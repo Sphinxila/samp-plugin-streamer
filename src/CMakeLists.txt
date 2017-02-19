@@ -63,6 +63,7 @@ add_samp_plugin(streamer-plugin
   ${SAMPSDK_PATH}/amxplugin.cpp
   ${SAMPGDK_PATH}/sampgdk.c
   streamer.def
+  streamer.rc
 )
 
 target_include_directories(streamer-plugin PUBLIC ${SAMPSDK_PATH})
