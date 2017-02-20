@@ -53,6 +53,8 @@ set(SOURCE_LIB
 	implements/settings_impl.cpp
 	implements/text-labels_impl.cpp
 	implements/updates_impl.cpp
+	implements/streamer_impl.cpp
+	implements/main_impl.cpp
 )
 
 SET(SOURCE_LIB_HEADER
@@ -92,9 +94,9 @@ SET(HEADER_FILES
 	utility/amx.h
 	utility/geometry.h
 	utility/misc.h
-	manipulation/array.cpp
-	manipulation/float.cpp
-	manipulation/int.cpp
+	manipulation/array.h
+	manipulation/float.h
+	manipulation/int.h
 )
 
 # Plugin
