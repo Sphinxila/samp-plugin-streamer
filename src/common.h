@@ -70,9 +70,7 @@ inline void intrusive_ptr_release(T *t)
 #include <boost/tuple/tuple.hpp>
 
 #include <Eigen/Core>
-
-#include <sampgdk/sampgdk.h>
-
+#include "sampgdk.h"
 #include <utility>
 
 #ifdef MAX_PLAYERS
