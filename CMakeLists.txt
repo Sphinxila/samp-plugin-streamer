@@ -11,6 +11,10 @@ if(NOT CMAKE_BUILD_TYPE)
       FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
 
+# Options
+option(SAMP_STREAMER_USE_FOREIGN_EXTERNAL "Use foreign externals" OFF)
+option(SAMP_STREAMER_BUILD_DOCS "Build Doxygen documentation" ON)
+
 # Set project title
 project(samp-plugin-streamer)
 
@@ -52,6 +56,8 @@ set(CMAKE_MODULE_PATH
 
 # Include externals
 include(external)
+
+# Include other
 include(defines)
 include(functions)
 

@@ -13,19 +13,27 @@ set(CMAKE_MODULE_PATH
 )
 
 # External bin path
-set(SAMP_GEN_EXTERNAL ${SAMP_STREAMER_EXTERNAL_BIN})
+if (NOT SAMP_STREAMER_USE_FOREIGN_EXTERNAL)
+	set(SAMP_GEN_EXTERNAL ${SAMP_STREAMER_EXTERNAL_BIN})
 
-# Set sampgdk settings
-set(SAMPGDK_DIR ${SAMPGDK_PATH})
-set(SAMPSDK_DIR ${SAMPSDK_PATH})
-set(SAMPSDK_INCLUDE_DIR ${SAMPSDK_DIR})
-set(SAMPGDK_GEN_DIR ${SAMP_GEN_EXTERNAL}/sampgdk)
+	# Set sampgdk settings
+	set(SAMPGDK_DIR ${SAMPGDK_PATH})
+	set(SAMPSDK_DIR ${SAMPSDK_PATH})
+	set(SAMPSDK_INCLUDE_DIR ${SAMPSDK_DIR})
+	set(SAMPGDK_GEN_DIR ${SAMP_GEN_EXTERNAL}/sampgdk)
+else()
+	message("External SAMP_GEN_EXTERNAL:" ${SAMP_GEN_EXTERNAL}})
+	message("External SAMPGDK_DIR:" ${SAMPGDK_DIR}})
+	message("External SAMPSDK_DIR:" ${SAMPSDK_DIR}})
+	message("External SAMPSDK_INCLUDE_DIR:" ${SAMPSDK_INCLUDE_DIR}})
+	message("External SAMPGDK_GEN_DIR:" ${SAMPGDK_GEN_DIR}})
+endif()
 
 # Options
 option(SAMPGDK_STATIC "Build static library instead" ON)
 option(SAMPGDK_BUILD_PLUGINS "Build example plugins" OFF)
 option(SAMPGDK_BUILD_AMALGAMATION "Build amalgamation" OFF)
-option(SAMPGDK_BUILD_DOCS "Build Doxygen documentation" ON)
+option(SAMPGDK_BUILD_DOCS "Build Doxygen documentation" ${SAMP_STREAMER_BUILD_DOCS})
 
 # Add src
 add_subdirectory(${SAMPGDK_PATH})
