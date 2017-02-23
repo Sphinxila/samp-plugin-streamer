@@ -10,7 +10,7 @@ This project is a fork of
 
 Documentation can  be found on the [wiki](https://github.com/samp-incognito/samp-streamer-plugin/wiki).
 
-## DownloadDownload
+## Download
 
 The latest binaries for Windows and Linux can be found on the [releases page](https://github.com/samp-incognito/samp-streamer-plugin/releases).
 
