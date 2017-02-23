@@ -3,14 +3,6 @@
 
 #pragma once
 
-#include <boost/geometry.hpp>
-#include <boost/geometry/geometries/geometries.hpp>
-#include <boost/intrusive_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
-#include <boost/unordered_map.hpp>
-
-#include <Eigen/Core>
-
 #include "config.hpp"
 
 STREAMER_BEGIN_NS

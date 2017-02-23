@@ -5,17 +5,8 @@
 
 #include "config.hpp"
 
-#include <boost/geometry.hpp>
-#include <boost/geometry/geometries/geometries.hpp>
-#include <boost/intrusive_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
-#include <boost/tuple/tuple.hpp>
-#include <boost/unordered_map.hpp>
-#include <boost/unordered_set.hpp>
-#include <boost/variant.hpp>
-
 #include <Eigen/Core>
-
+#include <vector>
 #include "../../common.h"
 
 STREAMER_BEGIN_NS
