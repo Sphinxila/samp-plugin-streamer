@@ -26,10 +26,11 @@
 
 #include <set>
 
+extern void *pAMXFunctions;
+
 STREAMER_BEGIN_NS
 
 namespace AmxEvent {
-	extern void *pAMXFunctions;
 
 	unsigned int Supports()
 	{
