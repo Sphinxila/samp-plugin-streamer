@@ -12,6 +12,26 @@ function(streamer_add_samp_plugin name)
 
 	# Set gdk stuff
 	target_compile_definitions(${name} PRIVATE SAMPGDK_AMALGAMATION SAMPGDK_CPP_WRAPPERS)
+	
+	# Plattform specified definitions
+	if (WIN32)
+		target_compile_definitions(
+			${name}
+			PRIVATE
+			BOOST_ALL_NO_LIB
+			BOOST_CHRONO_HEADER_ONLY
+			NOMINMAX
+			WIN32
+		)
+	else()
+		target_compile_definitions(
+			${name}
+			PRIVATE
+			BOOST_CHRONO_HEADER_ONLY
+			LINUX
+			NDEBUG
+		)
+	endif()	
 endfunction()
 
 function(streamer_add_library name)
@@ -28,5 +48,25 @@ function(streamer_add_library name)
 
 	# Set gdk stuff
 	target_compile_definitions(${name} PRIVATE SAMPGDK_AMALGAMATION SAMPGDK_CPP_WRAPPERS)
+
+	# Plattform specified definitions
+	if (WIN32)
+		target_compile_definitions(
+			${name}
+			PRIVATE
+			BOOST_ALL_NO_LIB
+			BOOST_CHRONO_HEADER_ONLY
+			NOMINMAX
+			WIN32
+		)
+	else()
+		target_compile_definitions(
+			${name}
+			PRIVATE
+			BOOST_CHRONO_HEADER_ONLY
+			LINUX
+			NDEBUG
+		)
+	endif()	
 endfunction()
 

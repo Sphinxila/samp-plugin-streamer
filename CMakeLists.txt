@@ -18,23 +18,6 @@ option(SAMP_STREAMER_BUILD_DOCS "Build Doxygen documentation" ON)
 # Set project title
 project(samp-plugin-streamer)
 
-# Plattform specified definitions
-if (WIN32)
-	add_definitions(
-		-DBOOST_ALL_NO_LIB
-		-DBOOST_CHRONO_HEADER_ONLY
-		-DNDEBUG
-		-DNOMINMAX
-		-DWIN32
-	)
-else()
-	add_definitions(
-		-DBOOST_CHRONO_HEADER_ONLY
-		-DLINUX
-		-DNDEBUG
-	)
-endif()
-
 # Base path constants
 set(SAMP_STREAMER_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 set(SAMP_STREAMER_BIN_ROOT ${CMAKE_CURRENT_BINARY_DIR})
