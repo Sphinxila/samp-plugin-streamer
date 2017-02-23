@@ -1677,7 +1677,8 @@ cell AMX_NATIVE_CALL Natives::Streamer_GetNearbyItems(AMX *amx, cell *params)
 						case STREAMER_AREA_TYPE_POLYGON:
 						{
 							Eigen::Vector2f centroidXY = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Polygon2D>(a->second->position));
-							Eigen::Vector2f positionZ = boost::get<Eigen::Vector2f>(a->second->height);
+							//Eigen::Vector2f positionZ = boost::get<Eigen::Vector2f>(a->second->height);
+							Eigen::Vector2f positionZ = a->second->height;	// TODO: check if this is correct
 							Eigen::Vector3f centroid = Eigen::Vector3f(centroidXY[0], centroidXY[1], positionZ[1] - positionZ[0]);
 							distance = static_cast<float>(boost::geometry::comparable_distance(centroid, position3D));
 							break;

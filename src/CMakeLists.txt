@@ -113,11 +113,11 @@ SET(SOURCE_LIB_HEADER
 )
 
 # Library
-streamer_add_library(streamer-plugin-lib
+streamer_add_library(streamer-lib
   ${SOURCE_FILES}
   ${HEADER_FILES}
   ${SOURCE_LIB}
   ${SOURCE_LIB_HEADER}
 )
 
-target_include_directories(streamer-plugin-lib PUBLIC include/)
+target_include_directories(streamer-lib PUBLIC include/)

@@ -1,3 +1,21 @@
+#################################################
+# Boost lib settings
+#################################################
+
+if ("${BOOST_LIB_PATH}" STREQUAL "")
+	# Set paths
+	SET(BOOST_LIB_PATH ${SAMP_STREAMER_EXTERNAL}/boost)
+endif()
+
+#################################################
+# Eigen lib
+#################################################
+
+if ("${EIGEN_LIB_PATH}" STREQUAL "")
+	# Set paths
+	SET(EIGEN_LIB_PATH ${SAMP_STREAMER_EXTERNAL}/eigen)
+endif()
+
 ##################################################
 # SAMPGDK Settings
 ##################################################

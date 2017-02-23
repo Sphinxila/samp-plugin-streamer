@@ -22,9 +22,14 @@ project(samp-plugin-streamer)
 set(SAMP_STREAMER_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 set(SAMP_STREAMER_BIN_ROOT ${CMAKE_CURRENT_BINARY_DIR})
 
-# Externals
-set(SAMP_STREAMER_EXTERNAL ${SAMP_STREAMER_ROOT}/external)
-set(SAMP_STREAMER_EXTERNAL_BIN ${SAMP_STREAMER_BIN_ROOT}/external)
+# Set initial external directories
+if ("${SAMP_STREAMER_EXTERNAL}" STREQUAL "")
+	set(SAMP_STREAMER_EXTERNAL ${SAMP_STREAMER_ROOT}/external)
+endif()
+
+if ("${SAMP_STREAMER_EXTERNAL_BIN}" STREQUAL "")
+	set(SAMP_STREAMER_EXTERNAL_BIN ${SAMP_STREAMER_BIN_ROOT}/external)
+endif()
 
 # Output directories
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${SAMP_STREAMER_BIN_ROOT}/lib)
@@ -45,6 +50,7 @@ endif()
 # Include other
 include(StreamerDefines)
 include(StreamerFunctions)
+include(StreamerCore)
 
 # Add src
 add_subdirectory(src)

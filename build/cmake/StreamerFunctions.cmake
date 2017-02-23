@@ -10,6 +10,10 @@ function(streamer_add_samp_plugin name)
 	target_include_directories(${name} PRIVATE ${SAMPGDK_DIR}/include)				# Include sampgdk files
 	target_include_directories(${name} PRIVATE ${SAMPGDK_GEN_DIR}/include/sampgdk)	# Include sampgdk generated samp includes
 
+	# Includes
+	target_include_directories(${name} PRIVATE ${EIGEN_LIB_PATH})
+	target_include_directories(${name} PRIVATE ${BOOST_LIB_PATH})
+	
 	# Set gdk stuff
 	target_compile_definitions(${name} PRIVATE SAMPGDK_AMALGAMATION SAMPGDK_CPP_WRAPPERS)
 	
@@ -45,7 +49,11 @@ function(streamer_add_library name)
 	target_include_directories(${name} PRIVATE ${SAMP_STREAMER_EXTERNAL})			# Include externals
 	target_include_directories(${name} PRIVATE ${SAMPGDK_DIR}/include)				# Include sampgdk files
 	target_include_directories(${name} PRIVATE ${SAMPGDK_GEN_DIR}/include/sampgdk)	# Include sampgdk generated samp includes
-
+	
+	# Includes
+	target_include_directories(${name} PRIVATE ${EIGEN_LIB_PATH})
+	target_include_directories(${name} PRIVATE ${BOOST_LIB_PATH})
+	
 	# Set gdk stuff
 	target_compile_definitions(${name} PRIVATE SAMPGDK_AMALGAMATION SAMPGDK_CPP_WRAPPERS)
 
