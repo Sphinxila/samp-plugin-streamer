@@ -51,8 +51,8 @@ function(streamer_add_library name)
 	target_include_directories(${name} PRIVATE ${SAMPGDK_GEN_DIR}/include/sampgdk)	# Include sampgdk generated samp includes
 	
 	# Includes
-	target_include_directories(${name} PRIVATE ${EIGEN_LIB_PATH})
-	target_include_directories(${name} PRIVATE ${BOOST_LIB_PATH})
+	target_include_directories(${name} PUBLIC ${EIGEN_LIB_PATH})
+	target_include_directories(${name} PUBLIC ${BOOST_LIB_PATH})
 	
 	# Set gdk stuff
 	target_compile_definitions(${name} PRIVATE SAMPGDK_AMALGAMATION SAMPGDK_CPP_WRAPPERS)
