@@ -16,7 +16,7 @@
 
 #include <Eigen/Core>
 
-#include "../common.h"
+#include "../../common.h"
 
 STREAMER_BEGIN_NS
 

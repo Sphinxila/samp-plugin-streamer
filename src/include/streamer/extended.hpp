@@ -1,7 +1,7 @@
 #ifndef EXTENDED_HPP
 #define EXTENDED_HPP
 
-#include "../common.h"
+#include "../../common.h"
 
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/geometries.hpp>

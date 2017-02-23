@@ -1,5 +1,5 @@
-#ifndef OBJECTS_HPP
-#define OBJECTS_HPP
+#ifndef RACE_CHECKPOINTS_HPP
+#define RACE_CHECKPOINTS_HPP
 
 #pragma once
 

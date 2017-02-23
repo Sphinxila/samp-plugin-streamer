@@ -1,5 +1,5 @@
-#ifndef TEXTLABELS_HPP
-#define TEXTLABELS_HPP
+#ifndef UPDATES_HPP
+#define UPDATES_HPP
 
 #pragma once
 
