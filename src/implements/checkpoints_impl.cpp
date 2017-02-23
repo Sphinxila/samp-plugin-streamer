@@ -14,13 +14,13 @@
 * limitations under the License.
 */
 
-#include "../include/config.hpp"
+#include <streamer/config.hpp>
 #include "../natives.h"
 
 #include "../core.h"
 #include "../utility.h"
 
-#include "../include/checkpoints.hpp"
+#include <streamer/checkpoints.hpp>
 
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/geometries.hpp>

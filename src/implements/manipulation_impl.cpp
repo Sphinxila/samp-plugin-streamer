@@ -13,12 +13,12 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include "../include/config.hpp"
+#include <streamer/config.hpp>
 #include "../natives.h"
 
 #include "../core.h"
 
-#include "../include/manipulation.hpp"
+#include <streamer/miscellaneous.hpp>
 
 #include <boost/intrusive_ptr.hpp>
 #include <boost/scoped_ptr.hpp>

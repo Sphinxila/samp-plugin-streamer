@@ -13,15 +13,15 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include "../include/config.hpp"
+#include <streamer/config.hpp>
 #include "../natives.h"
 #include "../core.h"
 
-#include "../include/deprecated.hpp"
+#include <streamer/deprecated.hpp>
 
 #include <boost/scoped_ptr.hpp>
 
-#include "../include/miscellaneous.hpp"
+#include <streamer/miscellaneous.hpp>
 
 STREAMER_BEGIN_NS
 

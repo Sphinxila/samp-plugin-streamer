@@ -14,14 +14,14 @@
 * limitations under the License.
 */
 
-#include "../include/config.hpp"
+#include <streamer/config.hpp>
 #include "../natives.h"
 
 #include "../core.h"
 #include "../main.h"
 #include "../utility.h"
 
-#include "../include/areas.hpp"
+#include <streamer/areas.hpp>
 
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/geometries.hpp>

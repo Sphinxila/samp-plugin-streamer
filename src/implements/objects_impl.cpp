@@ -14,13 +14,13 @@
 * limitations under the License.
 */
 
-#include "../include/config.hpp"
+#include <streamer/config.hpp>
 #include "../natives.h"
 
 #include "../core.h"
 #include "../utility.h"
 
-#include "../include/objects.hpp"
+#include <streamer/objects.hpp>
 
 #include <boost/chrono.hpp>
 #include <boost/geometry.hpp>

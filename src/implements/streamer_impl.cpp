@@ -1,4 +1,4 @@
-#include "../include/config.hpp"
+#include <streamer/config.hpp>
 
 #include "../core.h"
 

@@ -14,12 +14,12 @@
 * limitations under the License.
 */
 
-#include "../include/config.hpp"
+#include <streamer/config.hpp>
 #include "../natives.h"
 
 #include "../core.h"
 
-#include "../include/updates.hpp"
+#include <streamer/updates.hpp>
 
 #include <boost/intrusive_ptr.hpp>
 #include <boost/scoped_ptr.hpp>

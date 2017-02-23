@@ -13,13 +13,13 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-#include "../include/config.hpp"
+#include <streamer/config.hpp>
 #include "../natives.h"
 
 #include "../core.h"
 #include "../utility.h"
 
-#include "../include/settings.hpp"
+#include <streamer/settings.hpp>
 
 #include <boost/scoped_ptr.hpp>
 
