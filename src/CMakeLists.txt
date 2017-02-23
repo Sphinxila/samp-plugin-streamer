@@ -100,7 +100,6 @@ SET(SOURCE_LIB_HEADER
 	include/streamer/config.hpp
 	include/streamer/deprecated.hpp
 	include/streamer/extended.hpp
-	include/streamer/manipulation.h
 	include/streamer/manipulation.hpp
 	include/streamer/map-icons.hpp
 	include/streamer/miscellaneous.hpp
