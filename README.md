@@ -6,17 +6,21 @@ This plugin streams objects, pickups, checkpoints, race checkpoints, map icons, 
 This project is a fork of 
 - [samp-incognito/samp-streamer-plugin](https://github.com/samp-incognito/samp-streamer-plugin)
 
-Documentation
--------------
+## Documentation
 
 Documentation can  be found on the [wiki](https://github.com/samp-incognito/samp-streamer-plugin/wiki).
 
-Download
---------
+## DownloadDownload
 
 The latest binaries for Windows and Linux can be found on the [releases page](https://github.com/samp-incognito/samp-streamer-plugin/releases).
 
 ## Build
+#### Deps:
+- [Zeex/sampgdk - external/sampgdk](https://github.com/Zeex/sampgdk)
+- [Zeex/samp-plugin-sdk - external/sampsdk](https://github.com/Zeex/samp-plugin-sdk)
+- [RLovelett/eigen - external/eigen](https://github.com/RLovelett/eigen)
+- [steinwurf/boost - external/boost](https://github.com/steinwurf/boost)
+
 #### Requirements
 - [Modified version of gclient](https://github.com/timniederhausen/gclient)
 - CMake >=3.1
