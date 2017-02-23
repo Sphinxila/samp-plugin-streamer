@@ -13,6 +13,7 @@ endif(NOT CMAKE_BUILD_TYPE)
 
 # Options
 option(SAMP_STREAMER_USE_FOREIGN_EXTERNAL "Use foreign externals" OFF)
+option(SAMP_STREAMER_INCLUDE_PLUGIN "Include plugin to project" ON)
 option(SAMP_STREAMER_BUILD_DOCS "Build Doxygen documentation" ON)
 
 # Set project title

@@ -67,12 +67,14 @@ SET(PLUGIN_FILES
 )
 
 # Plugin
-streamer_add_samp_plugin(streamer
-  ${PLUGIN_FILES}
-  ${SOURCE_FILES}
-  ${SOURCE_NATIVES}
-  ${HEADER_FILES}
-)
+if (SAMP_STREAMER_INCLUDE_PLUGIN)
+	streamer_add_samp_plugin(streamer
+	  ${PLUGIN_FILES}
+	  ${SOURCE_FILES}
+	  ${SOURCE_NATIVES}
+	  ${HEADER_FILES}
+	)
+endif()
 
 set(SOURCE_LIB
 	implements/actors_impl.cpp
