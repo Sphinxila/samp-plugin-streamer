@@ -94,23 +94,23 @@ set(SOURCE_LIB
 )
 
 SET(SOURCE_LIB_HEADER
-	include/actors.hpp
-	include/areas.hpp
-	include/checkpoints.hpp
-	include/config.hpp
-	include/deprecated.hpp
-	include/extended.hpp
-	include/manipulation.h
-	include/manipulation.hpp
-	include/map-icons.hpp
-	include/miscellaneous.hpp
-	include/objects.hpp
-	include/pickups.hpp
-	include/race-checkpoints.hpp
-	include/settings.hpp
-	include/streamer.hpp
-	include/text-labels.hpp
-	include/updates.hpp
+	include/streamer/actors.hpp
+	include/streamer/areas.hpp
+	include/streamer/checkpoints.hpp
+	include/streamer/config.hpp
+	include/streamer/deprecated.hpp
+	include/streamer/extended.hpp
+	include/streamer/manipulation.h
+	include/streamer/manipulation.hpp
+	include/streamer/map-icons.hpp
+	include/streamer/miscellaneous.hpp
+	include/streamer/objects.hpp
+	include/streamer/pickups.hpp
+	include/streamer/race-checkpoints.hpp
+	include/streamer/settings.hpp
+	include/streamer/streamer.hpp
+	include/streamer/text-labels.hpp
+	include/streamer/updates.hpp
 )
 
 # Library
@@ -120,3 +120,5 @@ streamer_add_library(streamer-plugin-lib
   ${SOURCE_LIB}
   ${SOURCE_LIB_HEADER}
 )
+
+target_include_directories(streamer-plugin-lib PUBLIC include/)
