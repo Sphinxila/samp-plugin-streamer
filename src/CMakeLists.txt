@@ -134,4 +134,4 @@ streamer_add_library(streamer-plugin-lib
   ${SOURCE_LIB_HEADER}
 )
 
-target_include_directories(streamer-lib-lib PUBLIC include/)
+target_include_directories(streamer-plugin-lib PUBLIC include/)
