@@ -123,3 +123,15 @@ streamer_add_library(streamer-lib
 )
 
 target_include_directories(streamer-lib PUBLIC include/)
+
+
+# Library with natives
+streamer_add_library(streamer-plugin-lib
+  ${SOURCE_FILES}
+  ${HEADER_FILES}
+  ${SOURCE_LIB}
+  ${SOURCE_NATIVES}
+  ${SOURCE_LIB_HEADER}
+)
+
+target_include_directories(streamer-lib-lib PUBLIC include/)
