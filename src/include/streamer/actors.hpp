@@ -4,6 +4,7 @@
 #pragma once
 
 #include "config.hpp"
+#include <string>
 
 STREAMER_BEGIN_NS
 
