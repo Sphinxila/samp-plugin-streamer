@@ -38,7 +38,9 @@ set(CMAKE_MODULE_PATH
 )
 
 # Include externals
-include(external)
+if (NOT SAMP_STREAMER_USE_FOREIGN_EXTERNAL)
+	include(external)
+endif()
 
 # Include other
 include(defines)
