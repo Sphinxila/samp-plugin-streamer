@@ -14,6 +14,8 @@
 * limitations under the License.
 */
 
+#include <streamer/config.hpp>
+
 #include "../main.h"
 
 #include "../core.h"
@@ -24,8 +26,9 @@
 
 #include <set>
 
-namespace AmxEvent {
+STREAMER_BEGIN_NS
 
+namespace AmxEvent {
 	extern void *pAMXFunctions;
 
 	unsigned int Supports()
@@ -272,3 +275,5 @@ namespace AmxEvent {
 		core->getStreamer()->startAutomaticUpdate();
 	}
 }
+
+STREAMER_END_NS
