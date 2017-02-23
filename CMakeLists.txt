@@ -39,12 +39,12 @@ set(CMAKE_MODULE_PATH
 
 # Include externals
 if (NOT SAMP_STREAMER_USE_FOREIGN_EXTERNAL)
-	include(external)
+	include(StreamerExternal)
 endif()
 
 # Include other
-include(defines)
-include(functions)
+include(StreamerDefines)
+include(StreamerFunctions)
 
 # Add src
 add_subdirectory(src)
