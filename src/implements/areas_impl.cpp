@@ -33,6 +33,7 @@
 #include <boost/variant.hpp>
 
 #include <Eigen/Core>
+#include <vector>
 
 STREAMER_BEGIN_NS
 
@@ -158,30 +159,26 @@ int CreateDynamicPolygon(std::vector<Eigen::Vector2f> points, float minz, float 
 	if (core->getData()->getGlobalMaxItems(STREAMER_TYPE_AREA) == core->getData()->areas.size()) {
 		return 0;
 	}
-	
-	// TODO: <sphinx> check that
+
 	if (static_cast<int>(maxpoints >= 2 && static_cast<int>(maxpoints) % 2)) {
 		Utility::logError("CreateDynamicPolygon: Number of points must be divisible by two");
 		return 0;
 	}
 
 	int areaID = Item::Area::identifier.get();
-
 	Item::SharedArea area(new Item::Area);
 	//area->amx = amx;
 	area->areaID = areaID;
 	area->type = STREAMER_AREA_TYPE_POLYGON;
 
-	auto polygon = boost::get<Polygon2D>(area->position);
-
-	boost::geometry::assign_points(polygon, points);
-	boost::geometry::correct(polygon);
+	Polygon2D pol = boost::get<Polygon2D>(area->position);
+	boost::geometry::assign_points(pol, points);
+	boost::geometry::correct(pol);
 
 	area->height = Eigen::Vector2f(minz, maxz);
 	Box2D box = boost::geometry::return_envelope<Box2D>(boost::get<Polygon2D>(area->position));
 	area->comparableSize = static_cast<float>(boost::geometry::comparable_distance(box.min_corner(), box.max_corner()));
 	area->size = static_cast<float>(boost::geometry::distance(box.min_corner(), box.max_corner()));
-
 	Utility::addToContainer(area->worlds, worldid);
 	Utility::addToContainer(area->interiors, interiorid);
 	Utility::addToContainer(area->players, playerid);
@@ -212,10 +209,9 @@ int IsValidDynamicArea(int id) {
 
 // TODO: <sphinx> Check this out
 Polygon2D GetDynamicPolygonPoints(int id, std::vector<Eigen::Vector2f> points, int maxpoints) {
-	auto a = core->getData()->areas.find(id);
+	boost::unordered_map<int, Item::SharedArea>::iterator a = core->getData()->areas.find(id);
 	if (a != core->getData()->areas.end()) {
-		auto polygon = boost::get<Polygon2D>(a->second->position);
-		return polygon;
+		return boost::get<Polygon2D>(a->second->position);
 	}
 	return Polygon2D();
 }
@@ -223,7 +219,7 @@ Polygon2D GetDynamicPolygonPoints(int id, std::vector<Eigen::Vector2f> points, i
 int GetDynamicPolygonNumberPoints(int id) {
 	boost::unordered_map<int, Item::SharedArea>::iterator a = core->getData()->areas.find(id);
 	if (a != core->getData()->areas.end()) {
-		return static_cast<cell>(boost::get<Polygon2D>(a->second->position).outer().size());
+		return boost::get<Polygon2D>(a->second->position).outer().size();
 	}
 	return 0;
 }
@@ -239,7 +235,7 @@ int IsPlayerInDynamicArea(int playerID, int areaID, bool recheck) {
 		} else {
 			boost::unordered_map<int, Item::SharedArea>::iterator a = core->getData()->areas.find(areaID);
 			if (a != core->getData()->areas.end()) {
-				return static_cast<cell>(Utility::isPointInArea(p->second.position, a->second)) != 0;
+				return Utility::isPointInArea(p->second.position, a->second);
 			}
 		}
 	}
@@ -275,7 +271,7 @@ int IsAnyPlayerInDynamicArea(int id, bool recheck) {
 		} else {
 			boost::unordered_map<int, Item::SharedArea>::iterator a = core->getData()->areas.find(id);
 			if (a != core->getData()->areas.end()) {
-				return static_cast<cell>(Utility::isPointInArea(p->second.position, a->second)) != 0;
+				return Utility::isPointInArea(p->second.position, a->second);
 			}
 		}
 	}

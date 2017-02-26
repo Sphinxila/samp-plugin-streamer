@@ -110,5 +110,14 @@ function(streamer_add_library name)
 			NDEBUG
 		)
 	endif()	
+	
+	# Target
+	target_compile_features(${name}
+		PUBLIC
+			cxx_variadic_templates
+			cxx_nullptr
+		PRIVATE
+			cxx_lambdas
+	)
 endfunction()
 

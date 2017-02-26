@@ -483,7 +483,7 @@ int CreateDynamicPolygonEx(
 	area->areaID = areaID;
 	area->type = STREAMER_AREA_TYPE_POLYGON;
 
-	auto polygon = boost::get<Polygon2D>(area->position);
+	Polygon2D polygon = boost::get<Polygon2D>(area->position);
 	boost::geometry::assign_points(polygon, points);
 	boost::geometry::correct(polygon);
 
