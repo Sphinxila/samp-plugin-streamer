@@ -75,3 +75,8 @@ else()
 	target_compile_definitions(sampsdk PRIVATE LINUX)
 endif()
 
+if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+	set_property(TARGET sampsdk APPEND_STRING PROPERTY COMPILE_FLAGS " -m32")
+	set_property(TARGET sampsdk APPEND_STRING PROPERTY LINK_FLAGS    " -m32")
+endif()
+
