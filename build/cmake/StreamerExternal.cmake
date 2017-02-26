@@ -68,5 +68,10 @@ add_library(sampsdk
 )
 
 target_include_directories(sampsdk PUBLIC ${SAMPSDK_INCLUDE_DIR})
-
+if (WIN32)
+	target_compile_definitions(sampsdk PRIVATE WIN32)
+else()
+	target_include_directories(sampsdk PUBLIC ${SAMPSDK_INCLUDE_DIR}/amx)
+	target_compile_definitions(sampsdk PRIVATE LINUX)
+endif()
 
