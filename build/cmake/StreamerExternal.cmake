@@ -53,6 +53,19 @@ add_subdirectory(${SAMPGDK_PATH})
 target_include_directories(sampgdk PUBLIC ${SAMPGDK_DIR}/include)
 target_include_directories(sampgdk PUBLIC ${SAMPGDK_GEN_DIR}/include/sampgdk)
 
+target_include_directories(sampgdk PUBLIC ${SAMPSDK_INCLUDE_DIR})
+if (WIN32)
+	target_compile_definitions(sampgdk PRIVATE WIN32)
+else()
+	target_include_directories(sampgdk PUBLIC ${SAMPSDK_INCLUDE_DIR}/amx)
+	target_compile_definitions(sampgdk PRIVATE LINUX)
+endif()
+
+if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+	set_property(TARGET sampgdk APPEND_STRING PROPERTY COMPILE_FLAGS " -m32")
+	set_property(TARGET sampgdk APPEND_STRING PROPERTY LINK_FLAGS    " -m32")
+endif()
+
 ##################################################
 # AMXLib / sampsdk
 ##################################################
