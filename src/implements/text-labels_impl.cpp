@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2016 Incognito
+* Copyright (C) 2017 Incognito (Edited by ProMetheus)
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ int CreateDynamic3DTextLabel(std::string text, int color, float x, float y, floa
 	textLabel->inverseAreaChecking = false;
 	textLabel->originalComparableStreamDistance = -1.0f;
 	textLabel->positionOffset = Eigen::Vector3f::Zero();
+	textLabel->streamCallbacks = false;
 	textLabel->text = text;
 	textLabel->color = color;
 	textLabel->position = Eigen::Vector3f(x, y, z);

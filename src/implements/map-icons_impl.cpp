@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2016 Incognito
+* Copyright (C) 2017 Incognito (Edited by ProMetheus)
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -56,6 +56,7 @@ int CreateDynamicMapIcon(
 	mapIcon->inverseAreaChecking = false;
 	mapIcon->originalComparableStreamDistance = -1.0f;
 	mapIcon->positionOffset = Eigen::Vector3f::Zero();
+	mapIcon->streamCallbacks = false;
 	mapIcon->position = Eigen::Vector3f(x, y, z);
 	mapIcon->type = type;
 	mapIcon->color = color;

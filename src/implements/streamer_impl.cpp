@@ -137,16 +137,35 @@ namespace event {
 		return true;
 	}
 
-	bool OnPlayerEditObject(int playerid, bool playerobject, int objectid, int response, float fX, float fY, float fZ, float fRotX, float fRotY, float fRotZ) {
-		if (playerobject) {
+	bool OnPlayerEditObject(int playerid, bool playerobject, int objectid, int response, float fX, float fY, float fZ, float fRotX, float fRotY, float fRotZ)
+	{
+		if (playerobject)
+		{
 			boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(playerid);
-			if (p != core->getData()->players.end()) {
-				for (boost::unordered_map<int, int>::iterator i = p->second.internalObjects.begin(); i != p->second.internalObjects.end(); ++i) {
-					if (i->second == objectid) {
+			if (p != core->getData()->players.end())
+			{
+				for (boost::unordered_map<int, int>::iterator i = p->second.internalObjects.begin(); i != p->second.internalObjects.end(); ++i)
+				{
+					if (i->second == objectid)
+					{
 						int objectid = i->first;
-						for (std::set<AMX*>::iterator a = core->getData()->interfaces.begin(); a != core->getData()->interfaces.end(); ++a) {
+						if (response == EDIT_RESPONSE_CANCEL || response == EDIT_RESPONSE_FINAL)
+						{
+							boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(objectid);
+							if (o != core->getData()->objects.end())
+							{
+								if (o->second->comparableStreamDistance < STREAMER_STATIC_DISTANCE_CUTOFF && o->second->originalComparableStreamDistance > STREAMER_STATIC_DISTANCE_CUTOFF)
+								{
+									o->second->comparableStreamDistance = o->second->originalComparableStreamDistance;
+									o->second->originalComparableStreamDistance = -1.0f;
+								}
+							}
+						}
+						for (std::set<AMX*>::iterator a = core->getData()->interfaces.begin(); a != core->getData()->interfaces.end(); ++a)
+						{
 							int amxIndex = 0;
-							if (!amx_FindPublic(*a, "OnPlayerEditDynamicObject", &amxIndex)) {
+							if (!amx_FindPublic(*a, "OnPlayerEditDynamicObject", &amxIndex))
+							{
 								amx_Push(*a, amx_ftoc(fRotZ));
 								amx_Push(*a, amx_ftoc(fRotY));
 								amx_Push(*a, amx_ftoc(fRotX));

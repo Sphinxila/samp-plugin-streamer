@@ -16,9 +16,9 @@ int CreateDynamicObject(int modelid, float x, float y, float z,
 int DestroyDynamicObject(int id);
 int IsValidDynamicObject(int id);
 int SetDynamicObjectPos(int id, float x, float y, float z);
-int GetDynamicObjectPos(int id, float &x, float &y, float &z);
+//int GetDynamicObjectPos(int id, float &x, float &y, float &z);
 int SetDynamicObjectRot(int id, float rx, float ry, float rz);
-int GetDynamicObjectRot(int id, float &rx, float &ry, float &rz);
+//int GetDynamicObjectRot(int id, float &rx, float &ry, float &rz);
 int SetDynamicObjectNoCameraCol(int id);
 int GetDynamicObjectNoCameraCol(int id);
 int MoveDynamicObject(int id, float x, float y, float z, float speed, float rx, float ry, float rz);
@@ -36,6 +36,8 @@ int IsDynamicObjectMaterialTextUsed(int id, int materialindex);
 int GetDynamicObjectMaterialText(int id, int materialindex, std::string &text, int &materialSize, std::string &fontface, int &fontsize, bool &bold, int &fontcolor, int &backcolor, int &textalignment);
 int SetDynamicObjectMaterialText(int id, int materialindex, std::string text, int materialsize, int fontface, int fontsize, bool bold, int fontcolor, int backcolor, int textalignment);
 int GetPlayerCameraTargetDynObject(int playerrid);
+int GetDynamicObjectPos(int objectid, float &x, float &y, float &z);
+int GetDynamicObjectRot(int objectid, float &rx, float &ry, float &rz);
 
 STREAMER_END_NS
 #endif

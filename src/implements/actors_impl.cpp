@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2016 Incognito
+* Copyright (C) 2017 Incognito (Edited by ProMetheus)
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -295,6 +295,42 @@ int GetPlayerCameraTargetDynActor(int playerID)
 				}
 			}
 		}
+	}
+	return 0;
+}
+
+int IsDynamicActorStreamedIn(int playerid, int actorid) {
+	boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(playerid);
+	if (p != core->getData()->players.end()) {
+		boost::unordered_map<int, Item::SharedActor>::iterator a = core->getData()->actors.find(actorid);
+		if (a != core->getData()->actors.end()) {
+			boost::unordered_map<int, int>::iterator i = core->getData()->internalActors.find(a->first);
+			if (i != core->getData()->internalActors.end()) {
+				return sampgdk::IsActorStreamedIn(i->second, p->first);
+			}
+		}
+	}
+	return 0;
+}
+
+int GetDynamicActorVirtualWorld(int actorid) {
+	boost::unordered_map<int, Item::SharedActor>::iterator a = core->getData()->actors.find(actorid);
+	if (a != core->getData()->actors.end()) {
+		return Utility::getFirstValueInContainer(a->second->worlds);
+	}
+	return 0;
+}
+
+int SetDynamicActorVirtualWorld(int actorid, int worldid) {
+	boost::unordered_map<int, Item::SharedActor>::iterator a = core->getData()->actors.find(actorid);
+	if (a != core->getData()->actors.end()) {
+		Utility::setFirstValueInContainer(a->second->worlds, worldid);
+		boost::unordered_map<int, int>::iterator i = core->getData()->internalActors.find(a->first);
+		if (i != core->getData()->internalActors.end()) {
+			a->second->worldID = !a->second->worlds.empty() ? worldid : 0;
+			sampgdk::SetActorVirtualWorld(i->second, a->second->worldID);
+		}
+		return 1;
 	}
 	return 0;
 }

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2016 Incognito
+* Copyright (C) 2017 Incognito (Edited by ProMetheus)
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -62,6 +62,7 @@ int CreateDynamicObjectEx(
 	object->noCameraCollision = false;
 	object->originalComparableStreamDistance = -1.0f;
 	object->positionOffset = Eigen::Vector3f::Zero();
+	object->streamCallbacks = false;
 	object->modelID = modelid;
 	object->position = Eigen::Vector3f(x, y, z);
 	object->rotation = Eigen::Vector3f(rx, ry, rz);
@@ -104,6 +105,7 @@ int CreateDynamicPickupEx(
 	pickup->originalComparableStreamDistance = -1.0f;
 	pickup->modelID = modelid;
 	pickup->positionOffset = Eigen::Vector3f::Zero();
+	pickup->streamCallbacks = false;
 	pickup->type = type;
 	pickup->position = Eigen::Vector3f(x, y, z);
 	pickup->comparableStreamDistance = streamDistance < STREAMER_STATIC_DISTANCE_CUTOFF ? streamDistance : streamDistance * streamDistance;

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2016 Incognito
+* Copyright (C) 2017 Incognito (Edited by ProMetheus)
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ int CreateDynamicCP(float x, float y, float z, float size, int worldid, int inte
 	checkpoint->inverseAreaChecking = false;
 	checkpoint->originalComparableStreamDistance = -1.0f;
 	checkpoint->positionOffset = Eigen::Vector3f::Zero();
+	checkpoint->streamCallbacks = false;
 	checkpoint->position = Eigen::Vector3f(x, y, z);
 	checkpoint->size = size;
 

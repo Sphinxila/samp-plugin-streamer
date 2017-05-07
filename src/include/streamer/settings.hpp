@@ -20,7 +20,7 @@ int Streamer_GetTickRate();
 std::vector<int> Streamer_GetTypePriority();
 size_t Streamer_GetVisibleItems(int type, int playerid);
 bool Streamer_IsToggleErrorCallback();
-bool Streamer_IsToggleItemAntiAreas(int type, int id);
+bool Streamer_ToggleItemInvAreas(int type, int id);
 int Streamer_IsToggleItemStatic(int type, int id);
 void Streamer_SetCellDistance(float distance);
 void Streamer_SetCellSize(float size);
@@ -35,6 +35,7 @@ int Streamer_SetVisibleItems(int type, std::size_t value, int playerid);
 void Streamer_ToggleErrorCallback(bool toggle);
 int Streamer_ToggleItemAntiAreas(int type, int id, bool toggle);
 int Streamer_ToggleItemStatic(int type, int id, bool toggle);
-
+int Streamer_ToggleItemCallbacks(int type, int itemid, bool streamCallbacks);
+int Streamer_IsToggleItemCallbacks(int type, int itemid);
 STREAMER_END_NS
 #endif

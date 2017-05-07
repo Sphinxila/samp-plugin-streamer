@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2016 Incognito
+* Copyright (C) 2017 Incognito (Edited by ProMetheus)
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -76,8 +76,10 @@ namespace AmxEvent {
 		{ "Streamer_SetCellSize", Natives::Streamer_SetCellSize },
 		{ "Streamer_ToggleItemStatic", Natives::Streamer_ToggleItemStatic },
 		{ "Streamer_IsToggleItemStatic", Natives::Streamer_IsToggleItemStatic },
-		{ "Streamer_ToggleItemAntiAreas", Natives::Streamer_ToggleItemAntiAreas },
-		{ "Streamer_IsToggleItemAntiAreas", Natives::Streamer_IsToggleItemAntiAreas },
+		{ "Streamer_ToggleItemInvAreas", Natives::Streamer_ToggleItemInvAreas },
+		{ "Streamer_IsToggleItemInvAreas", Natives::Streamer_IsToggleItemInvAreas },
+		{ "Streamer_ToggleItemCallbacks", Natives::Streamer_ToggleItemCallbacks },
+		{ "Streamer_IsToggleItemCallbacks", Natives::Streamer_IsToggleItemCallbacks },
 		{ "Streamer_ToggleErrorCallback", Natives::Streamer_ToggleErrorCallback },
 		{ "Streamer_IsToggleErrorCallback", Natives::Streamer_IsToggleErrorCallback },
 		// Updates
@@ -115,18 +117,19 @@ namespace AmxEvent {
 		{ "Streamer_DestroyAllItems", Natives::Streamer_DestroyAllItems },
 		{ "Streamer_CountItems", Natives::Streamer_CountItems },
 		{ "Streamer_GetNearbyItems", Natives::Streamer_GetNearbyItems },
+		{ "Streamer_GetAllVisibleItems", Natives::Streamer_GetAllVisibleItems },
 		{ "Streamer_GetItemOffset", Natives::Streamer_GetItemOffset },
 		{ "Streamer_SetItemOffset", Natives::Streamer_SetItemOffset },
 		// Objects
 		{ "CreateDynamicObject", Natives::CreateDynamicObject },
 		{ "DestroyDynamicObject", Natives::DestroyDynamicObject },
 		{ "IsValidDynamicObject", Natives::IsValidDynamicObject },
-		{ "SetDynamicObjectPos", Natives::SetDynamicObjectPos },
 		{ "GetDynamicObjectPos", Natives::GetDynamicObjectPos },
-		{ "SetDynamicObjectRot", Natives::SetDynamicObjectRot },
+		{ "SetDynamicObjectPos", Natives::SetDynamicObjectPos },
 		{ "GetDynamicObjectRot", Natives::GetDynamicObjectRot },
-		{ "SetDynamicObjectNoCameraCol", Natives::SetDynamicObjectNoCameraCol },
+		{ "SetDynamicObjectRot", Natives::SetDynamicObjectRot },
 		{ "GetDynamicObjectNoCameraCol", Natives::GetDynamicObjectNoCameraCol },
+		{ "SetDynamicObjectNoCameraCol", Natives::SetDynamicObjectNoCameraCol },
 		{ "MoveDynamicObject", Natives::MoveDynamicObject },
 		{ "StopDynamicObject", Natives::StopDynamicObject },
 		{ "IsDynamicObjectMoving", Natives::IsDynamicObjectMoving },
@@ -150,16 +153,12 @@ namespace AmxEvent {
 		{ "CreateDynamicCP", Natives::CreateDynamicCP },
 		{ "DestroyDynamicCP", Natives::DestroyDynamicCP },
 		{ "IsValidDynamicCP", Natives::IsValidDynamicCP },
-		{ "TogglePlayerDynamicCP", Natives::TogglePlayerDynamicCP },
-		{ "TogglePlayerAllDynamicCPs", Natives::TogglePlayerAllDynamicCPs },
 		{ "IsPlayerInDynamicCP", Natives::IsPlayerInDynamicCP },
 		{ "GetPlayerVisibleDynamicCP", Natives::GetPlayerVisibleDynamicCP },
 		// Race Checkpoints
 		{ "CreateDynamicRaceCP", Natives::CreateDynamicRaceCP },
 		{ "DestroyDynamicRaceCP", Natives::DestroyDynamicRaceCP },
 		{ "IsValidDynamicRaceCP", Natives::IsValidDynamicRaceCP },
-		{ "TogglePlayerDynamicRaceCP", Natives::TogglePlayerDynamicRaceCP },
-		{ "TogglePlayerAllDynamicRaceCPs", Natives::TogglePlayerAllDynamicRaceCPs },
 		{ "IsPlayerInDynamicRaceCP", Natives::IsPlayerInDynamicRaceCP },
 		{ "GetPlayerVisibleDynamicRaceCP", Natives::GetPlayerVisibleDynamicRaceCP },
 		// Map Icons
@@ -184,8 +183,6 @@ namespace AmxEvent {
 		{ "IsValidDynamicArea", Natives::IsValidDynamicArea },
 		{ "GetDynamicPolygonPoints", Natives::GetDynamicPolygonPoints },
 		{ "GetDynamicPolygonNumberPoints", Natives::GetDynamicPolygonNumberPoints },
-		{ "TogglePlayerDynamicArea", Natives::TogglePlayerDynamicArea },
-		{ "TogglePlayerAllDynamicAreas", Natives::TogglePlayerAllDynamicAreas },
 		{ "IsPlayerInDynamicArea", Natives::IsPlayerInDynamicArea },
 		{ "IsPlayerInAnyDynamicArea", Natives::IsPlayerInAnyDynamicArea },
 		{ "IsAnyPlayerInDynamicArea", Natives::IsAnyPlayerInDynamicArea },
@@ -203,24 +200,26 @@ namespace AmxEvent {
 		{ "AttachDynamicAreaToObject", Natives::AttachDynamicAreaToObject },
 		{ "AttachDynamicAreaToPlayer", Natives::AttachDynamicAreaToPlayer },
 		{ "AttachDynamicAreaToVehicle", Natives::AttachDynamicAreaToVehicle },
+		{ "ToggleDynAreaSpectateMode", Natives::ToggleDynAreaSpectateMode},
+		{ "IsToggleDynAreaSpectateMode", Natives::IsToggleDynAreaSpectateMode },
 		// Actors
 		{ "CreateDynamicActor", Natives::CreateDynamicActor },
 		{ "DestroyDynamicActor", Natives::DestroyDynamicActor },
 		{ "IsValidDynamicActor", Natives::IsValidDynamicActor },
+		{ "IsDynamicActorStreamedIn", Natives::IsDynamicActorStreamedIn },
+		{ "GetDynamicActorVirtualWorld", Natives::GetDynamicActorVirtualWorld },
+		{ "SetDynamicActorVirtualWorld", Natives::SetDynamicActorVirtualWorld },
 		{ "ApplyDynamicActorAnimation", Natives::ApplyDynamicActorAnimation },
 		{ "ClearDynamicActorAnimations", Natives::ClearDynamicActorAnimations },
-		{ "GetPlayerTargetDynamicActor", Natives::GetPlayerTargetDynamicActor },
+		{ "GetDynamicActorFacingAngle", Natives::GetDynamicActorFacingAngle },
 		{ "SetDynamicActorFacingAngle", Natives::SetDynamicActorFacingAngle },
+		{ "GetDynamicActorPos", Natives::GetDynamicActorPos },
+		{ "SetDynamicActorPos", Natives::SetDynamicActorPos },
+		{ "GetDynamicActorHealth", Natives::GetDynamicActorHealth },
 		{ "SetDynamicActorHealth", Natives::SetDynamicActorHealth },
 		{ "SetDynamicActorInvulnerable", Natives::SetDynamicActorInvulnerable },
-		{ "SetDynamicActorPos", Natives::SetDynamicActorPos },
-		{ "SetDynamicActorVirtualWorld", Natives::SetDynamicActorVirtualWorld },
-		{ "GetDynamicActorFacingAngle", Natives::GetDynamicActorFacingAngle },
-		{ "GetDynamicActorHealth", Natives::GetDynamicActorHealth },
-		{ "GetDynamicActorPos", Natives::GetDynamicActorPos },
-		{ "GetDynamicActorVirtualWorld", Natives::GetDynamicActorVirtualWorld },
 		{ "IsDynamicActorInvulnerable", Natives::IsDynamicActorInvulnerable },
-		{ "IsDynamicActorStreamedIn", Natives::IsDynamicActorStreamedIn },
+		{ "GetPlayerTargetDynamicActor", Natives::GetPlayerTargetDynamicActor },
 		{ "GetPlayerCameraTargetDynActor", Natives::GetPlayerCameraTargetDynActor },
 		// Extended
 		{ "CreateDynamicObjectEx", Natives::CreateDynamicObjectEx },
@@ -258,9 +257,14 @@ namespace AmxEvent {
 		{ "CountDynamic3DTextLabels", Natives::CountDynamic3DTextLabels },
 		{ "DestroyAllDynamicAreas", Natives::DestroyAllDynamicAreas },
 		{ "CountDynamicAreas", Natives::CountDynamicAreas },
+		{ "TogglePlayerDynamicCP", Natives::TogglePlayerDynamicCP },
+		{ "TogglePlayerAllDynamicCPs", Natives::TogglePlayerAllDynamicCPs },
+		{ "TogglePlayerDynamicRaceCP", Natives::TogglePlayerDynamicRaceCP },
+		{ "TogglePlayerAllDynamicRaceCPs", Natives::TogglePlayerAllDynamicRaceCPs },
+		{ "TogglePlayerDynamicArea", Natives::TogglePlayerDynamicArea },
+		{ "TogglePlayerAllDynamicAreas", Natives::TogglePlayerAllDynamicAreas },
 		{ 0, 0 }
 	};
-
 	int AmxLoad(AMX *amx) {
 		core->getData()->interfaces.insert(amx);
 		return Utility::checkInterfaceAndRegisterNatives(amx, natives);

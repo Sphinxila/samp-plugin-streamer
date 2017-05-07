@@ -26,6 +26,9 @@ int SetDynamicActorHealth(int id, float health);
 int SetDynamicActorInvulnerable(int id, bool invulnerable);
 int SetDynamicActorPos(int id, float x, float y, float z);
 int SetDynamicActorVirtualWorld(int id, int value);
+int SetDynamicActorVirtualWorld(int actorid, int worldid);
+int GetDynamicActorVirtualWorld(int actorid);
+int IsDynamicActorStreamedIn(int playerid, int actorid);
 
 STREAMER_END_NS
 #endif

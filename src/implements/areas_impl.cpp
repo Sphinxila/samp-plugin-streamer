@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2016 Incognito
+* Copyright (C) 2017 Incognito (Edited by ProMetheus)
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -93,6 +93,7 @@ int CreateDynamicSphere(float x, float y, float z, float size, int worldid, int 
 	Item::SharedArea area(new Item::Area);
 	//area->amx = amx;
 	area->areaID = areaID;
+	area->spectateMode = true;
 	area->type = STREAMER_AREA_TYPE_SPHERE;
 	area->position = Eigen::Vector3f(x, y, z);
 	area->comparableSize = size * size;
@@ -116,6 +117,7 @@ int CreateDynamicRectangle(float minx, float miny, float maxx, float maxy, int w
 	Item::SharedArea area(new Item::Area);
 	//area->amx = amx;
 	area->areaID = areaID;
+	area->spectateMode = true;
 	area->type = STREAMER_AREA_TYPE_RECTANGLE;
 	area->position = Box2D(Eigen::Vector2f(minx, miny), Eigen::Vector2f(maxx, maxy));
 	boost::geometry::correct(boost::get<Box2D>(area->position));
@@ -140,6 +142,7 @@ int CreateDynamicCuboid(float minx, float miny, float minz, float maxx, float ma
 	Item::SharedArea area(new Item::Area);
 	//area->amx = amx;
 	area->areaID = areaID;
+	area->spectateMode = true;
 	area->type = STREAMER_AREA_TYPE_CUBOID;
 	area->position = Box3D(Eigen::Vector3f(minx, miny, minz), Eigen::Vector3f(maxx, maxy, maxz));
 	boost::geometry::correct(boost::get<Box3D>(area->position));
@@ -169,6 +172,7 @@ int CreateDynamicPolygon(std::vector<Eigen::Vector2f> points, float minz, float 
 	Item::SharedArea area(new Item::Area);
 	//area->amx = amx;
 	area->areaID = areaID;
+	area->spectateMode = true;
 	area->type = STREAMER_AREA_TYPE_POLYGON;
 
 	Polygon2D pol = boost::get<Polygon2D>(area->position);
@@ -338,44 +342,44 @@ std::vector<int> GetPlayerDynamicAreas(int id) {
 		for (boost::unordered_set<int>::iterator i = p->second.internalAreas.begin(); i != p->second.internalAreas.end(); ++i) {
 			boost::unordered_map<int, Item::SharedArea>::iterator a = core->getData()->areas.find(*i);
 			if (a != core->getData()->areas.end()) {
+
+				boost::variant<Polygon2D, Box2D, Box3D, Eigen::Vector2f, Eigen::Vector3f> position;
+				if (a->second->attach) {
+					position = a->second->position;
+				} else {
+					position = a->second->position;
+				}
+
 				float distance = 0.0f;
 				switch (a->second->type)
 				{
 				case STREAMER_AREA_TYPE_CIRCLE:
 				case STREAMER_AREA_TYPE_CYLINDER:
 				{
-					if (a->second->attach) {
-						distance = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector2f(p->second.position[0], p->second.position[1]), Eigen::Vector2f(a->second->attach->position[0], a->second->attach->position[1])));
-					} else {
-						distance = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector2f(p->second.position[0], p->second.position[1]), boost::get<Eigen::Vector2f>(a->second->position)));
-					}
+					distance = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector2f(p->second.position[0], p->second.position[1]), boost::get<Eigen::Vector2f>(position)));
 					break;
 				}
 				case STREAMER_AREA_TYPE_SPHERE:
 				{
-					if (a->second->attach) {
-						distance = static_cast<float>(boost::geometry::comparable_distance(p->second.position, a->second->attach->position));
-					} else {
-						distance = static_cast<float>(boost::geometry::comparable_distance(p->second.position, boost::get<Eigen::Vector3f>(a->second->position)));
-					}
+					distance = static_cast<float>(boost::geometry::comparable_distance(p->second.position, boost::get<Eigen::Vector3f>(position)));
 					break;
 				}
 				case STREAMER_AREA_TYPE_RECTANGLE:
 				{
-					Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Box2D>(a->second->position));
+					Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Box2D>(position));
 					distance = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector2f(p->second.position[0], p->second.position[1]), centroid));
 					break;
 				}
 				case STREAMER_AREA_TYPE_CUBOID:
 				{
-					Eigen::Vector3f centroid = boost::geometry::return_centroid<Eigen::Vector3f>(boost::get<Box3D>(a->second->position));
+					Eigen::Vector3f centroid = boost::geometry::return_centroid<Eigen::Vector3f>(boost::get<Box3D>(position));
 					distance = static_cast<float>(boost::geometry::comparable_distance(p->second.position, centroid));
 					break;
-
+				
 				}
 				case STREAMER_AREA_TYPE_POLYGON:
 				{
-					Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Polygon2D>(a->second->position));
+					Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Polygon2D>(position));
 					distance = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector2f(p->second.position[0], p->second.position[1]), centroid));
 					break;
 				}
@@ -407,50 +411,44 @@ std::vector<int> GetDynamicAreasForPoint(float x, float y, float z) {
 	for (std::vector<SharedCell>::const_iterator p = pointCells.begin(); p != pointCells.end(); ++p) {
 		for (boost::unordered_map<int, Item::SharedArea>::const_iterator a = (*p)->areas.begin(); a != (*p)->areas.end(); ++a) {
 			if (Utility::isPointInArea(Eigen::Vector3f(x, y, z), a->second)) {
+
+				boost::variant<Polygon2D, Box2D, Box3D, Eigen::Vector2f, Eigen::Vector3f> position;
+				if (a->second->attach) {
+					position = a->second->position;
+				} else {
+					position = a->second->position;
+				}
+
 				float distance = 0.0f;
 				switch (a->second->type)
 				{
 				case STREAMER_AREA_TYPE_CIRCLE:
 				case STREAMER_AREA_TYPE_CYLINDER:
 				{
-					if (a->second->attach)
-					{
-						distance = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector2f(x, y), Eigen::Vector2f(a->second->attach->position[0], a->second->attach->position[1])));
-					}
-					else
-					{
-						distance = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector2f(x, y), boost::get<Eigen::Vector2f>(a->second->position)));
-					}
+					distance = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector2f(x, y), boost::get<Eigen::Vector2f>(position)));
 					break;
 				}
 				case STREAMER_AREA_TYPE_SPHERE:
 				{
-					if (a->second->attach)
-					{
-						distance = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector3f(x, y, z), a->second->attach->position));
-					}
-					else
-					{
-						distance = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector3f(x, y, z), boost::get<Eigen::Vector3f>(a->second->position)));
-					}
+					distance = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector3f(x, y, z), boost::get<Eigen::Vector3f>(position)));
 					break;
 				}
 				case STREAMER_AREA_TYPE_RECTANGLE:
 				{
-					Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Box2D>(a->second->position));
+					Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Box2D>(position));
 					distance = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector2f(x, y), centroid));
 					break;
 				}
 				case STREAMER_AREA_TYPE_CUBOID:
 				{
-					Eigen::Vector3f centroid = boost::geometry::return_centroid<Eigen::Vector3f>(boost::get<Box3D>(a->second->position));
+					Eigen::Vector3f centroid = boost::geometry::return_centroid<Eigen::Vector3f>(boost::get<Box3D>(position));
 					distance = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector3f(x, y, z), centroid));
 					break;
 
 				}
 				case STREAMER_AREA_TYPE_POLYGON:
 				{
-					Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Polygon2D>(a->second->position));
+					Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Polygon2D>(position));
 					distance = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector2f(x, y), centroid));
 					break;
 				}
@@ -482,52 +480,45 @@ int GetNumberDynamicAreasForPoint(float x, float y, float z) {
 std::vector<int> GetDynamicAreasForLine(float x, float y, float z, float x2, float y2, float z2) {
 	std::multimap<float, int> orderedAreas;
 	for (boost::unordered_map<int, Item::SharedArea>::const_iterator a = core->getData()->areas.begin(); a != core->getData()->areas.end(); ++a) {
-		if (Utility::doesLineSegmentIntersectArea(Eigen::Vector3f(x, y, z), Eigen::Vector3f(x2, y2, z2), a->second))
-		{
+		if (Utility::doesLineSegmentIntersectArea(Eigen::Vector3f(x, y, z), Eigen::Vector3f(x2, y2, z2), a->second)) {
+
+			boost::variant<Polygon2D, Box2D, Box3D, Eigen::Vector2f, Eigen::Vector3f> position;
+			if (a->second->attach) {
+				position = a->second->position;
+			} else {
+				position = a->second->position;
+			}
+
 			float distance = 0.0f;
 			switch (a->second->type)
 			{
 			case STREAMER_AREA_TYPE_CIRCLE:
 			case STREAMER_AREA_TYPE_CYLINDER:
 			{
-				if (a->second->attach)
-				{
-					distance = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector2f(x, y), Eigen::Vector2f(a->second->attach->position[0], a->second->attach->position[1])));
-				}
-				else
-				{
-					distance = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector2f(x, y), boost::get<Eigen::Vector2f>(a->second->position)));
-				}
+				distance = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector2f(x, ay), boost::get<Eigen::Vector2f>(position)));
 				break;
 			}
 			case STREAMER_AREA_TYPE_SPHERE:
 			{
-				if (a->second->attach)
-				{
-					distance = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector3f(x, y, z), a->second->attach->position));
-				}
-				else
-				{
-					distance = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector3f(x, y, z), boost::get<Eigen::Vector3f>(a->second->position)));
-				}
+				distance = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector3f(x, y, z), boost::get<Eigen::Vector3f>(position)));
 				break;
 			}
 			case STREAMER_AREA_TYPE_RECTANGLE:
 			{
-				Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Box2D>(a->second->position));
+				Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Box2D>(position));
 				distance = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector2f(x, y), centroid));
 				break;
 			}
 			case STREAMER_AREA_TYPE_CUBOID:
 			{
-				Eigen::Vector3f centroid = boost::geometry::return_centroid<Eigen::Vector3f>(boost::get<Box3D>(a->second->position));
+				Eigen::Vector3f centroid = boost::geometry::return_centroid<Eigen::Vector3f>(boost::get<Box3D>(position));
 				distance = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector3f(x, y, z), centroid));
 				break;
 
 			}
 			case STREAMER_AREA_TYPE_POLYGON:
 			{
-				Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Polygon2D>(a->second->position));
+				Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Polygon2D>(position));
 				distance = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector2f(x, y), centroid));
 				break;
 			}
@@ -555,15 +546,16 @@ int GetNumberDynamicAreasForLine(float x, float y, float z, float x2, float y2, 
 int AttachDynamicAreaToObject(int id, int objectid, int type, int playerid, float x, float y, float z) {
 	boost::unordered_map<int, Item::SharedArea>::iterator a = core->getData()->areas.find(id);
 	if (a != core->getData()->areas.end()) {
-		if (a->second->type != STREAMER_AREA_TYPE_CIRCLE && a->second->type != STREAMER_AREA_TYPE_SPHERE) {
+		/*if (a->second->type != STREAMER_AREA_TYPE_CIRCLE && a->second->type != STREAMER_AREA_TYPE_SPHERE) {
 			Utility::logError("AttachDynamicAreaToObject: Only circles and spheres may be attached to objects");
 			return 0;
-		}
+		}*/
 
 		if ((objectid != INVALID_GENERIC_ID && type != STREAMER_OBJECT_TYPE_DYNAMIC) || (objectid != INVALID_STREAMER_ID && type == STREAMER_OBJECT_TYPE_DYNAMIC)) {
 			a->second->attach = boost::intrusive_ptr<Item::Area::Attach>(new Item::Area::Attach);
 			a->second->attach->player = INVALID_GENERIC_ID;
 			a->second->attach->vehicle = INVALID_GENERIC_ID;
+			a->second->attach->position = a->second->position;
 			a->second->attach->object = boost::make_tuple(objectid, type, playerid);
 			a->second->attach->positionOffset = Eigen::Vector3f(x, y, z);
 			core->getStreamer()->attachedAreas.insert(a->second);
@@ -584,14 +576,16 @@ int AttachDynamicAreaToObject(int id, int objectid, int type, int playerid, floa
 int AttachDynamicAreaToPlayer(int id, int playerrid, float x, float y, float z) {
 	boost::unordered_map<int, Item::SharedArea>::iterator a = core->getData()->areas.find(id);
 	if (a != core->getData()->areas.end()) {
-		if (a->second->type != STREAMER_AREA_TYPE_CIRCLE && a->second->type != STREAMER_AREA_TYPE_SPHERE) {
+		/*if (a->second->type != STREAMER_AREA_TYPE_CIRCLE && a->second->type != STREAMER_AREA_TYPE_SPHERE) {
 			Utility::logError("AttachDynamicAreaToPlayer: Only circles and spheres may be attached to players");
 			return 0;
-		}
+		}*/
+
 		if (playerrid != INVALID_GENERIC_ID) {
 			a->second->attach = boost::intrusive_ptr<Item::Area::Attach>(new Item::Area::Attach);
 			a->second->attach->object = boost::make_tuple(INVALID_STREAMER_ID, STREAMER_OBJECT_TYPE_DYNAMIC, INVALID_PLAYER_ID);
 			a->second->attach->vehicle = INVALID_GENERIC_ID;
+			a->second->attach->position = a->second->position;
 			a->second->attach->player = playerrid;
 			a->second->attach->positionOffset = Eigen::Vector3f(x, y, z);
 			core->getStreamer()->attachedAreas.insert(a->second);
@@ -609,18 +603,19 @@ int AttachDynamicAreaToPlayer(int id, int playerrid, float x, float y, float z) 
 	return 0;
 }
 
-int AttachDynamicAreaToVehicle(int id, int vehicleid, float x, float y, float z)
-{
+int AttachDynamicAreaToVehicle(int id, int vehicleid, float x, float y, float z) {
 	boost::unordered_map<int, Item::SharedArea>::iterator a = core->getData()->areas.find(id);
 	if (a != core->getData()->areas.end()) {
-		if (a->second->type != STREAMER_AREA_TYPE_CIRCLE && a->second->type != STREAMER_AREA_TYPE_SPHERE) {
+		/*if (a->second->type != STREAMER_AREA_TYPE_CIRCLE && a->second->type != STREAMER_AREA_TYPE_SPHERE) {
 			Utility::logError("AttachDynamicAreaToVehicle: Only circles and spheres may be attached to vehicles");
 			return 0;
-		}
+		}*/
+
 		if (vehicleid != INVALID_GENERIC_ID) {
 			a->second->attach = boost::intrusive_ptr<Item::Area::Attach>(new Item::Area::Attach);
 			a->second->attach->object = boost::make_tuple(INVALID_STREAMER_ID, STREAMER_OBJECT_TYPE_DYNAMIC, INVALID_PLAYER_ID);
 			a->second->attach->player = INVALID_GENERIC_ID;
+			a->second->attach->position = a->second->position;
 			a->second->attach->vehicle = vehicleid;
 			a->second->attach->positionOffset = a->second->attach->positionOffset = Eigen::Vector3f(x, y, z);
 			core->getStreamer()->attachedAreas.insert(a->second);
@@ -634,6 +629,23 @@ int AttachDynamicAreaToVehicle(int id, int vehicleid, float x, float y, float z)
 			}
 		}
 		return 1;
+	}
+	return 0;
+}
+
+int ToggleDynAreaSpectateMode(int areaid, int spectator) { 
+	boost::unordered_map<int, Item::SharedArea>::iterator a = core->getData()->areas.find(areaid);
+	if (a != core->getData()->areas.end()) {
+		a->second->spectateMode = spectator != 0;
+		return 1;
+	}
+	return 0;
+}
+
+int IsToggleDynAreaSpectateMode(int areaid) {
+	boost::unordered_map<int, Item::SharedArea>::iterator a = core->getData()->areas.find(areaid);
+	if (a != core->getData()->areas.end()) {
+		return static_cast<cell>(a->second->spectateMode != 0);
 	}
 	return 0;
 }

@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2016 Incognito
+* Copyright (C) 2017 Incognito (Edited by ProMetheus)
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -106,7 +106,7 @@ int Streamer_Update(int playerid, int type) {
 	return 0;
 }
 
-int Streamer_UpdateEx(int playerid, float x, float y, float z, int worldid, int interiorid, int type, int compensatedtime) {
+int Streamer_UpdateEx(int playerid, float x, float y, float z, int worldid, int interiorid, int type, int compensatedtime, bool pControllable) {
 	boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(playerid);
 	if (p != core->getData()->players.end()) {
 		p->second.position = Eigen::Vector3f(x, y, z);
@@ -122,10 +122,14 @@ int Streamer_UpdateEx(int playerid, float x, float y, float z, int worldid, int 
 		}
 		if (compensatedtime >= 0) {
 			sampgdk::SetPlayerPos(p->first, p->second.position[0], p->second.position[1], p->second.position[2]);
+			if (pControllable) {
+				sampgdk::TogglePlayerControllable(p->first, false);
+			}
 			sampgdk::TogglePlayerControllable(p->first, false);
 			p->second.delayedUpdate = true;
 			p->second.delayedUpdateType = type;
 			p->second.delayedUpdateTime = boost::chrono::steady_clock::now() + boost::chrono::milliseconds(compensatedtime);
+			p->second.delayedUpdateFreeze = pControllable;
 		}
 		core->getStreamer()->startManualUpdate(p->second, type);
 		return 1;

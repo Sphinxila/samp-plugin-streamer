@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2016 Incognito
+* Copyright (C) 2017 Incognito (Edited by ProMetheus)
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -47,10 +47,12 @@ int CreateDynamicObject( int modelid, float x, float y,  float z,
 	Item::SharedObject object(new Item::Object);
 	//object->amx = amx;
 	object->objectID = objectID;
+	object->inverseAreaChecking = false;
 	object->noCameraCollision = false;
 	object->inverseAreaChecking = false;
 	object->originalComparableStreamDistance = -1.0f;
 	object->positionOffset = Eigen::Vector3f::Zero();
+	object->streamCallbacks = false;
 	object->modelID = modelid;
 	object->position = Eigen::Vector3f(x, y, z);
 	object->rotation = Eigen::Vector3f(rx, ry, rz);
@@ -122,7 +124,7 @@ int SetDynamicObjectPos(int id, float x, float y, float z) {
 	return 0;
 }
 
-int GetDynamicObjectPos(int id, float &x, float &y, float &z) {
+/*int GetDynamicObjectPos(int id, float &x, float &y, float &z) {
 	boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(id);
 	if (o != core->getData()->objects.end()) {
 		if (o->second->move) {
@@ -134,7 +136,7 @@ int GetDynamicObjectPos(int id, float &x, float &y, float &z) {
 		return 1;
 	}
 	return 0;
-}
+}*/
 
 int SetDynamicObjectRot(int id, float rx, float ry, float rz) {
 	boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(id);
@@ -158,7 +160,7 @@ int SetDynamicObjectRot(int id, float rx, float ry, float rz) {
 	return 0;
 }
 
-int GetDynamicObjectRot(int id, float &rx, float &ry, float &rz) {
+/*int GetDynamicObjectRot(int id, float &rx, float &ry, float &rz) {
 	boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(id);
 	if (o != core->getData()->objects.end()) {
 		if (o->second->move) {
@@ -170,7 +172,7 @@ int GetDynamicObjectRot(int id, float &rx, float &ry, float &rz) {
 		return 1;
 	}
 	return 0;
-}
+}*/
 
 int SetDynamicObjectNoCameraCol(int id) {
 	boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(id);
@@ -203,7 +205,7 @@ int MoveDynamicObject(int id, float x, float y, float z, float speed, float rx, 
 	boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(id);
 	if (o != core->getData()->objects.end()) {
 		if (o->second->attach) {
-			Utility::logError("MoveDynamicObject: Object is currently attached and cannot be moved");
+			Utility::logError("MoveDynamicObject: Object is currently attached and cannot be moved.");
 			return 0;
 		}
 		Eigen::Vector3f position(x, y, z);
@@ -294,13 +296,13 @@ int AttachCameraToDynamicObject(int playerid, int objectid) {
 
 int AttachDynamicObjectToObject(int objectid, int attachtoid, float x, float y, float z, float rx, float ry, float rz, bool sync) {
 	if (sampgdk::FindNative("SetPlayerGravity") == NULL) {
-		Utility::logError("AttachDynamicObjectToObject: YSF plugin must be loaded to attach objects to objects");
+		Utility::logError("AttachDynamicObjectToObject: YSF plugin must be loaded to attach objects to objects.");
 		return 0;
 	}
 	boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(objectid);
 	if (o != core->getData()->objects.end()) {
 		if (o->second->move) {
-			Utility::logError("AttachDynamicObjectToObject: Object is currently moving and must be stopped first");
+			Utility::logError("AttachDynamicObjectToObject: Object is currently moving and must be stopped first.");
 			return 0;
 		}
 		o->second->attach = boost::intrusive_ptr<Item::Object::Attach>(new Item::Object::Attach);
@@ -355,13 +357,13 @@ int AttachDynamicObjectToObject(int objectid, int attachtoid, float x, float y, 
 
 int AttachDynamicObjectToPlayer(int objectid, int playerid, float x, float y, float z, float rx, float ry, float rz) {
 	if (sampgdk::FindNative("SetPlayerGravity") == NULL) {
-		Utility::logError("AttachDynamicObjectToPlayer: YSF plugin must be loaded to attach objects to players");
+		Utility::logError("AttachDynamicObjectToPlayer: YSF plugin must be loaded to attach objects to players.");
 		return 0;
 	}
 	boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(objectid);
 	if (o != core->getData()->objects.end()) {
 		if (o->second->move) {
-			Utility::logError("AttachDynamicObjectToPlayer: Object is currently moving and must be stopped first");
+			Utility::logError("AttachDynamicObjectToPlayer: Object is currently moving and must be stopped first.");
 			return 0;
 		}
 		o->second->attach = boost::intrusive_ptr<Item::Object::Attach>(new Item::Object::Attach);
@@ -402,7 +404,7 @@ int AttachDynamicObjectToVehicle(int objectid, int vehicleid, float x, float y, 
 	boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(objectid);
 	if (o != core->getData()->objects.end()) {
 		if (o->second->move) {
-			Utility::logError("AttachDynamicObjectToVehicle: Object is currently moving and must be stopped first");
+			Utility::logError("AttachDynamicObjectToVehicle: Object is currently moving and must be stopped first.");
 			return 0;
 		}
 		o->second->attach = boost::intrusive_ptr<Item::Object::Attach>(new Item::Object::Attach);
@@ -444,6 +446,11 @@ int EditDynamicObject(int playerid, int objectid) {
 		if (i == p->second.internalObjects.end()) {
 			boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(objectid);
 			if (o != core->getData()->objects.end()) {
+				if (o->second->comparableStreamDistance > STREAMER_STATIC_DISTANCE_CUTOFF && o->second->originalComparableStreamDistance < STREAMER_STATIC_DISTANCE_CUTOFF) {
+					o->second->originalComparableStreamDistance = o->second->comparableStreamDistance;
+					o->second->comparableStreamDistance = -1.0f;
+				}
+
 				p->second.position = Eigen::Vector3f(o->second->position[0], o->second->position[1], o->second->position[2]);
 				core->getStreamer()->startManualUpdate(p->second, STREAMER_TYPE_OBJECT);
 			}
@@ -585,6 +592,34 @@ int GetPlayerCameraTargetDynObject(int playerrid) {
 				}
 			}
 		}
+	}
+	return 0;
+}
+
+int GetDynamicObjectPos(int objectid, float &x, float &y, float &z) {
+	boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(objectid);
+	if (o != core->getData()->objects.end()) {
+		if (o->second->move) {
+			core->getStreamer()->processActiveItems();
+		}
+		x = o->second->position[0];
+		y = o->second->position[1];
+		z = o->second->position[2];
+		return 1;
+	}
+	return 0;
+}
+
+int GetDynamicObjectRot(int objectid, float &rx, float &ry, float &rz) {
+	boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(objectid);
+	if (o != core->getData()->objects.end()) {
+		if (o->second->move) {
+			core->getStreamer()->processActiveItems();
+		}
+		rx = o->second->rotation[0];
+		ry = o->second->rotation[1];
+		rz = o->second->rotation[2];
+		return 1;
 	}
 	return 0;
 }

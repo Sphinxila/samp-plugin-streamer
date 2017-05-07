@@ -38,6 +38,8 @@ int IsPlayerInDynamicArea(int playerID, int areaID, bool recheck);
 int IsPointInAnyDynamicArea(float x, float y, float z);
 int IsPointInDynamicArea(int id, float x, float y, float z);
 int IsValidDynamicArea(int id);
+int IsToggleDynAreaSpectateMode(int areaid);
+int ToggleDynAreaSpectateMode(int areaid, int spectator);
 
 STREAMER_END_NS
 #endif

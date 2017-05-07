@@ -30,6 +30,7 @@ int Streamer_SetItemOffset(int type, int id, float x, float y, float z);
 int Streamer_ToggleAllItems(int playerid, int type, bool toggle, boost::unordered_set<int> exceptions);
 int Streamer_ToggleItem(int playerid, int type, int id, bool toggle);
 std::vector<int> Streamer_GetNearbyItems(float x, float y, float z, int type, float prange);
+std::vector<int> Streamer_GetAllVisibleItems(int playerid, int type);
 
 STREAMER_END_NS
 #endif

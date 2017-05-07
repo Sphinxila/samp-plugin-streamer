@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2016 Incognito
+* Copyright (C) 2017 Incognito (Edited by ProMetheus)
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ int CreateDynamicRaceCP(int id, float x, float y, float z, float nx, float ny, f
 	raceCheckpoint->inverseAreaChecking = false;
 	raceCheckpoint->originalComparableStreamDistance = -1.0f;
 	raceCheckpoint->positionOffset = Eigen::Vector3f::Zero();
+	raceCheckpoint->streamCallbacks = false;
 	raceCheckpoint->type = id;
 	raceCheckpoint->position = Eigen::Vector3f(x, y, z);
 	raceCheckpoint->next = Eigen::Vector3f(nx, ny, nz);

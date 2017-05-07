@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2016 Incognito
+* Copyright (C) 2017 Incognito (Edited by ProMetheus)
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
@@ -127,7 +127,7 @@ int Streamer_GetUpperBound(int type) {
 	}
 	default:
 	{
-		Utility::logError("Streamer_GetUpperBound: Invalid type specified");
+		Utility::logError("Streamer_GetUpperBound: Invalid type specified.");
 		return 0;
 	}
 	}
