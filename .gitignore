@@ -253,3 +253,4 @@ paket-files/
 
 # No external stuff
 external/*
+.gclient_entries
