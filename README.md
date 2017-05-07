@@ -38,7 +38,7 @@ You can also download it manually and place it into the external directory.
 
     mkdir build
     cd build
-    cmake ..\samp-streamer-plugin
+    cmake ..\samp-plugin-streamer
     make
 
 - [How to use cmake](https://github.com/bast/cmake-example)
