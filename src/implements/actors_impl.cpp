@@ -206,7 +206,7 @@ int SetDynamicActorPos(int id, float x, float y, float z) {
 	return 0;
 }
 
-int SetDynamicActorVirtualWorld(int id, int value) {
+/*int SetDynamicActorVirtualWorld(int id, int value) {
 	boost::unordered_map<int, Item::SharedActor>::iterator a = core->getData()->actors.find(id);
 	if (a != core->getData()->actors.end()) {
 		Utility::setFirstValueInContainer(a->second->worlds, value);
@@ -217,7 +217,7 @@ int SetDynamicActorVirtualWorld(int id, int value) {
 		return 1;
 	}
 	return 0;
-}
+}*/
 
 int GetDynamicActorFacingAngle(int id, float r) {
 	boost::unordered_map<int, Item::SharedActor>::iterator a = core->getData()->actors.find(id);
@@ -249,14 +249,14 @@ int GetDynamicActorPos(int id, float x, float y, float z) {
 	return 0;
 }
 
-int GetDynamicActorVirtualWorld(int id)
+/*int GetDynamicActorVirtualWorld(int id)
 {
 	boost::unordered_map<int, Item::SharedActor>::iterator a = core->getData()->actors.find(id);
 	if (a != core->getData()->actors.end()) {
 		return Utility::getFirstValueInContainer(a->second->worlds);
 	}
 	return 0;
-}
+}*/
 
 int IsDynamicActorInvulnerable(int id)
 {
@@ -267,7 +267,7 @@ int IsDynamicActorInvulnerable(int id)
 	return 0;
 }
 
-int IsDynamicActorStreamedIn(int playerID, int actorID)
+/*int IsDynamicActorStreamedIn(int playerID, int actorID)
 {
 	boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(playerID);
 	if (p != core->getData()->players.end()) {
@@ -281,10 +281,9 @@ int IsDynamicActorStreamedIn(int playerID, int actorID)
 		}
 	}
 	return 0;
-}
+}*/
 
-int GetPlayerCameraTargetDynActor(int playerID)
-{
+int GetPlayerCameraTargetDynActor(int playerID) {
 	boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(playerID);
 	if (p != core->getData()->players.end()) {
 		int actorid = sampgdk::GetPlayerCameraTargetActor(p->second.playerID);

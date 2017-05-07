@@ -495,7 +495,7 @@ std::vector<int> GetDynamicAreasForLine(float x, float y, float z, float x2, flo
 			case STREAMER_AREA_TYPE_CIRCLE:
 			case STREAMER_AREA_TYPE_CYLINDER:
 			{
-				distance = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector2f(x, ay), boost::get<Eigen::Vector2f>(position)));
+				distance = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector2f(x, y), boost::get<Eigen::Vector2f>(position)));
 				break;
 			}
 			case STREAMER_AREA_TYPE_SPHERE:

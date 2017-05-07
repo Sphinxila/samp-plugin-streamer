@@ -562,9 +562,8 @@ int Streamer_ToggleItemCallbacks(int type, int itemid, bool streamCallbacks) {
 	return 0;
 }
 
-int Streamer_IsToggleItemCallbacks(int type, int itemid)
-{
-	switch (int type)
+int Streamer_IsToggleItemCallbacks(int type, int itemid) {
+	switch (type)
 	{
 		case STREAMER_TYPE_OBJECT:
 		{

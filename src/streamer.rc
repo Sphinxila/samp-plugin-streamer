@@ -11,8 +11,8 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 			VALUE "FileDescription", "SA-MP Streamer Plugin"
 			VALUE "LegalCopyright", "Copyright © 2017 Incognito"
 			VALUE "OriginalFilename", "streamer.dll"
-			VALUE "ProductName", "SA-MP Streamer Plugin"
-			VALUE "ProductVersion", "v2.9.1"
+			VALUE "ProductName", "Modified SA-MP Streamer Plugin"
+			VALUE "ProductVersion", "v2.9.1m"
 		}
 	}
 	BLOCK "VarFileInfo"

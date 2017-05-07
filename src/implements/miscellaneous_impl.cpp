@@ -1289,6 +1289,8 @@ std::vector<int> Streamer_GetNearbyItems(float x, float y, float z, int type, fl
 	std::vector<SharedCell> pointCells;
 	core->getGrid()->findMinimalCellsForPoint(position2D, pointCells);
 
+	std::vector<int> finalItems;
+
 	switch (type)
 	{
 		case STREAMER_TYPE_OBJECT:
@@ -1436,10 +1438,10 @@ std::vector<int> Streamer_GetNearbyItems(float x, float y, float z, int type, fl
 		default:
 		{
 			Utility::logError("Streamer_GetNearbyItems: Invalid type specified.");
-			return 0;
+			return finalItems; // Empty
 		}
 	}
-	std::vector<int> finalItems;
+
 	for (std::multimap<float, int>::iterator i = orderedItems.begin(); i != orderedItems.end(); ++i) {
 		finalItems.push_back(i->second);
 	}
