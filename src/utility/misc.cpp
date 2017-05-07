@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Incognito
+ * Copyright (C) 2017 Incognito
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,24 @@
 #include <Eigen/Core>
 
 using namespace Utility;
+
+boost::unordered_map<int, Item::SharedActor>::iterator Utility::destroyActor(boost::unordered_map<int, Item::SharedActor>::iterator a)
+{
+	Item::Actor::identifier.remove(a->first, core->getData()->actors.size());
+	boost::unordered_map<int, int>::iterator i = core->getData()->internalActors.find(a->first);
+	if (i != core->getData()->internalActors.end())
+	{
+		core->getData()->destroyedActors.push_back(i->second);
+		core->getData()->internalActors.quick_erase(i);
+	}
+	boost::unordered_map<int, Item::SharedActor>::iterator d = core->getData()->discoveredActors.find(a->first);
+	if (d != core->getData()->discoveredActors.end())
+	{
+		core->getData()->discoveredActors.erase(d);
+	}
+	core->getGrid()->removeActor(a->second);
+	return core->getData()->actors.erase(a);
+}
 
 boost::unordered_map<int, Item::SharedArea>::iterator Utility::destroyArea(boost::unordered_map<int, Item::SharedArea>::iterator a)
 {
@@ -105,6 +123,11 @@ boost::unordered_map<int, Item::SharedPickup>::iterator Utility::destroyPickup(b
 		sampgdk::DestroyPickup(i->second);
 		core->getData()->internalPickups.quick_erase(i);
 	}
+	boost::unordered_map<int, Item::SharedPickup>::iterator d = core->getData()->discoveredPickups.find(p->first);
+	if (d != core->getData()->discoveredPickups.end())
+	{
+		core->getData()->discoveredPickups.erase(d);
+	}
 	core->getGrid()->removePickup(p->second);
 	return core->getData()->pickups.erase(p);
 }
@@ -141,19 +164,6 @@ boost::unordered_map<int, Item::SharedTextLabel>::iterator Utility::destroyTextL
 	}
 	core->getGrid()->removeTextLabel(t->second);
 	return core->getData()->textLabels.erase(t);
-}
-
-boost::unordered_map<int, Item::SharedActor>::iterator Utility::destroyActor(boost::unordered_map<int, Item::SharedActor>::iterator p)
-{
-	Item::Actor::identifier.remove(p->first, core->getData()->actors.size());
-	boost::unordered_map<int, int>::iterator i = core->getData()->internalActors.find(p->first);
-	if (i != core->getData()->internalActors.end())
-	{
-		sampgdk::DestroyActor(i->second);
-		core->getData()->internalActors.quick_erase(i);
-	}
-	core->getGrid()->removeActor(p->second);
-	return core->getData()->actors.erase(p);
 }
 
 std::size_t Utility::getChunkTickRate(int type, int playerid)
@@ -343,13 +353,13 @@ bool Utility::setRadiusMultiplier(int type, float value, int playerid)
 	return core->getData()->setGlobalRadiusMultiplier(type, value);
 }
 
-bool Utility::haveAllPlayersCheckedPickups()
+bool Utility::haveAllPlayersCheckedActors()
 {
 	if (!core->getData()->players.empty())
 	{
 		for (boost::unordered_map<int, Player>::iterator p = core->getData()->players.begin(); p != core->getData()->players.end(); ++p)
 		{
-			if (!p->second.checkedPickups)
+			if (!p->second.checkedActors && p->second.enabledItems[STREAMER_TYPE_ACTOR])
 			{
 				return false;
 			}
@@ -359,13 +369,13 @@ bool Utility::haveAllPlayersCheckedPickups()
 	return false;
 }
 
-bool Utility::haveAllPlayersCheckedActors()
+bool Utility::haveAllPlayersCheckedPickups()
 {
 	if (!core->getData()->players.empty())
 	{
 		for (boost::unordered_map<int, Player>::iterator p = core->getData()->players.begin(); p != core->getData()->players.end(); ++p)
 		{
-			if (!p->second.checkedActors)
+			if (!p->second.checkedPickups && p->second.enabledItems[STREAMER_TYPE_PICKUP])
 			{
 				return false;
 			}
@@ -373,4 +383,17 @@ bool Utility::haveAllPlayersCheckedActors()
 		return true;
 	}
 	return false;
+}
+
+void Utility::processPendingDestroyedActors()
+{
+	if (!core->getData()->destroyedActors.empty())
+	{
+		std::vector<int>::iterator a = core->getData()->destroyedActors.begin();
+		while (a != core->getData()->destroyedActors.end())
+		{
+			sampgdk::DestroyActor(*a);
+			a = core->getData()->destroyedActors.erase(a);
+		}
+	}
 }

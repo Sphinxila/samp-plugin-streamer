@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Incognito
+ * Copyright (C) 2017 Incognito
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@
 
 namespace Utility
 {
+	boost::unordered_map<int, Item::SharedActor>::iterator destroyActor(boost::unordered_map<int, Item::SharedActor>::iterator a);
 	boost::unordered_map<int, Item::SharedArea>::iterator destroyArea(boost::unordered_map<int, Item::SharedArea>::iterator a);
 	boost::unordered_map<int, Item::SharedCheckpoint>::iterator destroyCheckpoint(boost::unordered_map<int, Item::SharedCheckpoint>::iterator c);
 	boost::unordered_map<int, Item::SharedMapIcon>::iterator destroyMapIcon(boost::unordered_map<int, Item::SharedMapIcon>::iterator m);
@@ -34,7 +35,6 @@ namespace Utility
 	boost::unordered_map<int, Item::SharedPickup>::iterator destroyPickup(boost::unordered_map<int, Item::SharedPickup>::iterator p);
 	boost::unordered_map<int, Item::SharedRaceCheckpoint>::iterator destroyRaceCheckpoint(boost::unordered_map<int, Item::SharedRaceCheckpoint>::iterator r);
 	boost::unordered_map<int, Item::SharedTextLabel>::iterator destroyTextLabel(boost::unordered_map<int, Item::SharedTextLabel>::iterator t);
-	boost::unordered_map<int, Item::SharedActor>::iterator destroyActor(boost::unordered_map<int, Item::SharedActor>::iterator a);
 
 	std::size_t getChunkTickRate(int type, int playerid);
 	bool setChunkTickRate(int type, std::size_t value, int playerid);
@@ -45,8 +45,10 @@ namespace Utility
 	float getRadiusMultiplier(int type, int playerid);
 	bool setRadiusMultiplier(int type, float value, int playerid);
 
-	bool haveAllPlayersCheckedPickups();
 	bool haveAllPlayersCheckedActors();
+	bool haveAllPlayersCheckedPickups();
+
+	void processPendingDestroyedActors();
 
 	template<typename T>
 	inline bool almostEquals(T a, T b)

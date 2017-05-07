@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Incognito
+ * Copyright (C) 2017 Incognito
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -131,7 +131,7 @@ cell AMX_NATIVE_CALL Natives::Streamer_Update(AMX *amx, cell *params)
 
 cell AMX_NATIVE_CALL Natives::Streamer_UpdateEx(AMX *amx, cell *params)
 {
-	CHECK_PARAMS(8, "Streamer_UpdateEx");
+	CHECK_PARAMS(9, "Streamer_UpdateEx");
 	boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(static_cast<int>(params[1]));
 	if (p != core->getData()->players.end())
 	{
@@ -155,10 +155,14 @@ cell AMX_NATIVE_CALL Natives::Streamer_UpdateEx(AMX *amx, cell *params)
 		if (static_cast<int>(params[8]) >= 0)
 		{
 			sampgdk::SetPlayerPos(p->first, p->second.position[0], p->second.position[1], p->second.position[2]);
-			sampgdk::TogglePlayerControllable(p->first, false);
+			if (static_cast<int>(params[9]))
+			{
+				sampgdk::TogglePlayerControllable(p->first, false);
+			}
 			p->second.delayedUpdate = true;
 			p->second.delayedUpdateType = static_cast<int>(params[7]);
 			p->second.delayedUpdateTime = boost::chrono::steady_clock::now() + boost::chrono::milliseconds(static_cast<int>(params[8]));
+			p->second.delayedUpdateFreeze = static_cast<int>(params[9]) != 0;
 		}
 		core->getStreamer()->startManualUpdate(p->second, static_cast<int>(params[7]));
 		return 1;

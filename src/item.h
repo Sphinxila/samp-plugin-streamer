@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Incognito
+ * Copyright (C) 2017 Incognito
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,55 @@
 
 namespace Item
 {
+	struct Actor
+	{
+		Actor();
+
+		int actorID;
+		AMX *amx;
+		SharedCell cell;
+		float comparableStreamDistance;
+		float health;
+		bool inverseAreaChecking;
+		bool invulnerable;
+		int modelID;
+		float originalComparableStreamDistance;
+		Eigen::Vector3f position;
+		Eigen::Vector3f positionOffset;
+		int priority;
+		int references;
+		float rotation;
+		float streamDistance;
+		int worldID;
+
+		struct Anim
+		{
+			Anim();
+
+			float delta;
+			bool freeze;
+			std::string lib;
+			bool loop;
+			bool lockx;
+			bool locky;
+			std::string name;
+			int references;
+			int time;
+		};
+
+		boost::intrusive_ptr<Anim> anim;
+
+		boost::unordered_set<int> areas;
+		std::vector<int> extras;
+		boost::unordered_set<int> interiors;
+		std::bitset<MAX_PLAYERS> players;
+		boost::unordered_set<int> worlds;
+
+		static Identifier identifier;
+
+		EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	};
+
 	struct Area
 	{
 		Area();
@@ -49,6 +98,7 @@ namespace Item
 		int priority;
 		int references;
 		float size;
+		bool spectateMode;
 		int type;
 
 		boost::variant<Polygon2D, Box2D, Box3D, Eigen::Vector2f, Eigen::Vector3f> position;
@@ -57,9 +107,10 @@ namespace Item
 		{
 			Attach();
 
+			Eigen::Vector2f height;
 			boost::tuple<int, int, int> object;
 			int player;
-			Eigen::Vector3f position;
+			boost::variant<Polygon2D, Box2D, Box3D, Eigen::Vector2f, Eigen::Vector3f> position;
 			Eigen::Vector3f positionOffset;
 			int references;
 			int vehicle;
@@ -95,6 +146,7 @@ namespace Item
 		int priority;
 		int references;
 		float size;
+		bool streamCallbacks;
 		float streamDistance;
 
 		boost::unordered_set<int> areas;
@@ -123,6 +175,7 @@ namespace Item
 		Eigen::Vector3f positionOffset;
 		int priority;
 		int references;
+		bool streamCallbacks;
 		float streamDistance;
 		int style;
 		int type;
@@ -156,6 +209,7 @@ namespace Item
 		int priority;
 		int references;
 		Eigen::Vector3f rotation;
+		bool streamCallbacks;
 		float streamDistance;
 
 		struct Attach
@@ -253,6 +307,7 @@ namespace Item
 		Eigen::Vector3f positionOffset;
 		int priority;
 		int references;
+		bool streamCallbacks;
 		float streamDistance;
 		int type;
 		int worldID;
@@ -284,6 +339,7 @@ namespace Item
 		int raceCheckpointID;
 		int references;
 		float size;
+		bool streamCallbacks;
 		float streamDistance;
 		int type;
 
@@ -313,6 +369,7 @@ namespace Item
 		Eigen::Vector3f positionOffset;
 		int priority;
 		int references;
+		bool streamCallbacks;
 		float streamDistance;
 		bool testLOS;
 		std::string text;
@@ -329,55 +386,6 @@ namespace Item
 		};
 
 		boost::intrusive_ptr<Attach> attach;
-
-		boost::unordered_set<int> areas;
-		std::vector<int> extras;
-		boost::unordered_set<int> interiors;
-		std::bitset<MAX_PLAYERS> players;
-		boost::unordered_set<int> worlds;
-
-		static Identifier identifier;
-
-		EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-	};
-
-	struct Actor
-	{
-		Actor();
-
-		AMX *amx;
-		SharedCell cell;
-		float comparableStreamDistance;
-		bool inverseAreaChecking;
-		int modelID;
-		float originalComparableStreamDistance;
-		int actorID;
-		Eigen::Vector3f position;
-		Eigen::Vector3f positionOffset;
-		float rotation;
-		int priority;
-		int references;
-		float streamDistance;
-		bool invulnerable;
-		float health;
-		int worldID;
-
-		struct Anim
-		{
-			Anim();
-
-			std::string lib;
-			std::string name;
-			float delta;
-			bool loop;
-			bool lockx;
-			bool locky;
-			bool freeze;
-			int time;
-			int references;
-		};
-
-		boost::intrusive_ptr<Anim> anim;
 
 		boost::unordered_set<int> areas;
 		std::vector<int> extras;

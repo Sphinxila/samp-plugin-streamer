@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Incognito
+ * Copyright (C) 2017 Incognito
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -116,7 +116,7 @@
 
 // Include File Version
 
-public Streamer_IncludeFileVersion = 0x282001;
+public Streamer_IncludeFileVersion = 0x291;
 
 #pragma unused Streamer_IncludeFileVersion
 
@@ -185,7 +185,7 @@ native Streamer_SetTickRate(rate);
 native Streamer_GetPlayerTickRate(playerid);
 native Streamer_SetPlayerTickRate(playerid, rate);
 native Streamer_GetChunkTickRate(type, playerid = -1);
-native Streamer_SetChunkTickRate(type, size, playerid = -1);
+native Streamer_SetChunkTickRate(type, rate, playerid = -1);
 native Streamer_GetChunkSize(type);
 native Streamer_SetChunkSize(type, size);
 native Streamer_GetMaxItems(type);
@@ -202,8 +202,10 @@ native Streamer_GetCellSize(&Float:size);
 native Streamer_SetCellSize(Float:size);
 native Streamer_ToggleItemStatic(type, STREAMER_ALL_TAGS id, toggle);
 native Streamer_IsToggleItemStatic(type, STREAMER_ALL_TAGS id);
-native Streamer_ToggleItemAntiAreas(type, STREAMER_ALL_TAGS id, toggle);
-native Streamer_IsToggleItemAntiAreas(type, STREAMER_ALL_TAGS id);
+native Streamer_ToggleItemInvAreas(type, STREAMER_ALL_TAGS id, toggle);
+native Streamer_IsToggleItemInvAreas(type, STREAMER_ALL_TAGS id);
+native Streamer_ToggleItemCallbacks(type, STREAMER_ALL_TAGS id, toggle);
+native Streamer_IsToggleItemCallbacks(type, STREAMER_ALL_TAGS id);
 native Streamer_ToggleErrorCallback(toggle);
 native Streamer_IsToggleErrorCallback();
 
@@ -218,7 +220,7 @@ native Streamer_ToggleItemUpdate(playerid, type, toggle);
 native Streamer_IsToggleItemUpdate(playerid, type);
 native Streamer_GetLastUpdateTime(&Float:time);
 native Streamer_Update(playerid, type = -1);
-native Streamer_UpdateEx(playerid, Float:x, Float:y, Float:z, worldid = -1, interiorid = -1, type = -1, compensatedtime = -1);
+native Streamer_UpdateEx(playerid, Float:x, Float:y, Float:z, worldid = -1, interiorid = -1, type = -1, compensatedtime = -1, freezeplayer = 1);
 
 // Natives (Data Manipulation)
 
@@ -247,6 +249,7 @@ native Streamer_CountVisibleItems(playerid, type, serverwide = 1);
 native Streamer_DestroyAllItems(type, serverwide = 1);
 native Streamer_CountItems(type, serverwide = 1);
 native Streamer_GetNearbyItems(Float:x, Float:y, Float:z, type, STREAMER_ALL_TAGS items[], maxitems = sizeof items, Float:range = 300.0);
+native Streamer_GetAllVisibleItems(playerid, type, STREAMER_ALL_TAGS items[], maxitems = sizeof items);
 native Streamer_GetItemOffset(type, STREAMER_ALL_TAGS id, &Float:x, &Float:y, &Float:z);
 native Streamer_SetItemOffset(type, STREAMER_ALL_TAGS id, Float:x, Float:y, Float:z);
 
@@ -255,12 +258,12 @@ native Streamer_SetItemOffset(type, STREAMER_ALL_TAGS id, Float:x, Float:y, Floa
 native STREAMER_TAG_OBJECT CreateDynamicObject(modelid, Float:x, Float:y, Float:z, Float:rx, Float:ry, Float:rz, worldid = -1, interiorid = -1, playerid = -1, Float:streamdistance = STREAMER_OBJECT_SD, Float:drawdistance = STREAMER_OBJECT_DD, STREAMER_TAG_AREA areaid = STREAMER_TAG_AREA -1, priority = 0);
 native DestroyDynamicObject(STREAMER_TAG_OBJECT objectid);
 native IsValidDynamicObject(STREAMER_TAG_OBJECT objectid);
-native SetDynamicObjectPos(STREAMER_TAG_OBJECT objectid, Float:x, Float:y, Float:z);
 native GetDynamicObjectPos(STREAMER_TAG_OBJECT objectid, &Float:x, &Float:y, &Float:z);
-native SetDynamicObjectRot(STREAMER_TAG_OBJECT objectid, Float:rx, Float:ry, Float:rz);
+native SetDynamicObjectPos(STREAMER_TAG_OBJECT objectid, Float:x, Float:y, Float:z);
 native GetDynamicObjectRot(STREAMER_TAG_OBJECT objectid, &Float:rx, &Float:ry, &Float:rz);
-native SetDynamicObjectNoCameraCol(STREAMER_TAG_OBJECT objectid);
+native SetDynamicObjectRot(STREAMER_TAG_OBJECT objectid, Float:rx, Float:ry, Float:rz);
 native GetDynamicObjectNoCameraCol(STREAMER_TAG_OBJECT objectid);
+native SetDynamicObjectNoCameraCol(STREAMER_TAG_OBJECT objectid);
 native MoveDynamicObject(STREAMER_TAG_OBJECT objectid, Float:x, Float:y, Float:z, Float:speed, Float:rx = -1000.0, Float:ry = -1000.0, Float:rz = -1000.0);
 native StopDynamicObject(STREAMER_TAG_OBJECT objectid);
 native IsDynamicObjectMoving(STREAMER_TAG_OBJECT objectid);
@@ -343,26 +346,28 @@ native GetNumberDynamicAreasForLine(Float:x1, Float:y1, Float:z1, Float:x2, Floa
 native AttachDynamicAreaToObject(STREAMER_TAG_AREA areaid, STREAMER_TAG_OBJECT_ALT objectid, type = STREAMER_OBJECT_TYPE_DYNAMIC, playerid = INVALID_PLAYER_ID, Float:offsetx = 0.0, Float:offsety = 0.0, Float:offsetz = 0.0);
 native AttachDynamicAreaToPlayer(STREAMER_TAG_AREA areaid, playerid, Float:offsetx = 0.0, Float:offsety = 0.0, Float:offsetz = 0.0);
 native AttachDynamicAreaToVehicle(STREAMER_TAG_AREA areaid, vehicleid, Float:offsetx = 0.0, Float:offsety = 0.0, Float:offsetz = 0.0);
+native ToggleDynAreaSpectateMode(STREAMER_TAG_AREA areaid, toggle);
+native IsToggleDynAreaSpectateMode(STREAMER_TAG_AREA areaid);
 
 // Natives (Actors)
 
-native STREAMER_TAG_ACTOR CreateDynamicActor(modelid, Float:x, Float:y, Float:z, Float:r, bool:invulnerable = true, Float:health = 100.0, worldid = -1, interiorid = -1, playerid = -1, Float:streamdistance = STREAMER_ACTOR_SD, STREAMER_TAG_AREA areaid = STREAMER_TAG_AREA -1, priority = 0);
+native STREAMER_TAG_ACTOR CreateDynamicActor(modelid, Float:x, Float:y, Float:z, Float:r, invulnerable = 1, Float:health = 100.0, worldid = -1, interiorid = -1, playerid = -1, Float:streamdistance = STREAMER_ACTOR_SD, STREAMER_TAG_AREA areaid = STREAMER_TAG_AREA -1, priority = 0);
 native DestroyDynamicActor(STREAMER_TAG_ACTOR actorid);
 native IsValidDynamicActor(STREAMER_TAG_ACTOR actorid);
-native ApplyDynamicActorAnimation(STREAMER_TAG_ACTOR actorid, animlib[], animname[], Float:fDelta, loop, lockx, locky, freeze, time);
-native ClearDynamicActorAnimations(STREAMER_TAG_ACTOR actorid);
-native GetPlayerTargetDynamicActor(playerid);
-native SetDynamicActorFacingAngle(STREAMER_TAG_ACTOR actorid, Float:ang);
-native SetDynamicActorHealth(STREAMER_TAG_ACTOR actorid, Float:health);
-native SetDynamicActorInvulnerable(STREAMER_TAG_ACTOR actorid, invulnerable = true);
-native SetDynamicActorPos(STREAMER_TAG_ACTOR actorid, Float:X, Float:Y, Float:Z);
-native SetDynamicActorVirtualWorld(STREAMER_TAG_ACTOR actorid, vworld);
-native GetDynamicActorFacingAngle(STREAMER_TAG_ACTOR actorid, &Float:ang);
-native GetDynamicActorHealth(STREAMER_TAG_ACTOR actorid, &Float:health);
-native GetDynamicActorPos(STREAMER_TAG_ACTOR actorid, &Float:X, &Float:Y, &Float:Z);
-native GetDynamicActorVirtualWorld(STREAMER_TAG_ACTOR actorid);
-native IsDynamicActorInvulnerable(STREAMER_TAG_ACTOR actorid);
 native IsDynamicActorStreamedIn(STREAMER_TAG_ACTOR actorid, forplayerid);
+native GetDynamicActorVirtualWorld(STREAMER_TAG_ACTOR actorid);
+native SetDynamicActorVirtualWorld(STREAMER_TAG_ACTOR actorid, vworld);
+native ApplyDynamicActorAnimation(STREAMER_TAG_ACTOR actorid, animlib[], animname[], Float:fdelta, loop, lockx, locky, freeze, time);
+native ClearDynamicActorAnimations(STREAMER_TAG_ACTOR actorid);
+native GetDynamicActorFacingAngle(STREAMER_TAG_ACTOR actorid, &Float:ang);
+native SetDynamicActorFacingAngle(STREAMER_TAG_ACTOR actorid, Float:ang);
+native GetDynamicActorPos(STREAMER_TAG_ACTOR actorid, &Float:x, &Float:y, &Float:z);
+native SetDynamicActorPos(STREAMER_TAG_ACTOR actorid, Float:x, Float:y, Float:z);
+native GetDynamicActorHealth(STREAMER_TAG_ACTOR actorid, &Float:health);
+native SetDynamicActorHealth(STREAMER_TAG_ACTOR actorid, Float:health);
+native SetDynamicActorInvulnerable(STREAMER_TAG_ACTOR actorid, invulnerable = 1);
+native IsDynamicActorInvulnerable(STREAMER_TAG_ACTOR actorid);
+native STREAMER_TAG_ACTOR GetPlayerTargetDynamicActor(playerid);
 native STREAMER_TAG_ACTOR GetPlayerCameraTargetDynActor(playerid);
 
 // Natives (Extended)
@@ -380,16 +385,17 @@ native STREAMER_TAG_AREA CreateDynamicRectangleEx(Float:minx, Float:miny, Float:
 native STREAMER_TAG_AREA CreateDynamicCuboidEx(Float:minx, Float:miny, Float:minz, Float:maxx, Float:maxy, Float:maxz, worlds[] = { -1 }, interiors[] = { -1 }, players[] = { -1 }, priority = 0, maxworlds = sizeof worlds, maxinteriors = sizeof interiors, maxplayers = sizeof players);
 native STREAMER_TAG_AREA CreateDynamicCubeEx(Float:minx, Float:miny, Float:minz, Float:maxx, Float:maxy, Float:maxz, worlds[] = { -1 }, interiors[] = { -1 }, players[] = { -1 }, priority = 0, maxworlds = sizeof worlds, maxinteriors = sizeof interiors, maxplayers = sizeof players);
 native STREAMER_TAG_AREA CreateDynamicPolygonEx(Float:points[], Float:minz = -FLOAT_INFINITY, Float:maxz = FLOAT_INFINITY, maxpoints = sizeof points, worlds[] = { -1 }, interiors[] = { -1 }, players[] = { -1 }, priority = 0, maxworlds = sizeof worlds, maxinteriors = sizeof interiors, maxplayers = sizeof players);
-native STREAMER_TAG_ACTOR CreateDynamicActorEx(modelid, Float:x, Float:y, Float:z, Float:r, bool:invulnerable = true, Float:health = 100.0, Float:streamdistance = STREAMER_PICKUP_SD, worlds[] = { -1 }, interiors[] = { -1 }, players[] = { -1 }, STREAMER_TAG_AREA areas[] = { STREAMER_TAG_AREA -1 }, priority = 0, maxworlds = sizeof worlds, maxinteriors = sizeof interiors, maxplayers = sizeof players, maxareas = sizeof areas);
+native STREAMER_TAG_ACTOR CreateDynamicActorEx(modelid, Float:x, Float:y, Float:z, Float:r, invulnerable = 1, Float:health = 100.0, Float:streamdistance = STREAMER_ACTOR_SD, worlds[] = { -1 }, interiors[] = { -1 }, players[] = { -1 }, STREAMER_TAG_AREA areas[] = { STREAMER_TAG_AREA -1 }, priority = 0, maxworlds = sizeof worlds, maxinteriors = sizeof interiors, maxplayers = sizeof players, maxareas = sizeof areas);
 
 // Natives (Deprecated)
+
+native Streamer_CallbackHook(callback, {Float,_}:...);
 
 native Streamer_TickRate(rate);
 native Streamer_MaxItems(type, items);
 native Streamer_VisibleItems(type, items, playerid = -1);
 native Streamer_CellDistance(Float:distance);
 native Streamer_CellSize(Float:size);
-native Streamer_CallbackHook(callback, {Float,_}:...);
 
 native DestroyAllDynamicObjects();
 native CountDynamicObjects();
@@ -429,5 +435,6 @@ forward OnPlayerLeaveDynamicArea(playerid, STREAMER_TAG_AREA areaid);
 forward OnPlayerGiveDamageDynamicActor(playerid, STREAMER_TAG_ACTOR actorid, Float:amount, weaponid, bodypart);
 forward OnDynamicActorStreamIn(STREAMER_TAG_ACTOR actorid, forplayerid);
 forward OnDynamicActorStreamOut(STREAMER_TAG_ACTOR actorid, forplayerid);
-
+forward Streamer_OnItemStreamIn(type, STREAMER_ALL_TAGS id);
+forward Streamer_OnItemStreamOut(type, STREAMER_ALL_TAGS id);
 forward Streamer_OnPluginError(error[]);

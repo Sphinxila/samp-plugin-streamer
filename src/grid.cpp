@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Incognito
+ * Copyright (C) 2017 Incognito
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,21 @@ Grid::Grid()
 	calculateTranslationMatrix();
 }
 
+void Grid::addActor(const Item::SharedActor &actor)
+{
+	if (actor->comparableStreamDistance > cellDistance || actor->comparableStreamDistance < STREAMER_STATIC_DISTANCE_CUTOFF)
+	{
+		globalCell->actors.insert(std::make_pair(actor->actorID, actor));
+		actor->cell.reset();
+	}
+	else
+	{
+		CellID cellID = getCellID(Eigen::Vector2f(actor->position[0], actor->position[1]));
+		cells[cellID]->actors.insert(std::make_pair(actor->actorID, actor));
+		actor->cell = cells[cellID];
+	}
+}
+
 void Grid::addArea(const Item::SharedArea &area)
 {
 	if (area->comparableSize > cellDistance)
@@ -48,52 +63,47 @@ void Grid::addArea(const Item::SharedArea &area)
 	}
 	else
 	{
-		Eigen::Vector2f position = Eigen::Vector2f::Zero();
+		Eigen::Vector2f centroid = Eigen::Vector2f::Zero();
+		boost::variant<Polygon2D, Box2D, Box3D, Eigen::Vector2f, Eigen::Vector3f> position;
+		if (area->attach)
+		{
+			position = area->attach->position;
+		}
+		else
+		{
+			position = area->position;
+		}
 		switch (area->type)
 		{
 			case STREAMER_AREA_TYPE_CIRCLE:
 			case STREAMER_AREA_TYPE_CYLINDER:
 			{
-				if (area->attach)
-				{
-					position = Eigen::Vector2f(area->attach->position[0], area->attach->position[1]);
-				}
-				else
-				{
-					position = boost::get<Eigen::Vector2f>(area->position);
-				}
+				centroid = Eigen::Vector2f(boost::get<Eigen::Vector2f>(position));
 				break;
 			}
 			case STREAMER_AREA_TYPE_SPHERE:
 			{
-				if (area->attach)
-				{
-					position = Eigen::Vector2f(area->attach->position[0], area->attach->position[1]);
-				}
-				else
-				{
-					position = Eigen::Vector2f(boost::get<Eigen::Vector3f>(area->position)[0], boost::get<Eigen::Vector3f>(area->position)[1]);
-				}
+				centroid = Eigen::Vector2f(boost::get<Eigen::Vector3f>(position)[0], boost::get<Eigen::Vector3f>(position)[1]);
 				break;
 			}
 			case STREAMER_AREA_TYPE_RECTANGLE:
 			{
-				boost::geometry::centroid(boost::get<Box2D>(area->position), position);
+				boost::geometry::centroid(boost::get<Box2D>(position), centroid);
 				break;
 			}
 			case STREAMER_AREA_TYPE_CUBOID:
 			{
-				Eigen::Vector3f centroid = boost::geometry::return_centroid<Eigen::Vector3f>(boost::get<Box3D>(area->position));
-				position = Eigen::Vector2f(centroid[0], centroid[1]);
+				Eigen::Vector3f point = boost::geometry::return_centroid<Eigen::Vector3f>(boost::get<Box3D>(position));
+				centroid = Eigen::Vector2f(point[0], point[1]);
 				break;
 			}
 			case STREAMER_AREA_TYPE_POLYGON:
 			{
-				boost::geometry::centroid(boost::get<Polygon2D>(area->position), position);
+				boost::geometry::centroid(boost::get<Polygon2D>(position), centroid);
 				break;
 			}
 		}
-		CellID cellID = getCellID(position);
+		CellID cellID = getCellID(centroid);
 		cells[cellID]->areas.insert(std::make_pair(area->areaID, area));
 		area->cell = cells[cellID];
 	}
@@ -207,26 +217,15 @@ void Grid::addTextLabel(const Item::SharedTextLabel &textLabel)
 	}
 }
 
-void Grid::addActor(const Item::SharedActor &actor)
-{
-	if (actor->comparableStreamDistance > cellDistance || actor->comparableStreamDistance < STREAMER_STATIC_DISTANCE_CUTOFF)
-	{
-		globalCell->actors.insert(std::make_pair(actor->actorID, actor));
-		actor->cell.reset();
-	}
-	else
-	{
-		CellID cellID = getCellID(Eigen::Vector2f(actor->position[0], actor->position[1]));
-		cells[cellID]->actors.insert(std::make_pair(actor->actorID, actor));
-		actor->cell = cells[cellID];
-	}
-}
-
 void Grid::rebuildGrid()
 {
 	cells.clear();
 	globalCell = SharedCell(new Cell());
 	calculateTranslationMatrix();
+	for (boost::unordered_map<int, Item::SharedActor>::iterator a = core->getData()->actors.begin(); a != core->getData()->actors.end(); ++a)
+	{
+		addActor(a->second);
+	}
 	for (boost::unordered_map<int, Item::SharedArea>::iterator a = core->getData()->areas.begin(); a != core->getData()->areas.end(); ++a)
 	{
 		addArea(a->second);
@@ -255,9 +254,40 @@ void Grid::rebuildGrid()
 	{
 		addTextLabel(t->second);
 	}
-	for (boost::unordered_map<int, Item::SharedActor>::iterator a = core->getData()->actors.begin(); a != core->getData()->actors.end(); ++a)
+}
+
+void Grid::removeActor(const Item::SharedActor &actor, bool reassign)
+{
+	bool found = false;
+	if (actor->cell)
 	{
-		addActor(a->second);
+		boost::unordered_map<CellID, SharedCell>::iterator c = cells.find(actor->cell->cellID);
+		if (c != cells.end())
+		{
+			boost::unordered_map<int, Item::SharedActor>::iterator a = c->second->actors.find(actor->actorID);
+			if (a != c->second->actors.end())
+			{
+				c->second->actors.quick_erase(a);
+				eraseCellIfEmpty(c->second);
+				found = true;
+			}
+		}
+	}
+	else
+	{
+		boost::unordered_map<int, Item::SharedActor>::iterator a = globalCell->actors.find(actor->actorID);
+		if (a != globalCell->actors.end())
+		{
+			globalCell->actors.quick_erase(a);
+			found = true;
+		}
+	}
+	if (found)
+	{
+		if (reassign)
+		{
+			addActor(actor);
+		}
 	}
 }
 
@@ -531,41 +561,6 @@ void Grid::removeTextLabel(const Item::SharedTextLabel &textLabel, bool reassign
 	}
 }
 
-void Grid::removeActor(const Item::SharedActor &actor, bool reassign)
-{
-	bool found = false;
-	if (actor->cell)
-	{
-		boost::unordered_map<CellID, SharedCell>::iterator c = cells.find(actor->cell->cellID);
-		if (c != cells.end())
-		{
-			boost::unordered_map<int, Item::SharedActor>::iterator a = c->second->actors.find(actor->actorID);
-			if (a != c->second->actors.end())
-			{
-				c->second->actors.quick_erase(a);
-				eraseCellIfEmpty(c->second);
-				found = true;
-			}
-		}
-	}
-	else
-	{
-		boost::unordered_map<int, Item::SharedActor>::iterator a = globalCell->actors.find(actor->actorID);
-		if (a != globalCell->actors.end())
-		{
-			globalCell->actors.quick_erase(a);
-			found = true;
-		}
-	}
-	if (found)
-	{
-		if (reassign)
-		{
-			addActor(actor);
-		}
-	}
-}
-
 CellID Grid::getCellID(const Eigen::Vector2f &position, bool insert)
 {
 	static Box2D box;
@@ -595,14 +590,21 @@ void Grid::processDiscoveredCellsForPlayer(Player &player, std::vector<SharedCel
 		boost::unordered_map<int, Item::SharedObject>::iterator o = player.visibleCell->objects.begin();
 		while (o != player.visibleCell->objects.end())
 		{
-			boost::unordered_set<CellID>::iterator d = discoveredCells.find(o->second->cell->cellID);
-			if (d != discoveredCells.end())
+			if (o->second->cell)
 			{
-				o = player.visibleCell->objects.erase(o);
+				boost::unordered_set<CellID>::iterator d = discoveredCells.find(o->second->cell->cellID);
+				if (d != discoveredCells.end())
+				{
+					o = player.visibleCell->objects.erase(o);
+				}
+				else
+				{
+					++o;
+				}
 			}
 			else
 			{
-				++o;
+				o = player.visibleCell->objects.erase(o);
 			}
 		}
 		playerCells.back()->objects.swap(player.visibleCell->objects);
@@ -628,7 +630,6 @@ void Grid::processDiscoveredCellsForPlayer(Player &player, std::vector<SharedCel
 			{
 				c = player.visibleCell->checkpoints.erase(c);
 			}
-
 		}
 		playerCells.back()->checkpoints.swap(player.visibleCell->checkpoints);
 	}

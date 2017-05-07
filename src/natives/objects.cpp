@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Incognito
+ * Copyright (C) 2017 Incognito
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,10 +43,11 @@ cell AMX_NATIVE_CALL Natives::CreateDynamicObject(AMX *amx, cell *params)
 	Item::SharedObject object(new Item::Object);
 	object->amx = amx;
 	object->objectID = objectID;
-	object->noCameraCollision = false;
 	object->inverseAreaChecking = false;
+	object->noCameraCollision = false;
 	object->originalComparableStreamDistance = -1.0f;
 	object->positionOffset = Eigen::Vector3f::Zero();
+	object->streamCallbacks = false;
 	object->modelID = static_cast<int>(params[1]);
 	object->position = Eigen::Vector3f(amx_ctof(params[2]), amx_ctof(params[3]), amx_ctof(params[4]));
 	object->rotation = Eigen::Vector3f(amx_ctof(params[5]), amx_ctof(params[6]), amx_ctof(params[7]));
@@ -81,6 +82,24 @@ cell AMX_NATIVE_CALL Natives::IsValidDynamicObject(AMX *amx, cell *params)
 	boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(static_cast<int>(params[1]));
 	if (o != core->getData()->objects.end())
 	{
+		return 1;
+	}
+	return 0;
+}
+
+cell AMX_NATIVE_CALL Natives::GetDynamicObjectPos(AMX *amx, cell *params)
+{
+	CHECK_PARAMS(4, "GetDynamicObjectPos");
+	boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(static_cast<int>(params[1]));
+	if (o != core->getData()->objects.end())
+	{
+		if (o->second->move)
+		{
+			core->getStreamer()->processActiveItems();
+		}
+		Utility::storeFloatInNative(amx, params[2], o->second->position[0]);
+		Utility::storeFloatInNative(amx, params[3], o->second->position[1]);
+		Utility::storeFloatInNative(amx, params[4], o->second->position[2]);
 		return 1;
 	}
 	return 0;
@@ -126,9 +145,9 @@ cell AMX_NATIVE_CALL Natives::SetDynamicObjectPos(AMX *amx, cell *params)
 	return 0;
 }
 
-cell AMX_NATIVE_CALL Natives::GetDynamicObjectPos(AMX *amx, cell *params)
+cell AMX_NATIVE_CALL Natives::GetDynamicObjectRot(AMX *amx, cell *params)
 {
-	CHECK_PARAMS(4, "GetDynamicObjectPos");
+	CHECK_PARAMS(4, "GetDynamicObjectRot");
 	boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(static_cast<int>(params[1]));
 	if (o != core->getData()->objects.end())
 	{
@@ -136,9 +155,9 @@ cell AMX_NATIVE_CALL Natives::GetDynamicObjectPos(AMX *amx, cell *params)
 		{
 			core->getStreamer()->processActiveItems();
 		}
-		Utility::storeFloatInNative(amx, params[2], o->second->position[0]);
-		Utility::storeFloatInNative(amx, params[3], o->second->position[1]);
-		Utility::storeFloatInNative(amx, params[4], o->second->position[2]);
+		Utility::storeFloatInNative(amx, params[2], o->second->rotation[0]);
+		Utility::storeFloatInNative(amx, params[3], o->second->rotation[1]);
+		Utility::storeFloatInNative(amx, params[4], o->second->rotation[2]);
 		return 1;
 	}
 	return 0;
@@ -172,20 +191,13 @@ cell AMX_NATIVE_CALL Natives::SetDynamicObjectRot(AMX *amx, cell *params)
 	return 0;
 }
 
-cell AMX_NATIVE_CALL Natives::GetDynamicObjectRot(AMX *amx, cell *params)
+cell AMX_NATIVE_CALL Natives::GetDynamicObjectNoCameraCol(AMX *amx, cell *params)
 {
-	CHECK_PARAMS(4, "GetDynamicObjectRot");
+	CHECK_PARAMS(1, "GetDynamicObjectNoCameraCol");
 	boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(static_cast<int>(params[1]));
 	if (o != core->getData()->objects.end())
 	{
-		if (o->second->move)
-		{
-			core->getStreamer()->processActiveItems();
-		}
-		Utility::storeFloatInNative(amx, params[2], o->second->rotation[0]);
-		Utility::storeFloatInNative(amx, params[3], o->second->rotation[1]);
-		Utility::storeFloatInNative(amx, params[4], o->second->rotation[2]);
-		return 1;
+		return o->second->noCameraCollision != 0;
 	}
 	return 0;
 }
@@ -210,17 +222,6 @@ cell AMX_NATIVE_CALL Natives::SetDynamicObjectNoCameraCol(AMX *amx, cell *params
 	return 0;
 }
 
-cell AMX_NATIVE_CALL Natives::GetDynamicObjectNoCameraCol(AMX *amx, cell *params)
-{
-	CHECK_PARAMS(1, "GetDynamicObjectNoCameraCol");
-	boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(static_cast<int>(params[1]));
-	if (o != core->getData()->objects.end())
-	{
-		return o->second->noCameraCollision != 0;
-	}
-	return 0;
-}
-
 cell AMX_NATIVE_CALL Natives::MoveDynamicObject(AMX *amx, cell *params)
 {
 	CHECK_PARAMS(8, "MoveDynamicObject");
@@ -233,7 +234,7 @@ cell AMX_NATIVE_CALL Natives::MoveDynamicObject(AMX *amx, cell *params)
 	{
 		if (o->second->attach)
 		{
-			Utility::logError("MoveDynamicObject: Object is currently attached and cannot be moved");
+			Utility::logError("MoveDynamicObject: Object is currently attached and cannot be moved.");
 			return 0;
 		}
 		Eigen::Vector3f position(amx_ctof(params[2]), amx_ctof(params[3]), amx_ctof(params[4]));
@@ -344,7 +345,7 @@ cell AMX_NATIVE_CALL Natives::AttachDynamicObjectToObject(AMX *amx, cell *params
 	CHECK_PARAMS(9, "AttachDynamicObjectToObject");
 	if (sampgdk::FindNative("SetPlayerGravity") == NULL)
 	{
-		Utility::logError("AttachDynamicObjectToObject: YSF plugin must be loaded to attach objects to objects");
+		Utility::logError("AttachDynamicObjectToObject: YSF plugin must be loaded to attach objects to objects.");
 		return 0;
 	}
 	boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(static_cast<int>(params[1]));
@@ -352,7 +353,7 @@ cell AMX_NATIVE_CALL Natives::AttachDynamicObjectToObject(AMX *amx, cell *params
 	{
 		if (o->second->move)
 		{
-			Utility::logError("AttachDynamicObjectToObject: Object is currently moving and must be stopped first");
+			Utility::logError("AttachDynamicObjectToObject: Object is currently moving and must be stopped first.");
 			return 0;
 		}
 		o->second->attach = boost::intrusive_ptr<Item::Object::Attach>(new Item::Object::Attach);
@@ -422,7 +423,7 @@ cell AMX_NATIVE_CALL Natives::AttachDynamicObjectToPlayer(AMX *amx, cell *params
 	CHECK_PARAMS(8, "AttachDynamicObjectToPlayer");
 	if (sampgdk::FindNative("SetPlayerGravity") == NULL)
 	{
-		Utility::logError("AttachDynamicObjectToPlayer: YSF plugin must be loaded to attach objects to players");
+		Utility::logError("AttachDynamicObjectToPlayer: YSF plugin must be loaded to attach objects to players.");
 		return 0;
 	}
 	boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(static_cast<int>(params[1]));
@@ -430,7 +431,7 @@ cell AMX_NATIVE_CALL Natives::AttachDynamicObjectToPlayer(AMX *amx, cell *params
 	{
 		if (o->second->move)
 		{
-			Utility::logError("AttachDynamicObjectToPlayer: Object is currently moving and must be stopped first");
+			Utility::logError("AttachDynamicObjectToPlayer: Object is currently moving and must be stopped first.");
 			return 0;
 		}
 		o->second->attach = boost::intrusive_ptr<Item::Object::Attach>(new Item::Object::Attach);
@@ -485,7 +486,7 @@ cell AMX_NATIVE_CALL Natives::AttachDynamicObjectToVehicle(AMX *amx, cell *param
 	{
 		if (o->second->move)
 		{
-			Utility::logError("AttachDynamicObjectToVehicle: Object is currently moving and must be stopped first");
+			Utility::logError("AttachDynamicObjectToVehicle: Object is currently moving and must be stopped first.");
 			return 0;
 		}
 		o->second->attach = boost::intrusive_ptr<Item::Object::Attach>(new Item::Object::Attach);
@@ -541,6 +542,11 @@ cell AMX_NATIVE_CALL Natives::EditDynamicObject(AMX *amx, cell *params)
 			boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(static_cast<int>(params[2]));
 			if (o != core->getData()->objects.end())
 			{
+				if (o->second->comparableStreamDistance > STREAMER_STATIC_DISTANCE_CUTOFF && o->second->originalComparableStreamDistance < STREAMER_STATIC_DISTANCE_CUTOFF)
+				{
+					o->second->originalComparableStreamDistance = o->second->comparableStreamDistance;
+					o->second->comparableStreamDistance = -1.0f;
+				}
 				p->second.position = Eigen::Vector3f(o->second->position[0], o->second->position[1], o->second->position[2]);
 				core->getStreamer()->startManualUpdate(p->second, STREAMER_TYPE_OBJECT);
 			}

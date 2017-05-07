@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Incognito
+ * Copyright (C) 2017 Incognito
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ cell AMX_NATIVE_CALL Natives::CreateDynamicObjectEx(AMX *amx, cell *params)
 	object->noCameraCollision = false;
 	object->originalComparableStreamDistance = -1.0f;
 	object->positionOffset = Eigen::Vector3f::Zero();
+	object->streamCallbacks = false;
 	object->modelID = static_cast<int>(params[1]);
 	object->position = Eigen::Vector3f(amx_ctof(params[2]), amx_ctof(params[3]), amx_ctof(params[4]));
 	object->rotation = Eigen::Vector3f(amx_ctof(params[5]), amx_ctof(params[6]), amx_ctof(params[7]));
@@ -74,8 +75,9 @@ cell AMX_NATIVE_CALL Natives::CreateDynamicPickupEx(AMX *amx, cell *params)
 	pickup->pickupID = pickupID;
 	pickup->inverseAreaChecking = false;
 	pickup->originalComparableStreamDistance = -1.0f;
-	pickup->modelID = static_cast<int>(params[1]);
 	pickup->positionOffset = Eigen::Vector3f::Zero();
+	pickup->streamCallbacks = false;
+	pickup->modelID = static_cast<int>(params[1]);
 	pickup->type = static_cast<int>(params[2]);
 	pickup->position = Eigen::Vector3f(amx_ctof(params[3]), amx_ctof(params[4]), amx_ctof(params[5]));
 	pickup->comparableStreamDistance = amx_ctof(params[6]) < STREAMER_STATIC_DISTANCE_CUTOFF ? amx_ctof(params[6]) : amx_ctof(params[6]) * amx_ctof(params[6]);
@@ -104,6 +106,7 @@ cell AMX_NATIVE_CALL Natives::CreateDynamicCPEx(AMX *amx, cell *params)
 	checkpoint->inverseAreaChecking = false;
 	checkpoint->originalComparableStreamDistance = -1.0f;
 	checkpoint->positionOffset = Eigen::Vector3f::Zero();
+	checkpoint->streamCallbacks = false;
 	checkpoint->position = Eigen::Vector3f(amx_ctof(params[1]), amx_ctof(params[2]), amx_ctof(params[3]));
 	checkpoint->size = amx_ctof(params[4]);
 	checkpoint->comparableStreamDistance = amx_ctof(params[5]) < STREAMER_STATIC_DISTANCE_CUTOFF ? amx_ctof(params[5]) : amx_ctof(params[5]) * amx_ctof(params[5]);
@@ -132,6 +135,7 @@ cell AMX_NATIVE_CALL Natives::CreateDynamicRaceCPEx(AMX *amx, cell *params)
 	raceCheckpoint->inverseAreaChecking = false;
 	raceCheckpoint->originalComparableStreamDistance = -1.0f;
 	raceCheckpoint->positionOffset = Eigen::Vector3f::Zero();
+	raceCheckpoint->streamCallbacks = false;
 	raceCheckpoint->type = static_cast<int>(params[1]);
 	raceCheckpoint->position = Eigen::Vector3f(amx_ctof(params[2]), amx_ctof(params[3]), amx_ctof(params[4]));
 	raceCheckpoint->next = Eigen::Vector3f(amx_ctof(params[5]), amx_ctof(params[6]), amx_ctof(params[7]));
@@ -162,6 +166,7 @@ cell AMX_NATIVE_CALL Natives::CreateDynamicMapIconEx(AMX *amx, cell *params)
 	mapIcon->inverseAreaChecking = false;
 	mapIcon->originalComparableStreamDistance = -1.0f;
 	mapIcon->positionOffset = Eigen::Vector3f::Zero();
+	mapIcon->streamCallbacks = false;
 	mapIcon->position = Eigen::Vector3f(amx_ctof(params[1]), amx_ctof(params[2]), amx_ctof(params[3]));
 	mapIcon->type = static_cast<int>(params[4]);
 	mapIcon->color = static_cast<int>(params[5]);
@@ -192,6 +197,7 @@ cell AMX_NATIVE_CALL Natives::CreateDynamic3DTextLabelEx(AMX *amx, cell *params)
 	textLabel->inverseAreaChecking = false;
 	textLabel->originalComparableStreamDistance = -1.0f;
 	textLabel->positionOffset = Eigen::Vector3f::Zero();
+	textLabel->streamCallbacks = false;
 	textLabel->text = Utility::convertNativeStringToString(amx, params[1]);
 	textLabel->color = static_cast<int>(params[2]);
 	textLabel->position = Eigen::Vector3f(amx_ctof(params[3]), amx_ctof(params[4]), amx_ctof(params[5]));
@@ -231,6 +237,7 @@ cell AMX_NATIVE_CALL Natives::CreateDynamicCircleEx(AMX *amx, cell *params)
 	Item::SharedArea area(new Item::Area);
 	area->amx = amx;
 	area->areaID = areaID;
+	area->spectateMode = true;
 	area->type = STREAMER_AREA_TYPE_CIRCLE;
 	area->position = Eigen::Vector2f(amx_ctof(params[1]), amx_ctof(params[2]));
 	area->comparableSize = amx_ctof(params[3]) * amx_ctof(params[3]);
@@ -255,6 +262,7 @@ cell AMX_NATIVE_CALL Natives::CreateDynamicCylinderEx(AMX *amx, cell *params)
 	Item::SharedArea area(new Item::Area);
 	area->amx = amx;
 	area->areaID = areaID;
+	area->spectateMode = true;
 	area->type = STREAMER_AREA_TYPE_CYLINDER;
 	area->position = Eigen::Vector2f(amx_ctof(params[1]), amx_ctof(params[2]));
 	area->height = Eigen::Vector2f(amx_ctof(params[3]), amx_ctof(params[4]));
@@ -280,6 +288,7 @@ cell AMX_NATIVE_CALL Natives::CreateDynamicSphereEx(AMX *amx, cell *params)
 	Item::SharedArea area(new Item::Area);
 	area->amx = amx;
 	area->areaID = areaID;
+	area->spectateMode = true;
 	area->type = STREAMER_AREA_TYPE_SPHERE;
 	area->position = Eigen::Vector3f(amx_ctof(params[1]), amx_ctof(params[2]), amx_ctof(params[3]));
 	area->comparableSize = amx_ctof(params[4]) * amx_ctof(params[4]);
@@ -304,6 +313,7 @@ cell AMX_NATIVE_CALL Natives::CreateDynamicRectangleEx(AMX *amx, cell *params)
 	Item::SharedArea area(new Item::Area);
 	area->amx = amx;
 	area->areaID = areaID;
+	area->spectateMode = true;
 	area->type = STREAMER_AREA_TYPE_RECTANGLE;
 	area->position = Box2D(Eigen::Vector2f(amx_ctof(params[1]), amx_ctof(params[2])), Eigen::Vector2f(amx_ctof(params[3]), amx_ctof(params[4])));
 	boost::geometry::correct(boost::get<Box2D>(area->position));
@@ -329,6 +339,7 @@ cell AMX_NATIVE_CALL Natives::CreateDynamicCuboidEx(AMX *amx, cell *params)
 	Item::SharedArea area(new Item::Area);
 	area->amx = amx;
 	area->areaID = areaID;
+	area->spectateMode = true;
 	area->type = STREAMER_AREA_TYPE_CUBOID;
 	area->position = Box3D(Eigen::Vector3f(amx_ctof(params[1]), amx_ctof(params[2]), amx_ctof(params[3])), Eigen::Vector3f(amx_ctof(params[4]), amx_ctof(params[5]), amx_ctof(params[6])));
 	boost::geometry::correct(boost::get<Box3D>(area->position));
@@ -352,12 +363,13 @@ cell AMX_NATIVE_CALL Natives::CreateDynamicPolygonEx(AMX *amx, cell *params)
 	}
 	if (static_cast<int>(params[4] >= 2 && static_cast<int>(params[4]) % 2))
 	{
-		Utility::logError("CreateDynamicPolygonEx: Number of points must be divisible by two");
+		Utility::logError("CreateDynamicPolygonEx: Number of points must be divisible by two.");
 	}
 	int areaID = Item::Area::identifier.get();
 	Item::SharedArea area(new Item::Area);
 	area->amx = amx;
 	area->areaID = areaID;
+	area->spectateMode = true;
 	area->type = STREAMER_AREA_TYPE_POLYGON;
 	Utility::convertArrayToPolygon(amx, params[1], params[4], boost::get<Polygon2D>(area->position));
 	area->height = Eigen::Vector2f(amx_ctof(params[2]), amx_ctof(params[3]));

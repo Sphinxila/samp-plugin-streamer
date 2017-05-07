@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Incognito
+ * Copyright (C) 2017 Incognito
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,7 +81,7 @@ namespace Utility
 		container.reset();
 		for (std::size_t i = 0; i < static_cast<std::size_t>(size); ++i)
 		{
-			if (!addToContainer(container, static_cast<std::size_t>(array[i])))
+			if (!addToContainer(container, static_cast<int>(array[i])))
 			{
 				return false;
 			}

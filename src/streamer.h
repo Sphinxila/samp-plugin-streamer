@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Incognito
+ * Copyright (C) 2017 Incognito
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,28 +69,28 @@ public:
 private:
 	void calculateAverageElapsedTime();
 
-	void performPlayerChunkUpdate(Player &player);
+	void performPlayerChunkUpdate(Player &player, bool automatic);
 	void performPlayerUpdate(Player &player, bool automatic);
 	void executeCallbacks();
+
+	void discoverActors(Player &player, const std::vector<SharedCell> &cells);
+	void streamActors();
 
 	void processAreas(Player &player, const std::vector<SharedCell> &cells);
 	void processCheckpoints(Player &player, const std::vector<SharedCell> &cells);
 	void processRaceCheckpoints(Player &player, const std::vector<SharedCell> &cells);
 
 	void discoverMapIcons(Player &player, const std::vector<SharedCell> &cells);
-	void streamMapIcons(Player &player);
+	void streamMapIcons(Player &player, bool automatic);
 
 	void discoverObjects(Player &player, const std::vector<SharedCell> &cells);
-	void streamObjects(Player &player);
+	void streamObjects(Player &player, bool automatic);
 
 	void discoverPickups(Player &player, const std::vector<SharedCell> &cells);
 	void streamPickups();
 
 	void discoverTextLabels(Player &player, const std::vector<SharedCell> &cells);
-	void streamTextLabels(Player &player);
-
-	void discoverActors(Player &player, const std::vector<SharedCell> &cells);
-	void streamActors();
+	void streamTextLabels(Player &player, bool automatic);
 
 	void processMovingObjects();
 	void processAttachedAreas();
@@ -109,10 +109,11 @@ private:
 
 	std::multimap<int, boost::tuple<int, int> > areaEnterCallbacks;
 	std::multimap<int, boost::tuple<int, int> > areaLeaveCallbacks;
+
 	std::vector<int> objectMoveCallbacks;
 
-	boost::unordered_map<int, Item::SharedPickup> discoveredPickups;
-	boost::unordered_map<int, Item::SharedActor> discoveredActors;
+	std::vector<boost::tuple<int, int> > streamInCallbacks;
+	std::vector<boost::tuple<int, int> > streamOutCallbacks;
 
 	template<std::size_t N, typename T>
 	inline bool doesPlayerSatisfyConditions(const std::bitset<N> &a, const T &b, const boost::unordered_set<T> &c, const T &d, const boost::unordered_set<T> &e, const T &f)

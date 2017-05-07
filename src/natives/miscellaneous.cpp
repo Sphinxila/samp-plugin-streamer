@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Incognito
+ * Copyright (C) 2017 Incognito
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,14 @@ cell AMX_NATIVE_CALL Natives::Streamer_GetDistanceToItem(AMX *amx, cell *params)
 			boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(static_cast<int>(params[5]));
 			if (o != core->getData()->objects.end())
 			{
-				position = o->second->position;
+				if (o->second->attach)
+				{
+					position = o->second->attach->position;
+				}
+				else
+				{
+					position = o->second->position;
+				}
 				break;
 			}
 			return 0;
@@ -109,52 +116,48 @@ cell AMX_NATIVE_CALL Natives::Streamer_GetDistanceToItem(AMX *amx, cell *params)
 			boost::unordered_map<int, Item::SharedArea>::iterator a = core->getData()->areas.find(static_cast<int>(params[5]));
 			if (a != core->getData()->areas.end())
 			{
+				boost::variant<Polygon2D, Box2D, Box3D, Eigen::Vector2f, Eigen::Vector3f> areaPosition;
+				if (a->second->attach)
+				{
+					areaPosition = a->second->position;
+				}
+				else
+				{
+					areaPosition = a->second->position;
+				}
 				switch (a->second->type)
 				{
 					case STREAMER_AREA_TYPE_CIRCLE:
 					case STREAMER_AREA_TYPE_CYLINDER:
 					{
 						float distance = 0.0f;
-						if (a->second->attach)
-						{
-							distance = static_cast<float>(boost::geometry::distance(Eigen::Vector2f(amx_ctof(params[1]), amx_ctof(params[2])), Eigen::Vector2f(a->second->attach->position[0], a->second->attach->position[1])));
-						}
-						else
-						{
-							distance = static_cast<float>(boost::geometry::distance(Eigen::Vector2f(amx_ctof(params[1]), amx_ctof(params[2])), boost::get<Eigen::Vector2f>(a->second->position)));
-						}
+						distance = static_cast<float>(boost::geometry::distance(Eigen::Vector2f(amx_ctof(params[1]), amx_ctof(params[2])), boost::get<Eigen::Vector2f>(areaPosition)));
 						Utility::storeFloatInNative(amx, params[6], distance);
 						return 1;
 					}
 					case STREAMER_AREA_TYPE_SPHERE:
 					{
-						if (a->second->attach)
-						{
-							position = a->second->attach->position;
-						}
-						else
-						{
-							position = boost::get<Eigen::Vector3f>(a->second->position);
-						}
+
+						position = boost::get<Eigen::Vector3f>(areaPosition);
 						break;
 					}
 					case STREAMER_AREA_TYPE_RECTANGLE:
 					{
-						Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Box2D>(a->second->position));
+						Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Box2D>(areaPosition));
 						float distance = static_cast<float>(boost::geometry::distance(Eigen::Vector2f(amx_ctof(params[1]), amx_ctof(params[2])), centroid));
 						Utility::storeFloatInNative(amx, params[6], distance);
 						return 1;
 					}
 					case STREAMER_AREA_TYPE_CUBOID:
 					{
-						Eigen::Vector3f centroid = boost::geometry::return_centroid<Eigen::Vector3f>(boost::get<Box3D>(a->second->position));
+						Eigen::Vector3f centroid = boost::geometry::return_centroid<Eigen::Vector3f>(boost::get<Box3D>(areaPosition));
 						float distance = static_cast<float>(boost::geometry::distance(Eigen::Vector3f(amx_ctof(params[1]), amx_ctof(params[2]), amx_ctof(params[3])), centroid));
 						Utility::storeFloatInNative(amx, params[6], distance);
 						return 1;
 					}
 					case STREAMER_AREA_TYPE_POLYGON:
 					{
-						Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Polygon2D>(a->second->position));
+						Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Polygon2D>(areaPosition));
 						float distance = static_cast<float>(boost::geometry::distance(Eigen::Vector2f(amx_ctof(params[1]), amx_ctof(params[2])), centroid));
 						Utility::storeFloatInNative(amx, params[6], distance);
 						return 1;
@@ -175,7 +178,7 @@ cell AMX_NATIVE_CALL Natives::Streamer_GetDistanceToItem(AMX *amx, cell *params)
 		}
 		default:
 		{
-			Utility::logError("Streamer_GetDistanceToItem: Invalid type specified");
+			Utility::logError("Streamer_GetDistanceToItem: Invalid type specified.");
 			return 0;
 		}
 	}
@@ -195,7 +198,7 @@ cell AMX_NATIVE_CALL Natives::Streamer_GetDistanceToItem(AMX *amx, cell *params)
 		}
 		default:
 		{
-			Utility::logError("Streamer_GetDistanceToItem: Invalid number of dimensions specified (outside range of 2-3)");
+			Utility::logError("Streamer_GetDistanceToItem: Invalid number of dimensions specified (outside range of 2-3).");
 			return 0;
 		}
 	}
@@ -337,7 +340,7 @@ cell AMX_NATIVE_CALL Natives::Streamer_ToggleItem(AMX *amx, cell *params)
 		}
 		default:
 		{
-			Utility::logError("Streamer_ToggleItem: Invalid type specified");
+			Utility::logError("Streamer_ToggleItem: Invalid type specified.");
 			return 0;
 		}
 	}
@@ -423,7 +426,7 @@ cell AMX_NATIVE_CALL Natives::Streamer_IsToggleItem(AMX *amx, cell *params)
 		}
 		default:
 		{
-			Utility::logError("Streamer_IsToggleItem: Invalid type specified");
+			Utility::logError("Streamer_IsToggleItem: Invalid type specified.");
 			return 0;
 		}
 	}
@@ -591,7 +594,7 @@ cell AMX_NATIVE_CALL Natives::Streamer_ToggleAllItems(AMX *amx, cell *params)
 		}
 		default:
 		{
-			Utility::logError("Streamer_ToggleAllItems: Invalid type specified");
+			Utility::logError("Streamer_ToggleAllItems: Invalid type specified.");
 			return 0;
 		}
 	}
@@ -680,7 +683,7 @@ cell AMX_NATIVE_CALL Natives::Streamer_GetItemInternalID(AMX *amx, cell *params)
 			}
 			default:
 			{
-				Utility::logError("Streamer_GetItemInternalID: Invalid type specified");
+				Utility::logError("Streamer_GetItemInternalID: Invalid type specified.");
 				return 0;
 			}
 		}
@@ -781,7 +784,7 @@ cell AMX_NATIVE_CALL Natives::Streamer_GetItemStreamerID(AMX *amx, cell *params)
 			}
 			default:
 			{
-				Utility::logError("Streamer_GetItemStreamerID: Invalid type specified");
+				Utility::logError("Streamer_GetItemStreamerID: Invalid type specified.");
 				return 0;
 			}
 		}
@@ -871,7 +874,7 @@ cell AMX_NATIVE_CALL Natives::Streamer_IsItemVisible(AMX *amx, cell *params)
 			}
 			default:
 			{
-				Utility::logError("Streamer_IsItemVisible: Invalid type specified");
+				Utility::logError("Streamer_IsItemVisible: Invalid type specified.");
 				return 0;
 			}
 		}
@@ -887,36 +890,36 @@ cell AMX_NATIVE_CALL Natives::Streamer_DestroyAllVisibleItems(AMX *amx, cell *pa
 	{
 		case STREAMER_TYPE_PICKUP:
 		{
-			boost::unordered_map<int, int>::iterator p = core->getData()->internalPickups.begin();
-			while (p != core->getData()->internalPickups.end())
+			boost::unordered_map<int, int>::iterator i = core->getData()->internalPickups.begin();
+			while (i != core->getData()->internalPickups.end())
 			{
-				boost::unordered_map<int, Item::SharedPickup>::iterator q = core->getData()->pickups.find(p->first);
-				if (serverWide || (q != core->getData()->pickups.end() && q->second->amx == amx))
+				boost::unordered_map<int, Item::SharedPickup>::iterator p = core->getData()->pickups.find(i->first);
+				if (serverWide || (p != core->getData()->pickups.end() && p->second->amx == amx))
 				{
-					sampgdk::DestroyPickup(p->second);
-					p = core->getData()->internalPickups.erase(p);
+					sampgdk::DestroyPickup(i->second);
+					i = core->getData()->internalPickups.erase(i);
 				}
 				else
 				{
-					++p;
+					++i;
 				}
 			}
 			return 1;
 		}
 		case STREAMER_TYPE_ACTOR:
 		{
-			boost::unordered_map<int, int>::iterator a = core->getData()->internalActors.begin();
-			while (a != core->getData()->internalActors.end())
+			boost::unordered_map<int, int>::iterator i = core->getData()->internalActors.begin();
+			while (i != core->getData()->internalActors.end())
 			{
-				boost::unordered_map<int, Item::SharedActor>::iterator q = core->getData()->actors.find(a->first);
-				if (serverWide || (q != core->getData()->actors.end() && q->second->amx == amx))
+				boost::unordered_map<int, Item::SharedActor>::iterator a = core->getData()->actors.find(i->first);
+				if (serverWide || (a != core->getData()->actors.end() && a->second->amx == amx))
 				{
-					sampgdk::DestroyActor(a->second);
-					a = core->getData()->internalActors.erase(a);
+					sampgdk::DestroyActor(i->second);
+					i = core->getData()->internalActors.erase(i);
 				}
 				else
 				{
-					++a;
+					++i;
 				}
 			}
 			return 1;
@@ -929,18 +932,18 @@ cell AMX_NATIVE_CALL Natives::Streamer_DestroyAllVisibleItems(AMX *amx, cell *pa
 		{
 			case STREAMER_TYPE_OBJECT:
 			{
-				boost::unordered_map<int, int>::iterator o = p->second.internalObjects.begin();
-				while (o != p->second.internalObjects.end())
+				boost::unordered_map<int, int>::iterator i = p->second.internalObjects.begin();
+				while (i != p->second.internalObjects.end())
 				{
-					boost::unordered_map<int, Item::SharedObject>::iterator q = core->getData()->objects.find(o->first);
-					if (serverWide || (q != core->getData()->objects.end() && q->second->amx == amx))
+					boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(i->first);
+					if (serverWide || (o != core->getData()->objects.end() && o->second->amx == amx))
 					{
-						sampgdk::DestroyPlayerObject(p->first, o->second);
-						o = p->second.internalObjects.erase(o);
+						sampgdk::DestroyPlayerObject(p->first, i->second);
+						i = p->second.internalObjects.erase(i);
 					}
 					else
 					{
-						++o;
+						++i;
 					}
 				}
 				return 1;
@@ -977,60 +980,60 @@ cell AMX_NATIVE_CALL Natives::Streamer_DestroyAllVisibleItems(AMX *amx, cell *pa
 			}
 			case STREAMER_TYPE_MAP_ICON:
 			{
-				boost::unordered_map<int, int>::iterator m = p->second.internalMapIcons.begin();
-				while (m != p->second.internalMapIcons.end())
+				boost::unordered_map<int, int>::iterator i = p->second.internalMapIcons.begin();
+				while (i != p->second.internalMapIcons.end())
 				{
-					boost::unordered_map<int, Item::SharedMapIcon>::iterator n = core->getData()->mapIcons.find(m->first);
-					if (serverWide || (n != core->getData()->mapIcons.end() && n->second->amx == amx))
+					boost::unordered_map<int, Item::SharedMapIcon>::iterator m = core->getData()->mapIcons.find(i->first);
+					if (serverWide || (m != core->getData()->mapIcons.end() && m->second->amx == amx))
 					{
-						sampgdk::RemovePlayerMapIcon(p->first, m->second);
-						m = p->second.internalMapIcons.erase(m);
+						sampgdk::RemovePlayerMapIcon(p->first, i->second);
+						i = p->second.internalMapIcons.erase(i);
 					}
 					else
 					{
-						++m;
+						++i;
 					}
 				}
 				return 1;
 			}
 			case STREAMER_TYPE_3D_TEXT_LABEL:
 			{
-				boost::unordered_map<int, int>::iterator t = p->second.internalTextLabels.begin();
-				while (t != p->second.internalMapIcons.end())
+				boost::unordered_map<int, int>::iterator i = p->second.internalTextLabels.begin();
+				while (i != p->second.internalTextLabels.end())
 				{
-					boost::unordered_map<int, Item::SharedTextLabel>::iterator u = core->getData()->textLabels.find(t->first);
-					if (serverWide || (u != core->getData()->textLabels.end() && u->second->amx == amx))
+					boost::unordered_map<int, Item::SharedTextLabel>::iterator t = core->getData()->textLabels.find(i->first);
+					if (serverWide || (t != core->getData()->textLabels.end() && t->second->amx == amx))
 					{
-						sampgdk::DeletePlayer3DTextLabel(p->first, t->second);
-						t = p->second.internalTextLabels.erase(t);
+						sampgdk::DeletePlayer3DTextLabel(p->first, i->second);
+						i = p->second.internalTextLabels.erase(i);
 					}
 					else
 					{
-						++t;
+						++i;
 					}
 				}
 				return 1;
 			}
 			case STREAMER_TYPE_AREA:
 			{
-				boost::unordered_set<int>::iterator a = p->second.internalAreas.begin();
-				while (a != p->second.internalAreas.end())
+				boost::unordered_set<int>::iterator i = p->second.internalAreas.begin();
+				while (i != p->second.internalAreas.end())
 				{
-					boost::unordered_map<int, Item::SharedArea>::iterator b = core->getData()->areas.find(*a);
-					if (serverWide || (b != core->getData()->areas.end() && b->second->amx == amx))
+					boost::unordered_map<int, Item::SharedArea>::iterator a = core->getData()->areas.find(*i);
+					if (serverWide || (a != core->getData()->areas.end() && a->second->amx == amx))
 					{
-						a = p->second.internalAreas.erase(a);
+						i = p->second.internalAreas.erase(i);
 					}
 					else
 					{
-						++a;
+						++i;
 					}
 				}
 				return 1;
 			}
 			default:
 			{
-				Utility::logError("Streamer_DestroyAllVisibleItems: Invalid type specified");
+				Utility::logError("Streamer_DestroyAllVisibleItems: Invalid type specified.");
 				return 0;
 			}
 		}
@@ -1067,10 +1070,10 @@ cell AMX_NATIVE_CALL Natives::Streamer_CountVisibleItems(AMX *amx, cell *params)
 				else
 				{
 					int count = 0;
-					for (boost::unordered_map<int, int>::iterator o = p->second.internalObjects.begin(); o != p->second.internalObjects.end(); ++o)
+					for (boost::unordered_map<int, int>::iterator i = p->second.internalObjects.begin(); i != p->second.internalObjects.end(); ++i)
 					{
-						boost::unordered_map<int, Item::SharedObject>::iterator q = core->getData()->objects.find(o->first);
-						if (q != core->getData()->objects.end() && q->second->amx == amx)
+						boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(i->first);
+						if (o != core->getData()->objects.end() && o->second->amx == amx)
 						{
 							++count;
 						}
@@ -1111,10 +1114,10 @@ cell AMX_NATIVE_CALL Natives::Streamer_CountVisibleItems(AMX *amx, cell *params)
 				else
 				{
 					int count = 0;
-					for (boost::unordered_map<int, int>::iterator m = p->second.internalMapIcons.begin(); m != p->second.internalObjects.end(); ++m)
+					for (boost::unordered_map<int, int>::iterator i = p->second.internalMapIcons.begin(); i != p->second.internalMapIcons.end(); ++i)
 					{
-						boost::unordered_map<int, Item::SharedMapIcon>::iterator n = core->getData()->mapIcons.find(m->first);
-						if (n != core->getData()->mapIcons.end() && n->second->amx == amx)
+						boost::unordered_map<int, Item::SharedMapIcon>::iterator m = core->getData()->mapIcons.find(i->first);
+						if (m != core->getData()->mapIcons.end() && m->second->amx == amx)
 						{
 							++count;
 						}
@@ -1131,10 +1134,10 @@ cell AMX_NATIVE_CALL Natives::Streamer_CountVisibleItems(AMX *amx, cell *params)
 				else
 				{
 					int count = 0;
-					for (boost::unordered_map<int, int>::iterator t = p->second.internalTextLabels.begin(); t != p->second.internalTextLabels.end(); ++t)
+					for (boost::unordered_map<int, int>::iterator i = p->second.internalTextLabels.begin(); i != p->second.internalTextLabels.end(); ++i)
 					{
-						boost::unordered_map<int, Item::SharedTextLabel>::iterator u = core->getData()->textLabels.find(t->first);
-						if (u != core->getData()->textLabels.end() && u->second->amx == amx)
+						boost::unordered_map<int, Item::SharedTextLabel>::iterator t = core->getData()->textLabels.find(i->first);
+						if (t != core->getData()->textLabels.end() && t->second->amx == amx)
 						{
 							++count;
 						}
@@ -1151,10 +1154,10 @@ cell AMX_NATIVE_CALL Natives::Streamer_CountVisibleItems(AMX *amx, cell *params)
 				else
 				{
 					int count = 0;
-					for (boost::unordered_set<int>::iterator a = p->second.internalAreas.begin(); a != p->second.internalAreas.end(); ++a)
+					for (boost::unordered_set<int>::iterator i = p->second.internalAreas.begin(); i != p->second.internalAreas.end(); ++i)
 					{
-						boost::unordered_map<int, Item::SharedArea>::iterator b = core->getData()->areas.find(*a);
-						if (b != core->getData()->areas.end() && b->second->amx == amx)
+						boost::unordered_map<int, Item::SharedArea>::iterator a = core->getData()->areas.find(*i);
+						if (a != core->getData()->areas.end() && a->second->amx == amx)
 						{
 							++count;
 						}
@@ -1164,7 +1167,7 @@ cell AMX_NATIVE_CALL Natives::Streamer_CountVisibleItems(AMX *amx, cell *params)
 			}
 			default:
 			{
-				Utility::logError("Streamer_CountVisibleItems: Invalid type specified");
+				Utility::logError("Streamer_CountVisibleItems: Invalid type specified.");
 				return 0;
 			}
 		}
@@ -1309,7 +1312,7 @@ cell AMX_NATIVE_CALL Natives::Streamer_DestroyAllItems(AMX *amx, cell *params)
 		}
 		default:
 		{
-			Utility::logError("Streamer_DestroyAllItems: Invalid type specified");
+			Utility::logError("Streamer_DestroyAllItems: Invalid type specified.");
 			return 0;
 		}
 	}
@@ -1476,7 +1479,7 @@ cell AMX_NATIVE_CALL Natives::Streamer_CountItems(AMX *amx, cell *params)
 		}
 		default:
 		{
-			Utility::logError("Streamer_CountItems: Invalid type specified");
+			Utility::logError("Streamer_CountItems: Invalid type specified.");
 			return 0;
 		}
 	}
@@ -1486,250 +1489,297 @@ cell AMX_NATIVE_CALL Natives::Streamer_CountItems(AMX *amx, cell *params)
 cell AMX_NATIVE_CALL Natives::Streamer_GetNearbyItems(AMX *amx, cell *params)
 {
 	CHECK_PARAMS(7, "Streamer_GetNearbyItems");
-	Eigen::Vector3f position3D = Eigen::Vector3f(amx_ctof(params[1]), amx_ctof(params[2]), amx_ctof(params[3]));
 	Eigen::Vector2f position2D = Eigen::Vector2f(amx_ctof(params[1]), amx_ctof(params[2]));
-	float range = pow(amx_ctof(params[7]), 2);
+	Eigen::Vector3f position3D = Eigen::Vector3f(amx_ctof(params[1]), amx_ctof(params[2]), amx_ctof(params[3]));
+	float range = amx_ctof(params[7]) * amx_ctof(params[7]);
+	std::multimap<float, int> orderedItems;
+	std::vector<SharedCell> pointCells;
+	core->getGrid()->findMinimalCellsForPoint(position2D, pointCells);
 	switch (static_cast<int>(params[4]))
 	{
 		case STREAMER_TYPE_OBJECT:
 		{
-			std::vector<SharedCell> pointCells;
-			core->getGrid()->findMinimalCellsForPoint(position2D, pointCells);
-			std::multimap<float, int> orderedObjects;
 			for (std::vector<SharedCell>::const_iterator p = pointCells.begin(); p != pointCells.end(); ++p)
 			{
-				for (boost::unordered_map<int, Item::SharedObject>::const_iterator a = (*p)->objects.begin(); a != (*p)->objects.end(); ++a)
+				for (boost::unordered_map<int, Item::SharedObject>::const_iterator o = (*p)->objects.begin(); o != (*p)->objects.end(); ++o)
 				{
-					float distance = static_cast<float>(boost::geometry::comparable_distance(a->second->position, position3D));
+					float distance = 0.0f;
+					if (o->second->attach)
+					{
+						distance = static_cast<float>(boost::geometry::comparable_distance(position3D, o->second->attach->position));
+					}
+					else
+					{
+						distance = static_cast<float>(boost::geometry::comparable_distance(position3D, o->second->position));
+					}
 					if (distance < range)
 					{
-						orderedObjects.insert(std::pair<float, int>(distance, a->first));
+						orderedItems.insert(std::pair<float, int>(distance, o->first));
 					}
 				}
 			}
-			std::vector<int> finalAreas;
-			for (std::multimap<float, int>::iterator i = orderedObjects.begin(); i != orderedObjects.end(); ++i)
-			{
-				finalAreas.push_back(i->second);
-			}
-			Utility::convertContainerToArray(amx, params[5], params[6], finalAreas);
-			return static_cast<cell>(finalAreas.size());
+			break;
 		}
 		case STREAMER_TYPE_PICKUP:
 		{
-			std::vector<SharedCell> pointCells;
-			core->getGrid()->findMinimalCellsForPoint(position2D, pointCells);
-			std::multimap<float, int> orderedPickups;
 			for (std::vector<SharedCell>::const_iterator p = pointCells.begin(); p != pointCells.end(); ++p)
 			{
-				for (boost::unordered_map<int, Item::SharedPickup>::const_iterator a = (*p)->pickups.begin(); a != (*p)->pickups.end(); ++a)
+				for (boost::unordered_map<int, Item::SharedPickup>::const_iterator q = (*p)->pickups.begin(); q != (*p)->pickups.end(); ++q)
 				{
-					float distance = static_cast<float>(boost::geometry::comparable_distance(a->second->position, position3D));
+					float distance = static_cast<float>(boost::geometry::comparable_distance(position3D, q->second->position));
 					if (distance < range)
 					{
-						orderedPickups.insert(std::pair<float, int>(distance, a->first));
+						orderedItems.insert(std::pair<float, int>(distance, q->first));
 					}
 				}
 			}
-			std::vector<int> finalAreas;
-			for (std::multimap<float, int>::iterator i = orderedPickups.begin(); i != orderedPickups.end(); ++i)
-			{
-				finalAreas.push_back(i->second);
-			}
-			Utility::convertContainerToArray(amx, params[5], params[6], finalAreas);
-			return static_cast<cell>(finalAreas.size());
+			break;
 		}
 		case STREAMER_TYPE_CP:
 		{
-			std::vector<SharedCell> pointCells;
-			core->getGrid()->findMinimalCellsForPoint(position2D, pointCells);
-			std::multimap<float, int> orderedCheckpoints;
 			for (std::vector<SharedCell>::const_iterator p = pointCells.begin(); p != pointCells.end(); ++p)
 			{
-				for (boost::unordered_map<int, Item::SharedCheckpoint>::const_iterator a = (*p)->checkpoints.begin(); a != (*p)->checkpoints.end(); ++a)
+				for (boost::unordered_map<int, Item::SharedCheckpoint>::const_iterator c = (*p)->checkpoints.begin(); c != (*p)->checkpoints.end(); ++c)
 				{
-					float distance = static_cast<float>(boost::geometry::comparable_distance(a->second->position, position3D));
+					float distance = static_cast<float>(boost::geometry::comparable_distance(position3D, c->second->position));
 					if (distance < range)
 					{
-						orderedCheckpoints.insert(std::pair<float, int>(distance, a->first));
+						orderedItems.insert(std::pair<float, int>(distance, c->first));
 					}
 				}
 			}
-			std::vector<int> finalAreas;
-			for (std::multimap<float, int>::iterator i = orderedCheckpoints.begin(); i != orderedCheckpoints.end(); ++i)
-			{
-				finalAreas.push_back(i->second);
-			}
-			Utility::convertContainerToArray(amx, params[5], params[6], finalAreas);
-			return static_cast<cell>(finalAreas.size());
+			break;
 		}
 		case STREAMER_TYPE_RACE_CP:
 		{
-			std::vector<SharedCell> pointCells;
-			core->getGrid()->findMinimalCellsForPoint(position2D, pointCells);
-			std::multimap<float, int> orderedRaceCheckpoints;
 			for (std::vector<SharedCell>::const_iterator p = pointCells.begin(); p != pointCells.end(); ++p)
 			{
-				for (boost::unordered_map<int, Item::SharedRaceCheckpoint>::const_iterator a = (*p)->raceCheckpoints.begin(); a != (*p)->raceCheckpoints.end(); ++a)
+				for (boost::unordered_map<int, Item::SharedRaceCheckpoint>::const_iterator r = (*p)->raceCheckpoints.begin(); r != (*p)->raceCheckpoints.end(); ++r)
 				{
-					float distance = static_cast<float>(boost::geometry::comparable_distance(a->second->position, position3D));
+					float distance = static_cast<float>(boost::geometry::comparable_distance(position3D, r->second->position));
 					if (distance < range)
 					{
-						orderedRaceCheckpoints.insert(std::pair<float, int>(distance, a->first));
+						orderedItems.insert(std::pair<float, int>(distance, r->first));
 					}
 				}
 			}
-			std::vector<int> finalAreas;
-			for (std::multimap<float, int>::iterator i = orderedRaceCheckpoints.begin(); i != orderedRaceCheckpoints.end(); ++i)
-			{
-				finalAreas.push_back(i->second);
-			}
-			Utility::convertContainerToArray(amx, params[5], params[6], finalAreas);
-			return static_cast<cell>(finalAreas.size());
+			break;
 		}
 		case STREAMER_TYPE_MAP_ICON:
 		{
-			std::vector<SharedCell> pointCells;
-			core->getGrid()->findMinimalCellsForPoint(position2D, pointCells);
-			std::multimap<float, int> orderedMapIcons;
 			for (std::vector<SharedCell>::const_iterator p = pointCells.begin(); p != pointCells.end(); ++p)
 			{
-				for (boost::unordered_map<int, Item::SharedMapIcon>::const_iterator a = (*p)->mapIcons.begin(); a != (*p)->mapIcons.end(); ++a)
+				for (boost::unordered_map<int, Item::SharedMapIcon>::const_iterator m = (*p)->mapIcons.begin(); m != (*p)->mapIcons.end(); ++m)
 				{
-					float distance = static_cast<float>(boost::geometry::comparable_distance(a->second->position, position3D));
+					float distance = static_cast<float>(boost::geometry::comparable_distance(position3D, m->second->position));
 					if (distance < range)
 					{
-						orderedMapIcons.insert(std::pair<float, int>(distance, a->first));
+						orderedItems.insert(std::pair<float, int>(distance, m->first));
 					}
 				}
 			}
-			std::vector<int> finalAreas;
-			for (std::multimap<float, int>::iterator i = orderedMapIcons.begin(); i != orderedMapIcons.end(); ++i)
-			{
-				finalAreas.push_back(i->second);
-			}
-			Utility::convertContainerToArray(amx, params[5], params[6], finalAreas);
-			return static_cast<cell>(finalAreas.size());
+			break;
 		}
 		case STREAMER_TYPE_3D_TEXT_LABEL:
 		{
-			std::vector<SharedCell> pointCells;
-			core->getGrid()->findMinimalCellsForPoint(position2D, pointCells);
-			std::multimap<float, int> orderedTextLabels;
-			float distance = 0.0f;
 			for (std::vector<SharedCell>::const_iterator p = pointCells.begin(); p != pointCells.end(); ++p)
 			{
-				for (boost::unordered_map<int, Item::SharedTextLabel>::const_iterator a = (*p)->textLabels.begin(); a != (*p)->textLabels.end(); ++a)
+				for (boost::unordered_map<int, Item::SharedTextLabel>::const_iterator t = (*p)->textLabels.begin(); t != (*p)->textLabels.end(); ++t)
 				{
-					distance = static_cast<float>(boost::geometry::comparable_distance(a->second->position, position3D));
+					float distance = static_cast<float>(boost::geometry::comparable_distance(position3D, t->second->position));
 					if (distance < range)
 					{
-						orderedTextLabels.insert(std::pair<float, int>(distance, a->first));
+						orderedItems.insert(std::pair<float, int>(distance, t->first));
 					}
 				}
 			}
-			std::vector<int> finalAreas;
-			for (std::multimap<float, int>::iterator i = orderedTextLabels.begin(); i != orderedTextLabels.end(); ++i)
-			{
-				finalAreas.push_back(i->second);
-			}
-			Utility::convertContainerToArray(amx, params[5], params[6], finalAreas);
-			return static_cast<cell>(finalAreas.size());
+			break;
 		}
 		case STREAMER_TYPE_AREA:
 		{
-			std::vector<SharedCell> pointCells;
-			core->getGrid()->findMinimalCellsForPoint(position2D, pointCells);
-			std::multimap<float, int> orderedAreas;
-			float distance = 0.0f;
 			for (std::vector<SharedCell>::const_iterator p = pointCells.begin(); p != pointCells.end(); ++p)
 			{
 				for (boost::unordered_map<int, Item::SharedArea>::const_iterator a = (*p)->areas.begin(); a != (*p)->areas.end(); ++a)
 				{
+					boost::variant<Polygon2D, Box2D, Box3D, Eigen::Vector2f, Eigen::Vector3f> position;
+					if (a->second->attach)
+					{
+						position = a->second->position;
+					}
+					else
+					{
+						position = a->second->position;
+					}
+					float distance = 0.0f;
 					switch (a->second->type)
 					{
 						case STREAMER_AREA_TYPE_CIRCLE:
 						case STREAMER_AREA_TYPE_CYLINDER:
+						{
+							distance = static_cast<float>(boost::geometry::distance(position2D, boost::get<Eigen::Vector2f>(position)));
+							break;
+						}
 						case STREAMER_AREA_TYPE_SPHERE:
 						{
-							if (a->second->attach)
-							{
-								distance = static_cast<float>(boost::geometry::comparable_distance(a->second->attach->position, position3D));
-							}
-							else
-							{
-								distance = static_cast<float>(boost::geometry::comparable_distance(boost::get<Eigen::Vector3f>(a->second->position), position3D));
-							}
+							distance = static_cast<float>(boost::geometry::comparable_distance(position3D, boost::get<Eigen::Vector3f>(position)));
 							break;
 						}
 						case STREAMER_AREA_TYPE_RECTANGLE:
 						{
-							Eigen::Vector3f centroid = boost::geometry::return_centroid<Eigen::Vector3f>(boost::get<Box3D>(a->second->position));
-							distance = static_cast<float>(boost::geometry::comparable_distance(centroid, position3D));
+							Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Box2D>(position));
+							distance = static_cast<float>(boost::geometry::comparable_distance(position2D, centroid));
 							break;
 						}
 						case STREAMER_AREA_TYPE_CUBOID:
 						{
-							Eigen::Vector3f centroid = boost::geometry::return_centroid<Eigen::Vector3f>(boost::get<Box3D>(a->second->position));
-							distance = static_cast<float>(boost::geometry::comparable_distance(centroid, position3D));
+							Eigen::Vector3f centroid = boost::geometry::return_centroid<Eigen::Vector3f>(boost::get<Box3D>(position));
+							distance = static_cast<float>(boost::geometry::comparable_distance(position3D, centroid));
 							break;
 						}
 						case STREAMER_AREA_TYPE_POLYGON:
 						{
-							Eigen::Vector2f centroidXY = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Polygon2D>(a->second->position));
-							//Eigen::Vector2f positionZ = boost::get<Eigen::Vector2f>(a->second->height);
-							Eigen::Vector2f positionZ = a->second->height;	// TODO: check if this is correct
-							Eigen::Vector3f centroid = Eigen::Vector3f(centroidXY[0], centroidXY[1], positionZ[1] - positionZ[0]);
-							distance = static_cast<float>(boost::geometry::comparable_distance(centroid, position3D));
+							Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Polygon2D>(position));
+							distance = static_cast<float>(boost::geometry::comparable_distance(position2D, centroid));
 							break;
 						}
 					}
 					if (distance < range)
 					{
-						orderedAreas.insert(std::pair<float, int>(distance, a->first));
+						orderedItems.insert(std::pair<float, int>(distance, a->first));
 					}
 				}
 			}
-			std::vector<int> finalAreas;
-			for (std::multimap<float, int>::iterator i = orderedAreas.begin(); i != orderedAreas.end(); ++i)
-			{
-				finalAreas.push_back(i->second);
-			}
-			Utility::convertContainerToArray(amx, params[5], params[6], finalAreas);
-			return static_cast<cell>(finalAreas.size());
+			break;
 		}
 		case STREAMER_TYPE_ACTOR:
 		{
-			std::vector<SharedCell> pointCells;
-			core->getGrid()->findMinimalCellsForPoint(position2D, pointCells);
-			std::multimap<float, int> orderedActors;
 			for (std::vector<SharedCell>::const_iterator p = pointCells.begin(); p != pointCells.end(); ++p)
 			{
 				for (boost::unordered_map<int, Item::SharedActor>::const_iterator a = (*p)->actors.begin(); a != (*p)->actors.end(); ++a)
 				{
-					float distance = static_cast<float>(boost::geometry::comparable_distance(a->second->position, position3D));
+					float distance = static_cast<float>(boost::geometry::comparable_distance(position3D, a->second->position));
 					if (distance < range)
 					{
-						orderedActors.insert(std::pair<float, int>(distance, a->first));
+						orderedItems.insert(std::pair<float, int>(distance, a->first));
 					}
 				}
 			}
-			std::vector<int> finalAreas;
-			for (std::multimap<float, int>::iterator i = orderedActors.begin(); i != orderedActors.end(); ++i)
-			{
-				finalAreas.push_back(i->second);
-			}
-			Utility::convertContainerToArray(amx, params[5], params[6], finalAreas);
-			return static_cast<cell>(finalAreas.size());
+			break;
 		}
 		default:
 		{
-			Utility::logError("Streamer_GetNearbyItems: Invalid type specified");
+			Utility::logError("Streamer_GetNearbyItems: Invalid type specified.");
 			return 0;
 		}
 	}
+	std::vector<int> finalItems;
+	for (std::multimap<float, int>::iterator i = orderedItems.begin(); i != orderedItems.end(); ++i)
+	{
+		finalItems.push_back(i->second);
+	}
+	Utility::convertContainerToArray(amx, params[5], params[6], finalItems);
+	return static_cast<cell>(finalItems.size());
+}
 
-	return 0;
+cell AMX_NATIVE_CALL Natives::Streamer_GetAllVisibleItems(AMX *amx, cell *params)
+{
+	CHECK_PARAMS(4, "Streamer_GetAllVisibleItems");
+	std::multimap<float, int> orderedItems;
+	boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(static_cast<int>(params[1]));
+	if (p != core->getData()->players.end())
+	{
+		switch (static_cast<int>(params[2]))
+		{
+			case STREAMER_TYPE_OBJECT:
+			{
+				for (boost::unordered_map<int, int>::iterator i = p->second.internalObjects.begin(); i != p->second.internalObjects.end(); ++i)
+				{
+					boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(i->first);
+					if (o != core->getData()->objects.end())
+					{
+						float distance = 0.0f;
+						if (o->second->attach)
+						{
+							distance = static_cast<float>(boost::geometry::comparable_distance(p->second.position, o->second->attach->position));
+						}
+						else
+						{
+							distance = static_cast<float>(boost::geometry::comparable_distance(p->second.position, o->second->position));
+						}
+						orderedItems.insert(std::pair<float, int>(distance, o->first));
+					}
+				}
+				break;
+			}
+			case STREAMER_TYPE_PICKUP:
+			{
+				for (boost::unordered_map<int, int>::iterator i = core->getData()->internalPickups.begin(); i != core->getData()->internalPickups.end(); ++i)
+				{
+					boost::unordered_map<int, Item::SharedPickup>::iterator q = core->getData()->pickups.find(i->first);
+					if (q != core->getData()->pickups.end())
+					{
+						float distance = static_cast<float>(boost::geometry::comparable_distance(p->second.position, q->second->position));
+						orderedItems.insert(std::pair<float, int>(distance, q->first));
+					}
+				}
+				break;
+			}
+			case STREAMER_TYPE_MAP_ICON:
+			{
+				for (boost::unordered_map<int, int>::iterator i = p->second.internalMapIcons.begin(); i != p->second.internalMapIcons.end(); ++i)
+				{
+					boost::unordered_map<int, Item::SharedMapIcon>::iterator m = core->getData()->mapIcons.find(i->first);
+					if (m != core->getData()->mapIcons.end())
+					{
+						float distance = static_cast<float>(boost::geometry::comparable_distance(p->second.position, m->second->position));
+						orderedItems.insert(std::pair<float, int>(distance, m->first));
+					}
+				}
+				break;
+			}
+			case STREAMER_TYPE_3D_TEXT_LABEL:
+			{
+				for (boost::unordered_map<int, int>::iterator i = p->second.internalTextLabels.begin(); i != p->second.internalTextLabels.end(); ++i)
+				{
+					boost::unordered_map<int, Item::SharedTextLabel>::iterator t = core->getData()->textLabels.find(i->first);
+					if (t != core->getData()->textLabels.end())
+					{
+						float distance = 0.0f;
+						if (t->second->attach)
+						{
+							distance = static_cast<float>(boost::geometry::comparable_distance(p->second.position, t->second->attach->position));
+						}
+						else
+						{
+							distance = static_cast<float>(boost::geometry::comparable_distance(p->second.position, t->second->position));
+						}
+						orderedItems.insert(std::pair<float, int>(distance, t->first));
+					}
+				}
+				break;
+			}
+			case STREAMER_TYPE_ACTOR:
+			{
+				for (boost::unordered_map<int, int>::iterator i = core->getData()->internalActors.begin(); i != core->getData()->internalActors.end(); ++i)
+				{
+					boost::unordered_map<int, Item::SharedActor>::iterator a = core->getData()->actors.find(i->first);
+					if (a != core->getData()->actors.end())
+					{
+						float distance = static_cast<float>(boost::geometry::comparable_distance(p->second.position, a->second->position));
+						orderedItems.insert(std::pair<float, int>(distance, a->first));
+					}
+				}
+				break;
+			}
+		}
+	}
+	std::vector<int> finalItems;
+	for (std::multimap<float, int>::iterator i = orderedItems.begin(); i != orderedItems.end(); ++i)
+	{
+		finalItems.push_back(i->second);
+	}
+	Utility::convertContainerToArray(amx, params[3], params[4], finalItems);
+	return static_cast<cell>(finalItems.size());
 }
 
 cell AMX_NATIVE_CALL Natives::Streamer_GetItemOffset(AMX *amx, cell *params)
@@ -1810,7 +1860,7 @@ cell AMX_NATIVE_CALL Natives::Streamer_GetItemOffset(AMX *amx, cell *params)
 		}
 		default:
 		{
-			Utility::logError("Streamer_GetItemPosOffset: Invalid type specified");
+			Utility::logError("Streamer_GetItemPosOffset: Invalid type specified.");
 			return 0;
 		}
 	}
@@ -1823,7 +1873,6 @@ cell AMX_NATIVE_CALL Natives::Streamer_GetItemOffset(AMX *amx, cell *params)
 cell AMX_NATIVE_CALL Natives::Streamer_SetItemOffset(AMX *amx, cell *params)
 {
 	CHECK_PARAMS(5, "Streamer_SetItemOffset");
-	Eigen::Vector3f positionOffset = Eigen::Vector3f::Zero();
 	switch (static_cast<int>(params[1]))
 	{
 		case STREAMER_TYPE_OBJECT:
@@ -1898,7 +1947,7 @@ cell AMX_NATIVE_CALL Natives::Streamer_SetItemOffset(AMX *amx, cell *params)
 		}
 		default:
 		{
-			Utility::logError("Streamer_SetItemPosOffset: Invalid type specified");
+			Utility::logError("Streamer_SetItemPosOffset: Invalid type specified.");
 			return 0;
 		}
 	}

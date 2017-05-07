@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Incognito
+ * Copyright (C) 2017 Incognito
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,9 +46,15 @@ public:
 
 	std::set<AMX*> interfaces;
 
-	boost::unordered_map<int, int> internalPickups;
-	boost::unordered_map<int, int> internalActors;
+	std::vector<int> destroyedActors;
 
+	boost::unordered_map<int, Item::SharedActor> discoveredActors;
+	boost::unordered_map<int, Item::SharedPickup> discoveredPickups;
+
+	boost::unordered_map<int, int> internalActors;
+	boost::unordered_map<int, int> internalPickups;
+
+	boost::unordered_map<int, Item::SharedActor> actors;
 	boost::unordered_map<int, Item::SharedArea> areas;
 	boost::unordered_map<int, Item::SharedCheckpoint> checkpoints;
 	boost::unordered_map<int, Item::SharedMapIcon> mapIcons;
@@ -56,7 +62,6 @@ public:
 	boost::unordered_map<int, Item::SharedPickup> pickups;
 	boost::unordered_map<int, Item::SharedRaceCheckpoint> raceCheckpoints;
 	boost::unordered_map<int, Item::SharedTextLabel> textLabels;
-	boost::unordered_map<int, Item::SharedActor> actors;
 
 	boost::unordered_map<int, Player> players;
 

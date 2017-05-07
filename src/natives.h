@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 Incognito
+ * Copyright (C) 2017 Incognito
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@
 #define CHECK_PARAMS(m, n) \
 	if (params[0] != (m * 4)) \
 	{ \
-		Utility::logError("%s: Expecting %d parameter(s), but found %d", n, m, params[0] / sizeof(cell)); \
+		Utility::logError("%s: Expecting %d parameter(s), but found %d.", n, m, params[0] / sizeof(cell)); \
 		return 0; \
 	}
 
@@ -63,8 +63,10 @@ namespace Natives
 	cell AMX_NATIVE_CALL Streamer_SetCellSize(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL Streamer_ToggleItemStatic(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL Streamer_IsToggleItemStatic(AMX *amx, cell *params);
-	cell AMX_NATIVE_CALL Streamer_ToggleItemAntiAreas(AMX *amx, cell *params);
-	cell AMX_NATIVE_CALL Streamer_IsToggleItemAntiAreas(AMX *amx, cell *params);
+	cell AMX_NATIVE_CALL Streamer_ToggleItemInvAreas(AMX *amx, cell *params);
+	cell AMX_NATIVE_CALL Streamer_IsToggleItemInvAreas(AMX *amx, cell *params);
+	cell AMX_NATIVE_CALL Streamer_ToggleItemCallbacks(AMX *amx, cell *params);
+	cell AMX_NATIVE_CALL Streamer_IsToggleItemCallbacks(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL Streamer_ToggleErrorCallback(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL Streamer_IsToggleErrorCallback(AMX *amx, cell *params);
 	// Updates
@@ -102,18 +104,19 @@ namespace Natives
 	cell AMX_NATIVE_CALL Streamer_DestroyAllItems(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL Streamer_CountItems(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL Streamer_GetNearbyItems(AMX *amx, cell *params);
+	cell AMX_NATIVE_CALL Streamer_GetAllVisibleItems(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL Streamer_GetItemOffset(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL Streamer_SetItemOffset(AMX *amx, cell *params);
 	// Objects
 	cell AMX_NATIVE_CALL CreateDynamicObject(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL DestroyDynamicObject(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL IsValidDynamicObject(AMX *amx, cell *params);
-	cell AMX_NATIVE_CALL SetDynamicObjectPos(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL GetDynamicObjectPos(AMX *amx, cell *params);
-	cell AMX_NATIVE_CALL SetDynamicObjectRot(AMX *amx, cell *params);
+	cell AMX_NATIVE_CALL SetDynamicObjectPos(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL GetDynamicObjectRot(AMX *amx, cell *params);
-	cell AMX_NATIVE_CALL SetDynamicObjectNoCameraCol(AMX *amx, cell *params);
+	cell AMX_NATIVE_CALL SetDynamicObjectRot(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL GetDynamicObjectNoCameraCol(AMX *amx, cell *params);
+	cell AMX_NATIVE_CALL SetDynamicObjectNoCameraCol(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL MoveDynamicObject(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL StopDynamicObject(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL IsDynamicObjectMoving(AMX *amx, cell *params);
@@ -183,24 +186,26 @@ namespace Natives
 	cell AMX_NATIVE_CALL AttachDynamicAreaToObject(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL AttachDynamicAreaToPlayer(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL AttachDynamicAreaToVehicle(AMX *amx, cell *params);
+	cell AMX_NATIVE_CALL ToggleDynAreaSpectateMode(AMX *amx, cell *params);
+	cell AMX_NATIVE_CALL IsToggleDynAreaSpectateMode(AMX *amx, cell *params);
 	// Actors
 	cell AMX_NATIVE_CALL CreateDynamicActor(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL DestroyDynamicActor(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL IsValidDynamicActor(AMX *amx, cell *params);
+	cell AMX_NATIVE_CALL IsDynamicActorStreamedIn(AMX *amx, cell *params);
+	cell AMX_NATIVE_CALL GetDynamicActorVirtualWorld(AMX *amx, cell *params);
+	cell AMX_NATIVE_CALL SetDynamicActorVirtualWorld(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL ApplyDynamicActorAnimation(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL ClearDynamicActorAnimations(AMX *amx, cell *params);
-	cell AMX_NATIVE_CALL GetPlayerTargetDynamicActor(AMX *amx, cell *params);
+	cell AMX_NATIVE_CALL GetDynamicActorFacingAngle(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL SetDynamicActorFacingAngle(AMX *amx, cell *params);
+	cell AMX_NATIVE_CALL GetDynamicActorPos(AMX *amx, cell *params);
+	cell AMX_NATIVE_CALL SetDynamicActorPos(AMX *amx, cell *params);
+	cell AMX_NATIVE_CALL GetDynamicActorHealth(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL SetDynamicActorHealth(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL SetDynamicActorInvulnerable(AMX *amx, cell *params);
-	cell AMX_NATIVE_CALL SetDynamicActorPos(AMX *amx, cell *params);
-	cell AMX_NATIVE_CALL SetDynamicActorVirtualWorld(AMX *amx, cell *params);
-	cell AMX_NATIVE_CALL GetDynamicActorFacingAngle(AMX *amx, cell *params);
-	cell AMX_NATIVE_CALL GetDynamicActorHealth(AMX *amx, cell *params);
-	cell AMX_NATIVE_CALL GetDynamicActorPos(AMX *amx, cell *params);
-	cell AMX_NATIVE_CALL GetDynamicActorVirtualWorld(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL IsDynamicActorInvulnerable(AMX *amx, cell *params);
-	cell AMX_NATIVE_CALL IsDynamicActorStreamedIn(AMX *amx, cell *params);
+	cell AMX_NATIVE_CALL GetPlayerTargetDynamicActor(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL GetPlayerCameraTargetDynActor(AMX *amx, cell *params);
 	// Extended
 	cell AMX_NATIVE_CALL CreateDynamicObjectEx(AMX *amx, cell *params);
@@ -216,9 +221,8 @@ namespace Natives
 	cell AMX_NATIVE_CALL CreateDynamicCuboidEx(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL CreateDynamicPolygonEx(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL CreateDynamicActorEx(AMX *amx, cell *params);
-	// Internal
-	cell AMX_NATIVE_CALL Streamer_CallbackHook(AMX *amx, cell *params);
 	// Deprecated
+	cell AMX_NATIVE_CALL Streamer_CallbackHook(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL DestroyAllDynamicObjects(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL CountDynamicObjects(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL DestroyAllDynamicPickups(AMX *amx, cell *params);
