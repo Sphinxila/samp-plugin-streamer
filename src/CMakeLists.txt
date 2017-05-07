@@ -74,6 +74,28 @@ if (SAMP_STREAMER_INCLUDE_PLUGIN)
 	  ${SOURCE_NATIVES}
 	  ${HEADER_FILES}
 	)
+
+	if (SAMP_STREAMER_USE_BUILD_DIR)
+		# Target output
+		set_target_properties(streamer
+			PROPERTIES
+			ARCHIVE_OUTPUT_DIRECTORY "${SAMP_STREAMER_BIN_OUT_DIR}/plugins"
+			LIBRARY_OUTPUT_DIRECTORY "${SAMP_STREAMER_BIN_OUT_DIR}/plugins"
+			RUNTIME_OUTPUT_DIRECTORY "${SAMP_STREAMER_BIN_OUT_DIR}/plugins"
+		)
+		
+		# Streamerr include file handling
+		set(STREAMER_INCLUDE_SRC "${SAMP_STREAMER_ROOT}/include/streamer.inc")
+		set(STREAMER_INCLUDE_DST "${SAMP_STREAMER_BIN_OUT_DIR}/include/streamer.inc")
+		
+		# Copy
+		add_custom_command(
+			TARGET  streamer POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E copy
+					${STREAMER_INCLUDE_SRC}
+					${STREAMER_INCLUDE_DST}
+			COMMENT "Copy Pawno include file")
+	endif()
 endif()
 
 set(SOURCE_LIB
@@ -124,6 +146,16 @@ streamer_add_library(streamer-lib
 
 target_include_directories(streamer-lib PUBLIC include/)
 
+if (SAMP_STREAMER_USE_BUILD_DIR)
+	# Target output
+	set_target_properties(streamer-lib
+		PROPERTIES
+		ARCHIVE_OUTPUT_DIRECTORY "${SAMP_STREAMER_BIN_OUT_DIR}/lib"
+		LIBRARY_OUTPUT_DIRECTORY "${SAMP_STREAMER_BIN_OUT_DIR}/lib"
+		RUNTIME_OUTPUT_DIRECTORY "${SAMP_STREAMER_BIN_OUT_DIR}/lib"
+	)
+endif()
+
 
 # Library with natives
 streamer_add_library(streamer-plugin-lib
@@ -135,3 +167,13 @@ streamer_add_library(streamer-plugin-lib
 )
 
 target_include_directories(streamer-plugin-lib PUBLIC include/)
+
+if (SAMP_STREAMER_USE_BUILD_DIR)
+	# Target output
+	set_target_properties(streamer-lib
+		PROPERTIES
+		ARCHIVE_OUTPUT_DIRECTORY "${SAMP_STREAMER_BIN_OUT_DIR}/lib"
+		LIBRARY_OUTPUT_DIRECTORY "${SAMP_STREAMER_BIN_OUT_DIR}/lib"
+		RUNTIME_OUTPUT_DIRECTORY "${SAMP_STREAMER_BIN_OUT_DIR}/lib"
+	)
+endif()

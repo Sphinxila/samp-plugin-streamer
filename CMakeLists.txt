@@ -15,6 +15,7 @@ endif(NOT CMAKE_BUILD_TYPE)
 option(SAMP_STREAMER_USE_FOREIGN_EXTERNAL "Use foreign externals" OFF)
 option(SAMP_STREAMER_INCLUDE_PLUGIN "Include plugin to project" ON)
 option(SAMP_STREAMER_BUILD_DOCS "Build Doxygen documentation" ON)
+option(SAMP_STREAMER_USE_BUILD_DIR "Change build directory" ON)
 
 # Set project title
 project(samp-plugin-streamer)
@@ -22,6 +23,7 @@ project(samp-plugin-streamer)
 # Base path constants
 set(SAMP_STREAMER_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 set(SAMP_STREAMER_BIN_ROOT ${CMAKE_CURRENT_BINARY_DIR})
+set(SAMP_STREAMER_BIN_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/build)
 
 # Set initial external directories
 if ("${SAMP_STREAMER_EXTERNAL}" STREQUAL "")
