@@ -1,4 +1,4 @@
-SA-MP Streamer Plugin with CMake Support
+SA-MP Streamer Plugin with SampGDK Support
 =====================
 
 This plugin streams objects, pickups, checkpoints, race checkpoints, map icons, 3D text labels, and actors at user-defined server ticks. Basic area detection is also included. Because it is written entirely in C++, much of the overhead from PAWN is avoided. This streamer, as a result, is quite a bit faster than any other implementation currently available in PAWN.
@@ -6,13 +6,16 @@ This plugin streams objects, pickups, checkpoints, race checkpoints, map icons, 
 This project is a fork of 
 - [samp-incognito/samp-streamer-plugin](https://github.com/samp-incognito/samp-streamer-plugin)
 
-## Documentation
+## Official documentation
 
 Documentation can  be found on the [wiki](https://github.com/samp-incognito/samp-streamer-plugin/wiki).
+There is no documentation for the SampGDK implementation.
+See [Streamer.hpp](src/include/streamer/streamer.hpp) for more informations.
+Basicly you need to call the functions in your main plugin handler.
 
 ## Download
 
-The latest binaries for Windows and Linux can be found on the [releases page](https://github.com/samp-incognito/samp-streamer-plugin/releases).
+The latest binaries for Windows and Linux can be found on the [releases page](https://github.com/Sphinxila/samp-plugin-streamer/releases).
 
 ## Build
 #### Deps:
