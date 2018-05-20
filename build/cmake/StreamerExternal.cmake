@@ -6,6 +6,7 @@ if ("${BOOST_LIB_PATH}" STREQUAL "")
 	# Set paths
 	SET(BOOST_LIB_PATH ${SAMP_STREAMER_EXTERNAL}/boost)
 endif()
+add_subdirectory(${BOOST_LIB_PATH})
 
 #################################################
 # Eigen lib

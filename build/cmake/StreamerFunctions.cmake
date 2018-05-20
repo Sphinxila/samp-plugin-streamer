@@ -23,7 +23,6 @@ function(streamer_add_samp_plugin name)
 			${name}
 			PRIVATE
 			BOOST_ALL_NO_LIB
-			BOOST_CHRONO_HEADER_ONLY
 			NOMINMAX
 			WIN32
 		)
@@ -31,11 +30,17 @@ function(streamer_add_samp_plugin name)
 		target_compile_definitions(
 			${name}
 			PRIVATE
-			BOOST_CHRONO_HEADER_ONLY
+			BOOST_ALL_NO_LIB
 			LINUX
 			NDEBUG
 		)
 	endif()	
+	
+	target_compile_definitions(
+		${name}
+		PUBLIC
+			BOOST_ALL_NO_LIB
+	)
 endfunction()
 
 function(streamer_add_library name)
@@ -96,21 +101,26 @@ function(streamer_add_library name)
 		target_compile_definitions(
 			${name}
 			PRIVATE
-			BOOST_ALL_NO_LIB
-			BOOST_CHRONO_HEADER_ONLY
-			NOMINMAX
-			WIN32
+				BOOST_ALL_NO_LIB
+				NOMINMAX
+				WIN32
 		)
 	else()
 		target_compile_definitions(
 			${name}
 			PRIVATE
-			BOOST_CHRONO_HEADER_ONLY
-			LINUX
-			NDEBUG
+				BOOST_ALL_NO_LIB
+				LINUX
+				NDEBUG
 		)
-	endif()	
-	
+	endif()
+
+	target_compile_definitions(
+		${name}
+		PUBLIC
+			BOOST_ALL_NO_LIB
+	)	
+
 	# Target
 	target_compile_features(${name}
 		PUBLIC
