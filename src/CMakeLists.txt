@@ -74,7 +74,13 @@ if (SAMP_STREAMER_INCLUDE_PLUGIN)
 	  ${SOURCE_NATIVES}
 	  ${HEADER_FILES}
 	)
-
+	
+	target_link_libraries(streamer
+		boost::unordered
+		boost::smart_ptr
+		boost::geometry
+	)
+	
 	if (SAMP_STREAMER_USE_BUILD_DIR)
 		# Target output
 		set_target_properties(streamer
@@ -146,6 +152,12 @@ streamer_add_library(streamer-lib
 
 target_include_directories(streamer-lib PUBLIC include/)
 
+target_link_libraries(streamer-lib 
+	boost::unordered
+	boost::smart_ptr
+	boost::geometry
+)
+
 if (SAMP_STREAMER_USE_BUILD_DIR)
 	# Target output
 	set_target_properties(streamer-lib
@@ -167,6 +179,12 @@ streamer_add_library(streamer-plugin-lib
 )
 
 target_include_directories(streamer-plugin-lib PUBLIC include/)
+
+target_link_libraries(streamer-plugin-lib
+	boost::unordered
+	boost::smart_ptr
+	boost::geometry
+)
 
 if (SAMP_STREAMER_USE_BUILD_DIR)
 	# Target output
