@@ -48,7 +48,6 @@ endif()
 # Include other
 include(StreamerDefines)
 include(StreamerFunctions)
-include(StreamerCore)
 
 # Add src
 add_subdirectory(src)

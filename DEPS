@@ -1,13 +1,15 @@
 vars = {
 	'github_zeex': 'https://github.com/Zeex',
-	'github_RLovelett' : 'https://github.com/RLovelett',
+	'github_EigenTeam' : 'https://github.com/eigenteam',
 	'github_steinwurf' : 'https://github.com/steinwurf',
-	'github_philip' : 'https://github.com/philip1337'
+	'github_philip' : 'https://github.com/philip1337',
+	'github_xianly': 'https://github.com/xianyi'
 }
 
 deps = {
 	'external/sampsdk': Var('github_zeex') + '/samp-plugin-sdk.git@15ffdfcb1faad2c77e57a64ccdd8147a9a7b92f5',
-	'external/sampgdk': Var('github_zeex') + '/sampgdk.git@0705676ff6d47e33ec4d2a53754aabeec038b472',
-	'external/eigen': Var('github_RLovelett') + '/eigen.git@a46d2e7337c4656f00abe54a8115f6d76153a048',
-	'external/boost': Var('github_philip') + '/boost.git@258437f88ffad53608d7f19855e8df2a000a8235',
+	'external/sampgdk': Var('github_zeex') + '/sampgdk.git@43ad7b4bf5e566db027fb52f5ba12f9619277283',
+	'external/eigen': Var('github_EigenTeam') + '/eigen-git-mirror.git@54acf9d8a38f5d7f34e7d81cc141aa46287fd845',
+	'external/boost': Var('github_philip') + '/boost.git@a64647dd7f2595f056176252fb57ce46ddab6647',
+	'external/blas': Var('github_xianly') + '/OpenBLAS.git@2beaa82c050804268aded407bc82c0f8bee93404',
 }

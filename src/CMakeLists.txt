@@ -156,6 +156,7 @@ target_link_libraries(streamer-lib
 	boost::unordered
 	boost::smart_ptr
 	boost::geometry
+	eigen
 )
 
 if (SAMP_STREAMER_USE_BUILD_DIR)
@@ -184,6 +185,7 @@ target_link_libraries(streamer-plugin-lib
 	boost::unordered
 	boost::smart_ptr
 	boost::geometry
+	eigen
 )
 
 if (SAMP_STREAMER_USE_BUILD_DIR)
