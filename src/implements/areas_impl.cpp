@@ -42,10 +42,10 @@ int CreateDynamicCircle(float x, float y, float size, int worldid, int interiori
 		return 0;
 	}
 
-	int areaID = Item::Area::identifier.get();
+	int areaId = Item::Area::identifier.get();
 	Item::SharedArea area(new Item::Area);
 	//area->amx = amx;
-	area->areaID = areaID;
+	area->areaId = areaId;
 	area->type = STREAMER_AREA_TYPE_CIRCLE;
 	area->position = Eigen::Vector2f(x, y);
 	area->comparableSize = size * size;
@@ -56,8 +56,8 @@ int CreateDynamicCircle(float x, float y, float size, int worldid, int interiori
 	Utility::addToContainer(area->players, playerid);
 	area->priority = priority;
 	core->getGrid()->addArea(area);
-	core->getData()->areas.insert(std::make_pair(areaID, area));
-	return areaID;
+	core->getData()->areas.insert(std::make_pair(areaId, area));
+	return areaId;
 }
 
 int CreateDynamicCylinder(float x, float y, float minz, float maxz, float size, int worldid, int interiorid, int playerid, int priority) {
@@ -65,10 +65,10 @@ int CreateDynamicCylinder(float x, float y, float minz, float maxz, float size, 
 		return 0;
 	}
 
-	int areaID = Item::Area::identifier.get();
+	int areaId = Item::Area::identifier.get();
 	Item::SharedArea area(new Item::Area);
 	//area->amx = amx;
-	area->areaID = areaID;
+	area->areaId = areaId;
 	area->type = STREAMER_AREA_TYPE_CYLINDER;
 	area->position = Eigen::Vector2f(x, y);
 	area->height = Eigen::Vector2f(minz, maxz);
@@ -80,8 +80,8 @@ int CreateDynamicCylinder(float x, float y, float minz, float maxz, float size, 
 	Utility::addToContainer(area->players,  playerid);
 	area->priority = priority;
 	core->getGrid()->addArea(area);
-	core->getData()->areas.insert(std::make_pair(areaID, area));
-	return areaID;
+	core->getData()->areas.insert(std::make_pair(areaId, area));
+	return areaId;
 }
 
 int CreateDynamicSphere(float x, float y, float z, float size, int worldid, int interiorid, int playerid, int priority) {
@@ -89,10 +89,10 @@ int CreateDynamicSphere(float x, float y, float z, float size, int worldid, int 
 		return 0;
 	}
 
-	int areaID = Item::Area::identifier.get();
+	int areaId = Item::Area::identifier.get();
 	Item::SharedArea area(new Item::Area);
 	//area->amx = amx;
-	area->areaID = areaID;
+	area->areaId = areaId;
 	area->spectateMode = true;
 	area->type = STREAMER_AREA_TYPE_SPHERE;
 	area->position = Eigen::Vector3f(x, y, z);
@@ -104,8 +104,8 @@ int CreateDynamicSphere(float x, float y, float z, float size, int worldid, int 
 	Utility::addToContainer(area->players, playerid);
 	area->priority = priority;
 	core->getGrid()->addArea(area);
-	core->getData()->areas.insert(std::make_pair(areaID, area));
-	return areaID;
+	core->getData()->areas.insert(std::make_pair(areaId, area));
+	return areaId;
 }
 
 int CreateDynamicRectangle(float minx, float miny, float maxx, float maxy, int worldid, int interiorid, int playerid, int priority) {
@@ -113,24 +113,24 @@ int CreateDynamicRectangle(float minx, float miny, float maxx, float maxy, int w
 		return 0;
 	}
 
-	int areaID = Item::Area::identifier.get();
+	int areaId = Item::Area::identifier.get();
 	Item::SharedArea area(new Item::Area);
 	//area->amx = amx;
-	area->areaID = areaID;
+	area->areaId = areaId;
 	area->spectateMode = true;
 	area->type = STREAMER_AREA_TYPE_RECTANGLE;
-	area->position = Box2D(Eigen::Vector2f(minx, miny), Eigen::Vector2f(maxx, maxy));
-	boost::geometry::correct(boost::get<Box2D>(area->position));
-	area->comparableSize = static_cast<float>(boost::geometry::comparable_distance(boost::get<Box2D>(area->position).min_corner(), boost::get<Box2D>(area->position).max_corner()));
-	area->size = static_cast<float>(boost::geometry::distance(boost::get<Box2D>(area->position).min_corner(), boost::get<Box2D>(area->position).max_corner()));
+	area->position = Box2d(Eigen::Vector2f(minx, miny), Eigen::Vector2f(maxx, maxy));
+	boost::geometry::correct(boost::get<Box2d>(area->position));
+	area->comparableSize = static_cast<float>(boost::geometry::comparable_distance(boost::get<Box2d>(area->position).min_corner(), boost::get<Box2d>(area->position).max_corner()));
+	area->size = static_cast<float>(boost::geometry::distance(boost::get<Box2d>(area->position).min_corner(), boost::get<Box2d>(area->position).max_corner()));
 
 	Utility::addToContainer(area->worlds, worldid);
 	Utility::addToContainer(area->interiors, interiorid);
 	Utility::addToContainer(area->players, playerid);
 	area->priority = priority;
 	core->getGrid()->addArea(area);
-	core->getData()->areas.insert(std::make_pair(areaID, area));
-	return areaID;
+	core->getData()->areas.insert(std::make_pair(areaId, area));
+	return areaId;
 }
 
 int CreateDynamicCuboid(float minx, float miny, float minz, float maxx, float maxy, float maxz, int worldid, int interiorid, int playerid, int priority) {
@@ -138,24 +138,24 @@ int CreateDynamicCuboid(float minx, float miny, float minz, float maxx, float ma
 		return 0;
 	}
 
-	int areaID = Item::Area::identifier.get();
+	int areaId = Item::Area::identifier.get();
 	Item::SharedArea area(new Item::Area);
 	//area->amx = amx;
-	area->areaID = areaID;
+	area->areaId = areaId;
 	area->spectateMode = true;
 	area->type = STREAMER_AREA_TYPE_CUBOID;
-	area->position = Box3D(Eigen::Vector3f(minx, miny, minz), Eigen::Vector3f(maxx, maxy, maxz));
-	boost::geometry::correct(boost::get<Box3D>(area->position));
-	area->comparableSize = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector2f(boost::get<Box3D>(area->position).min_corner()[0], boost::get<Box3D>(area->position).min_corner()[1]), Eigen::Vector2f(boost::get<Box3D>(area->position).max_corner()[0], boost::get<Box3D>(area->position).max_corner()[1])));
-	area->size = static_cast<float>(boost::geometry::distance(Eigen::Vector2f(boost::get<Box3D>(area->position).min_corner()[0], boost::get<Box3D>(area->position).min_corner()[1]), Eigen::Vector2f(boost::get<Box3D>(area->position).max_corner()[0], boost::get<Box3D>(area->position).max_corner()[1])));
+	area->position = Box3d(Eigen::Vector3f(minx, miny, minz), Eigen::Vector3f(maxx, maxy, maxz));
+	boost::geometry::correct(boost::get<Box3d>(area->position));
+	area->comparableSize = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector2f(boost::get<Box3d>(area->position).min_corner()[0], boost::get<Box3d>(area->position).min_corner()[1]), Eigen::Vector2f(boost::get<Box3d>(area->position).max_corner()[0], boost::get<Box3d>(area->position).max_corner()[1])));
+	area->size = static_cast<float>(boost::geometry::distance(Eigen::Vector2f(boost::get<Box3d>(area->position).min_corner()[0], boost::get<Box3d>(area->position).min_corner()[1]), Eigen::Vector2f(boost::get<Box3d>(area->position).max_corner()[0], boost::get<Box3d>(area->position).max_corner()[1])));
 
 	Utility::addToContainer(area->worlds, worldid);
 	Utility::addToContainer(area->interiors, interiorid);
 	Utility::addToContainer(area->players, playerid);
 	area->priority = priority;
 	core->getGrid()->addArea(area);
-	core->getData()->areas.insert(std::make_pair(areaID, area));
-	return areaID;
+	core->getData()->areas.insert(std::make_pair(areaId, area));
+	return areaId;
 }
 
 int CreateDynamicPolygon(std::vector<Eigen::Vector2f> points, float minz, float maxz, int maxpoints, int worldid, int interiorid, int playerid, int priority) {
@@ -168,19 +168,19 @@ int CreateDynamicPolygon(std::vector<Eigen::Vector2f> points, float minz, float 
 		return 0;
 	}
 
-	int areaID = Item::Area::identifier.get();
+	int areaId = Item::Area::identifier.get();
 	Item::SharedArea area(new Item::Area);
 	//area->amx = amx;
-	area->areaID = areaID;
+	area->areaId = areaId;
 	area->spectateMode = true;
 	area->type = STREAMER_AREA_TYPE_POLYGON;
 
-	Polygon2D pol = boost::get<Polygon2D>(area->position);
+	Polygon2d pol = boost::get<Polygon2d>(area->position);
 	boost::geometry::assign_points(pol, points);
 	boost::geometry::correct(pol);
 
 	area->height = Eigen::Vector2f(minz, maxz);
-	Box2D box = boost::geometry::return_envelope<Box2D>(boost::get<Polygon2D>(area->position));
+	Box2d box = boost::geometry::return_envelope<Box2d>(boost::get<Polygon2d>(area->position));
 	area->comparableSize = static_cast<float>(boost::geometry::comparable_distance(box.min_corner(), box.max_corner()));
 	area->size = static_cast<float>(boost::geometry::distance(box.min_corner(), box.max_corner()));
 	Utility::addToContainer(area->worlds, worldid);
@@ -188,8 +188,8 @@ int CreateDynamicPolygon(std::vector<Eigen::Vector2f> points, float minz, float 
 	Utility::addToContainer(area->players, playerid);
 	area->priority = priority;
 	core->getGrid()->addArea(area);
-	core->getData()->areas.insert(std::make_pair(areaID, area));
-	return areaID;
+	core->getData()->areas.insert(std::make_pair(areaId, area));
+	return areaId;
 }
 
 int DestroyDynamicArea(int id)
@@ -212,32 +212,32 @@ int IsValidDynamicArea(int id) {
 }
 
 // TODO: <sphinx> Check this out
-Polygon2D GetDynamicPolygonPoints(int id, std::vector<Eigen::Vector2f> points, int maxpoints) {
+Polygon2d GetDynamicPolygonPoints(int id, std::vector<Eigen::Vector2f> points, int maxpoints) {
 	boost::unordered_map<int, Item::SharedArea>::iterator a = core->getData()->areas.find(id);
 	if (a != core->getData()->areas.end()) {
-		return boost::get<Polygon2D>(a->second->position);
+		return boost::get<Polygon2d>(a->second->position);
 	}
-	return Polygon2D();
+	return Polygon2d();
 }
 
 int GetDynamicPolygonNumberPoints(int id) {
 	boost::unordered_map<int, Item::SharedArea>::iterator a = core->getData()->areas.find(id);
 	if (a != core->getData()->areas.end()) {
-		return boost::get<Polygon2D>(a->second->position).outer().size();
+		return boost::get<Polygon2d>(a->second->position).outer().size();
 	}
 	return 0;
 }
 
-int IsPlayerInDynamicArea(int playerID, int areaID, bool recheck) {
-	boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(playerID);
+int IsPlayerInDynamicArea(int playerId, int areaId, bool recheck) {
+	boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(playerId);
 	if (p != core->getData()->players.end()) {
 		if (!recheck) {
-			boost::unordered_set<int>::iterator i = p->second.internalAreas.find(areaID);
+			boost::unordered_set<int>::iterator i = p->second.internalAreas.find(areaId);
 			if (i != p->second.internalAreas.end()) {
 				return 1;
 			}
 		} else {
-			boost::unordered_map<int, Item::SharedArea>::iterator a = core->getData()->areas.find(areaID);
+			boost::unordered_map<int, Item::SharedArea>::iterator a = core->getData()->areas.find(areaId);
 			if (a != core->getData()->areas.end()) {
 				return Utility::isPointInArea(p->second.position, a->second);
 			}
@@ -343,7 +343,7 @@ std::vector<int> GetPlayerDynamicAreas(int id) {
 			boost::unordered_map<int, Item::SharedArea>::iterator a = core->getData()->areas.find(*i);
 			if (a != core->getData()->areas.end()) {
 
-				boost::variant<Polygon2D, Box2D, Box3D, Eigen::Vector2f, Eigen::Vector3f> position;
+				boost::variant<Polygon2d, Box2d, Box3d, Eigen::Vector2f, Eigen::Vector3f> position;
 				if (a->second->attach) {
 					position = a->second->position;
 				} else {
@@ -366,20 +366,20 @@ std::vector<int> GetPlayerDynamicAreas(int id) {
 				}
 				case STREAMER_AREA_TYPE_RECTANGLE:
 				{
-					Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Box2D>(position));
+					Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Box2d>(position));
 					distance = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector2f(p->second.position[0], p->second.position[1]), centroid));
 					break;
 				}
 				case STREAMER_AREA_TYPE_CUBOID:
 				{
-					Eigen::Vector3f centroid = boost::geometry::return_centroid<Eigen::Vector3f>(boost::get<Box3D>(position));
+					Eigen::Vector3f centroid = boost::geometry::return_centroid<Eigen::Vector3f>(boost::get<Box3d>(position));
 					distance = static_cast<float>(boost::geometry::comparable_distance(p->second.position, centroid));
 					break;
 				
 				}
 				case STREAMER_AREA_TYPE_POLYGON:
 				{
-					Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Polygon2D>(position));
+					Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Polygon2d>(position));
 					distance = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector2f(p->second.position[0], p->second.position[1]), centroid));
 					break;
 				}
@@ -412,7 +412,7 @@ std::vector<int> GetDynamicAreasForPoint(float x, float y, float z) {
 		for (boost::unordered_map<int, Item::SharedArea>::const_iterator a = (*p)->areas.begin(); a != (*p)->areas.end(); ++a) {
 			if (Utility::isPointInArea(Eigen::Vector3f(x, y, z), a->second)) {
 
-				boost::variant<Polygon2D, Box2D, Box3D, Eigen::Vector2f, Eigen::Vector3f> position;
+				boost::variant<Polygon2d, Box2d, Box3d, Eigen::Vector2f, Eigen::Vector3f> position;
 				if (a->second->attach) {
 					position = a->second->position;
 				} else {
@@ -435,20 +435,20 @@ std::vector<int> GetDynamicAreasForPoint(float x, float y, float z) {
 				}
 				case STREAMER_AREA_TYPE_RECTANGLE:
 				{
-					Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Box2D>(position));
+					Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Box2d>(position));
 					distance = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector2f(x, y), centroid));
 					break;
 				}
 				case STREAMER_AREA_TYPE_CUBOID:
 				{
-					Eigen::Vector3f centroid = boost::geometry::return_centroid<Eigen::Vector3f>(boost::get<Box3D>(position));
+					Eigen::Vector3f centroid = boost::geometry::return_centroid<Eigen::Vector3f>(boost::get<Box3d>(position));
 					distance = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector3f(x, y, z), centroid));
 					break;
 
 				}
 				case STREAMER_AREA_TYPE_POLYGON:
 				{
-					Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Polygon2D>(position));
+					Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Polygon2d>(position));
 					distance = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector2f(x, y), centroid));
 					break;
 				}
@@ -482,7 +482,7 @@ std::vector<int> GetDynamicAreasForLine(float x, float y, float z, float x2, flo
 	for (boost::unordered_map<int, Item::SharedArea>::const_iterator a = core->getData()->areas.begin(); a != core->getData()->areas.end(); ++a) {
 		if (Utility::doesLineSegmentIntersectArea(Eigen::Vector3f(x, y, z), Eigen::Vector3f(x2, y2, z2), a->second)) {
 
-			boost::variant<Polygon2D, Box2D, Box3D, Eigen::Vector2f, Eigen::Vector3f> position;
+			boost::variant<Polygon2d, Box2d, Box3d, Eigen::Vector2f, Eigen::Vector3f> position;
 			if (a->second->attach) {
 				position = a->second->position;
 			} else {
@@ -505,20 +505,20 @@ std::vector<int> GetDynamicAreasForLine(float x, float y, float z, float x2, flo
 			}
 			case STREAMER_AREA_TYPE_RECTANGLE:
 			{
-				Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Box2D>(position));
+				Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Box2d>(position));
 				distance = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector2f(x, y), centroid));
 				break;
 			}
 			case STREAMER_AREA_TYPE_CUBOID:
 			{
-				Eigen::Vector3f centroid = boost::geometry::return_centroid<Eigen::Vector3f>(boost::get<Box3D>(position));
+				Eigen::Vector3f centroid = boost::geometry::return_centroid<Eigen::Vector3f>(boost::get<Box3d>(position));
 				distance = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector3f(x, y, z), centroid));
 				break;
 
 			}
 			case STREAMER_AREA_TYPE_POLYGON:
 			{
-				Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Polygon2D>(position));
+				Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Polygon2d>(position));
 				distance = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector2f(x, y), centroid));
 				break;
 			}
@@ -551,17 +551,17 @@ int AttachDynamicAreaToObject(int id, int objectid, int type, int playerid, floa
 			return 0;
 		}*/
 
-		if ((objectid != INVALID_GENERIC_ID && type != STREAMER_OBJECT_TYPE_DYNAMIC) || (objectid != INVALID_STREAMER_ID && type == STREAMER_OBJECT_TYPE_DYNAMIC)) {
+		if ((objectid != INVALID_OBJECT_ID && type != STREAMER_OBJECT_TYPE_DYNAMIC) || (objectid != INVALID_STREAMER_ID && type == STREAMER_OBJECT_TYPE_DYNAMIC)) {
 			a->second->attach = boost::intrusive_ptr<Item::Area::Attach>(new Item::Area::Attach);
-			a->second->attach->player = INVALID_GENERIC_ID;
-			a->second->attach->vehicle = INVALID_GENERIC_ID;
+			a->second->attach->player = INVALID_OBJECT_ID;
+			a->second->attach->vehicle = INVALID_OBJECT_ID;
 			a->second->attach->position = a->second->position;
 			a->second->attach->object = boost::make_tuple(objectid, type, playerid);
 			a->second->attach->positionOffset = Eigen::Vector3f(x, y, z);
 			core->getStreamer()->attachedAreas.insert(a->second);
 		} else {
 			if (a->second->attach) {
-				if ((a->second->attach->object.get<0>() != INVALID_GENERIC_ID && a->second->attach->object.get<1>() != STREAMER_OBJECT_TYPE_DYNAMIC) || (a->second->attach->object.get<0>() != INVALID_STREAMER_ID && a->second->attach->object.get<1>() == STREAMER_OBJECT_TYPE_DYNAMIC)) {
+				if ((a->second->attach->object.get<0>() != INVALID_OBJECT_ID && a->second->attach->object.get<1>() != STREAMER_OBJECT_TYPE_DYNAMIC) || (a->second->attach->object.get<0>() != INVALID_STREAMER_ID && a->second->attach->object.get<1>() == STREAMER_OBJECT_TYPE_DYNAMIC)) {
 					a->second->attach.reset();
 					core->getStreamer()->attachedAreas.erase(a->second);
 					core->getGrid()->removeArea(a->second, true);
@@ -581,17 +581,17 @@ int AttachDynamicAreaToPlayer(int id, int playerrid, float x, float y, float z) 
 			return 0;
 		}*/
 
-		if (playerrid != INVALID_GENERIC_ID) {
+		if (playerrid != INVALID_OBJECT_ID) {
 			a->second->attach = boost::intrusive_ptr<Item::Area::Attach>(new Item::Area::Attach);
 			a->second->attach->object = boost::make_tuple(INVALID_STREAMER_ID, STREAMER_OBJECT_TYPE_DYNAMIC, INVALID_PLAYER_ID);
-			a->second->attach->vehicle = INVALID_GENERIC_ID;
+			a->second->attach->vehicle = INVALID_OBJECT_ID;
 			a->second->attach->position = a->second->position;
 			a->second->attach->player = playerrid;
 			a->second->attach->positionOffset = Eigen::Vector3f(x, y, z);
 			core->getStreamer()->attachedAreas.insert(a->second);
 		} else {
 			if (a->second->attach) {
-				if (a->second->attach->player != INVALID_GENERIC_ID) {
+				if (a->second->attach->player != INVALID_OBJECT_ID) {
 					a->second->attach.reset();
 					core->getStreamer()->attachedAreas.erase(a->second);
 					core->getGrid()->removeArea(a->second, true);
@@ -611,17 +611,17 @@ int AttachDynamicAreaToVehicle(int id, int vehicleid, float x, float y, float z)
 			return 0;
 		}*/
 
-		if (vehicleid != INVALID_GENERIC_ID) {
+		if (vehicleid != INVALID_OBJECT_ID) {
 			a->second->attach = boost::intrusive_ptr<Item::Area::Attach>(new Item::Area::Attach);
 			a->second->attach->object = boost::make_tuple(INVALID_STREAMER_ID, STREAMER_OBJECT_TYPE_DYNAMIC, INVALID_PLAYER_ID);
-			a->second->attach->player = INVALID_GENERIC_ID;
+			a->second->attach->player = INVALID_OBJECT_ID;
 			a->second->attach->position = a->second->position;
 			a->second->attach->vehicle = vehicleid;
 			a->second->attach->positionOffset = a->second->attach->positionOffset = Eigen::Vector3f(x, y, z);
 			core->getStreamer()->attachedAreas.insert(a->second);
 		} else {
 			if (a->second->attach) {
-				if (a->second->attach->vehicle != INVALID_GENERIC_ID) {
+				if (a->second->attach->vehicle != INVALID_OBJECT_ID) {
 					a->second->attach.reset();
 					core->getStreamer()->attachedAreas.erase(a->second);
 					core->getGrid()->removeArea(a->second, true);

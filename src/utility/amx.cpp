@@ -14,26 +14,13 @@
  * limitations under the License.
  */
 
-#include "amx.h"
+#include "../common.h"
 
+#include "amx.h"
 #include "../core.h"
 #include "../main.h"
 
-#include <boost/geometry.hpp>
-#include <boost/geometry/geometries/geometries.hpp>
-#include <boost/intrusive_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
-#include <boost/tuple/tuple.hpp>
-#include <boost/unordered_map.hpp>
-#include <boost/unordered_set.hpp>
-#include <boost/variant.hpp>
-
-#include <Eigen/Core>
-
-#include <set>
-#include <sstream>
-#include <string>
-#include <vector>
+#include <sampgdk/core.h>
 
 using namespace Utility;
 
@@ -59,7 +46,6 @@ int Utility::checkInterfaceAndRegisterNatives(AMX *amx, AMX_NATIVE_INFO *amxNati
 			foundNatives = true;
 			if (!amxNativeTable[i].address)
 			{
-				Utility::logError("Obsolete or invalid native \"%s\" found (script might recompiled with the correct include file).", name);
 				amxNativeTable[i].address = reinterpret_cast<cell>(hookedNative);
 				hookedNatives = true;
 			}
@@ -68,27 +54,33 @@ int Utility::checkInterfaceAndRegisterNatives(AMX *amx, AMX_NATIVE_INFO *amxNati
 	if (foundNatives)
 	{
 		cell amxAddr = 0;
-		int includeFileValue = 0;
+		int includeFileVersion = 0;
 		if (!amx_FindPubVar(amx, "Streamer_IncludeFileVersion", &amxAddr))
 		{
 			cell *amxPhysAddr = NULL;
 			if (!amx_GetAddr(amx, amxAddr, &amxPhysAddr))
 			{
-				includeFileValue = static_cast<int>(*amxPhysAddr);
+				includeFileVersion = static_cast<int>(*amxPhysAddr);
 			}
 		}
-		if (includeFileValue != INCLUDE_FILE_VERSION)
+		std::ostringstream includeFileVersionStream, pluginVersionStream;
+		if (includeFileVersion <= 0)
 		{
-			std::ostringstream includeFileVersion;
-			if (includeFileValue <= 0)
-			{
-				includeFileVersion << "unknown version";
-			}
-			else
-			{
-				includeFileVersion << std::hex << std::showbase << includeFileValue;
-			}
-			Utility::logError("Include file version (%s) does not match plugin version (%#x) (script might need to be recompiled with the correct include file).", includeFileVersion.str().c_str(), INCLUDE_FILE_VERSION);
+			includeFileVersionStream << "unknown version";
+		}
+		else
+		{
+			includeFileVersionStream << std::hex << std::showbase << includeFileVersion;
+			pluginVersionStream << std::hex << std::showbase << INCLUDE_FILE_VERSION;
+			std::istringstream(includeFileVersionStream.str().substr(0, pluginVersionStream.str().length())) >> std::hex >> includeFileVersion;
+		}
+		if (includeFileVersion < INCLUDE_FILE_VERSION)
+		{
+			Utility::logError("The include file version (%s) for this script is older than the plugin version (%#x). The script might need to be recompiled with the latest include file.", includeFileVersionStream.str().c_str(), INCLUDE_FILE_VERSION);
+		}
+		else if (includeFileVersion > INCLUDE_FILE_VERSION)
+		{
+			Utility::logError("The plugin version (%#x) is older than the include file version (%s) for this script. The plugin might need to be updated to the latest version.", INCLUDE_FILE_VERSION, includeFileVersionStream.str().c_str());
 		}
 	}
 	if (hookedNatives)
@@ -216,14 +208,14 @@ void Utility::executeFinalAreaCallbacks(int areaid)
 	}
 	for (std::vector<boost::tuple<int, int> >::const_iterator c = callbacks.begin(); c != callbacks.end(); ++c)
 	{
-		for (std::set<AMX*>::iterator a = core->getData()->interfaces.begin(); a != core->getData()->interfaces.end(); ++a)
+		for (std::set<AMX*>::iterator amx = core->getData()->interfaces.begin(); amx != core->getData()->interfaces.end(); ++amx)
 		{
 			int amxIndex = 0;
-			if (!amx_FindPublic(*a, "OnPlayerLeaveDynamicArea", &amxIndex))
+			if (!amx_FindPublic(*amx, "OnPlayerLeaveDynamicArea", &amxIndex))
 			{
-				amx_Push(*a, static_cast<cell>(c->get<0>()));
-				amx_Push(*a, static_cast<cell>(c->get<1>()));
-				amx_Exec(*a, NULL, amxIndex);
+				amx_Push(*amx, static_cast<cell>(c->get<0>()));
+				amx_Push(*amx, static_cast<cell>(c->get<1>()));
+				amx_Exec(*amx, NULL, amxIndex);
 			}
 		}
 	}
@@ -294,7 +286,7 @@ void Utility::logError(const char *format, ...)
 	}
 }
 
-void Utility::convertArrayToPolygon(AMX *amx, cell input, cell size, Polygon2D &polygon)
+void Utility::convertArrayToPolygon(AMX *amx, cell input, cell size, Polygon2d &polygon)
 {
 	cell *array = NULL;
 	std::vector<Eigen::Vector2f> points;
@@ -307,7 +299,7 @@ void Utility::convertArrayToPolygon(AMX *amx, cell input, cell size, Polygon2D &
 	boost::geometry::correct(polygon);
 }
 
-bool Utility::convertPolygonToArray(AMX *amx, cell output, cell size, Polygon2D &polygon)
+bool Utility::convertPolygonToArray(AMX *amx, cell output, cell size, Polygon2d &polygon)
 {
 	cell *array = NULL;
 	std::size_t i = 0;

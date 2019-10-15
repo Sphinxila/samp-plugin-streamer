@@ -12,9 +12,11 @@ STREAMER_BEGIN_NS
 
 namespace event {
 	bool OnPlayerConnect(int playerid) {
-		if (playerid >= 0 && playerid < MAX_PLAYERS) {
+		if (playerid >= 0 && playerid < MAX_PLAYERS)
+		{
 			boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(playerid);
-			if (p == core->getData()->players.end()) {
+			if (p == core->getData()->players.end())
+			{
 				Player player(playerid);
 				core->getData()->players.insert(std::make_pair(playerid, player));
 			}
@@ -29,7 +31,8 @@ namespace event {
 
 	bool OnPlayerSpawn(int playerid) {
 		boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(playerid);
-		if (p != core->getData()->players.end()) {
+		if (p != core->getData()->players.end())
+		{
 			p->second.requestingClass = false;
 		}
 		return true;
@@ -37,7 +40,8 @@ namespace event {
 
 	bool OnPlayerRequestClass(int playerid, int classid) {
 		boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(playerid);
-		if (p != core->getData()->players.end()) {
+		if (p != core->getData()->players.end())
+		{
 			p->second.requestingClass = true;
 		}
 		return true;
@@ -45,13 +49,17 @@ namespace event {
 
 	bool OnPlayerEnterCheckpoint(int playerid) {
 		boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(playerid);
-		if (p != core->getData()->players.end()) {
-			if (p->second.activeCheckpoint != p->second.visibleCheckpoint) {
+		if (p != core->getData()->players.end())
+		{
+			if (p->second.activeCheckpoint != p->second.visibleCheckpoint)
+			{
 				int checkpointid = p->second.visibleCheckpoint;
 				p->second.activeCheckpoint = checkpointid;
-				for (std::set<AMX*>::iterator a = core->getData()->interfaces.begin(); a != core->getData()->interfaces.end(); ++a) {
+				for (std::set<AMX*>::iterator a = core->getData()->interfaces.begin(); a != core->getData()->interfaces.end(); ++a)
+				{
 					int amxIndex = 0;
-					if (!amx_FindPublic(*a, "OnPlayerEnterDynamicCP", &amxIndex)) {
+					if (!amx_FindPublic(*a, "OnPlayerEnterDynamicCP", &amxIndex))
+					{
 						amx_Push(*a, static_cast<cell>(checkpointid));
 						amx_Push(*a, static_cast<cell>(playerid));
 						amx_Exec(*a, NULL, amxIndex);
@@ -64,13 +72,17 @@ namespace event {
 
 	bool OnPlayerLeaveCheckpoint(int playerid) {
 		boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(playerid);
-		if (p != core->getData()->players.end()) {
-			if (p->second.activeCheckpoint == p->second.visibleCheckpoint) {
+		if (p != core->getData()->players.end())
+		{
+			if (p->second.activeCheckpoint == p->second.visibleCheckpoint)
+			{
 				int checkpointid = p->second.activeCheckpoint;
 				p->second.activeCheckpoint = 0;
-				for (std::set<AMX*>::iterator a = core->getData()->interfaces.begin(); a != core->getData()->interfaces.end(); ++a) {
+				for (std::set<AMX*>::iterator a = core->getData()->interfaces.begin(); a != core->getData()->interfaces.end(); ++a)
+				{
 					int amxIndex = 0;
-					if (!amx_FindPublic(*a, "OnPlayerLeaveDynamicCP", &amxIndex)) {
+					if (!amx_FindPublic(*a, "OnPlayerLeaveDynamicCP", &amxIndex))
+					{
 						amx_Push(*a, static_cast<cell>(checkpointid));
 						amx_Push(*a, static_cast<cell>(playerid));
 						amx_Exec(*a, NULL, amxIndex);
@@ -83,13 +95,17 @@ namespace event {
 
 	bool OnPlayerEnterRaceCheckpoint(int playerid) {
 		boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(playerid);
-		if (p != core->getData()->players.end()) {
-			if (p->second.activeRaceCheckpoint != p->second.visibleRaceCheckpoint) {
+		if (p != core->getData()->players.end())
+		{
+			if (p->second.activeRaceCheckpoint != p->second.visibleRaceCheckpoint)
+			{
 				int checkpointid = p->second.visibleRaceCheckpoint;
 				p->second.activeRaceCheckpoint = checkpointid;
-				for (std::set<AMX*>::iterator a = core->getData()->interfaces.begin(); a != core->getData()->interfaces.end(); ++a) {
+				for (std::set<AMX*>::iterator a = core->getData()->interfaces.begin(); a != core->getData()->interfaces.end(); ++a)
+				{
 					int amxIndex = 0;
-					if (!amx_FindPublic(*a, "OnPlayerEnterDynamicRaceCP", &amxIndex)) {
+					if (!amx_FindPublic(*a, "OnPlayerEnterDynamicRaceCP", &amxIndex))
+					{
 						amx_Push(*a, static_cast<cell>(checkpointid));
 						amx_Push(*a, static_cast<cell>(playerid));
 						amx_Exec(*a, NULL, amxIndex);
@@ -102,13 +118,17 @@ namespace event {
 
 	bool OnPlayerLeaveRaceCheckpoint(int playerid) {
 		boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(playerid);
-		if (p != core->getData()->players.end()) {
-			if (p->second.activeRaceCheckpoint == p->second.visibleRaceCheckpoint) {
+		if (p != core->getData()->players.end())
+		{
+			if (p->second.activeRaceCheckpoint == p->second.visibleRaceCheckpoint)
+			{
 				int checkpointid = p->second.activeRaceCheckpoint;
 				p->second.activeRaceCheckpoint = 0;
-				for (std::set<AMX*>::iterator a = core->getData()->interfaces.begin(); a != core->getData()->interfaces.end(); ++a) {
+				for (std::set<AMX*>::iterator a = core->getData()->interfaces.begin(); a != core->getData()->interfaces.end(); ++a)
+				{
 					int amxIndex = 0;
-					if (!amx_FindPublic(*a, "OnPlayerLeaveDynamicRaceCP", &amxIndex)) {
+					if (!amx_FindPublic(*a, "OnPlayerLeaveDynamicRaceCP", &amxIndex))
+					{
 						amx_Push(*a, static_cast<cell>(checkpointid));
 						amx_Push(*a, static_cast<cell>(playerid));
 						amx_Exec(*a, NULL, amxIndex);
@@ -120,13 +140,17 @@ namespace event {
 	}
 
 	bool OnPlayerPickUpPickup(int playerid, int pickupid) {
-		for (boost::unordered_map<int, int>::iterator i = core->getData()->internalPickups.begin(); i != core->getData()->internalPickups.end(); ++i) {
-			if (i->second == pickupid) {
-				int pickupid = i->first;
-				for (std::set<AMX*>::iterator a = core->getData()->interfaces.begin(); a != core->getData()->interfaces.end(); ++a) {
+		for (boost::unordered_map<std::pair<int, int>, int>::iterator i = core->getData()->internalPickups.begin(); i != core->getData()->internalPickups.end(); ++i)
+		{
+			if (i->second == pickupid)
+			{
+				int dynPickupId = i->first.first;
+				for (std::set<AMX*>::iterator a = core->getData()->interfaces.begin(); a != core->getData()->interfaces.end(); ++a)
+				{
 					int amxIndex = 0;
-					if (!amx_FindPublic(*a, "OnPlayerPickUpDynamicPickup", &amxIndex)) {
-						amx_Push(*a, static_cast<cell>(pickupid));
+					if (!amx_FindPublic(*a, "OnPlayerPickUpDynamicPickup", &amxIndex))
+					{
+						amx_Push(*a, static_cast<cell>(dynPickupId));
 						amx_Push(*a, static_cast<cell>(playerid));
 						amx_Exec(*a, NULL, amxIndex);
 					}
@@ -138,24 +162,34 @@ namespace event {
 	}
 
 	bool OnPlayerEditObject(int playerid, bool playerobject, int objectid, int response, float fX, float fY, float fZ, float fRotX, float fRotY, float fRotZ) {
-		if (playerobject) {
+		if (playerobject)
+		{
 			boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(playerid);
-			if (p != core->getData()->players.end()) {
-				for (boost::unordered_map<int, int>::iterator i = p->second.internalObjects.begin(); i != p->second.internalObjects.end(); ++i) {
-					if (i->second == objectid) {
-						int objectid = i->first;
-						if (response == EDIT_RESPONSE_CANCEL || response == EDIT_RESPONSE_FINAL) {
-							boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(objectid);
-							if (o != core->getData()->objects.end()) {
-								if (o->second->comparableStreamDistance < STREAMER_STATIC_DISTANCE_CUTOFF && o->second->originalComparableStreamDistance > STREAMER_STATIC_DISTANCE_CUTOFF) {
+			if (p != core->getData()->players.end())
+			{
+				for (boost::unordered_map<int, int>::iterator i = p->second.internalObjects.begin(); i != p->second.internalObjects.end(); ++i)
+				{
+					if (i->second == objectid)
+					{
+						int dynObjectId = i->first;
+						if (response == EDIT_RESPONSE_CANCEL || response == EDIT_RESPONSE_FINAL)
+						{
+							boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(dynObjectId);
+							if (o != core->getData()->objects.end())
+							{
+								if (o->second->comparableStreamDistance < STREAMER_STATIC_DISTANCE_CUTOFF && o->second->originalComparableStreamDistance > STREAMER_STATIC_DISTANCE_CUTOFF)
+								{
 									o->second->comparableStreamDistance = o->second->originalComparableStreamDistance;
 									o->second->originalComparableStreamDistance = -1.0f;
 								}
 							}
 						}
-						for (std::set<AMX*>::iterator a = core->getData()->interfaces.begin(); a != core->getData()->interfaces.end(); ++a) {
+						for (std::set<AMX*>::iterator a = core->getData()->interfaces.begin(); a != core->getData()->interfaces.end(); ++a)
+						{
 							int amxIndex = 0;
-							if (!amx_FindPublic(*a, "OnPlayerEditDynamicObject", &amxIndex)) {
+							cell amxRetVal = 0;
+							if (!amx_FindPublic(*a, "OnPlayerEditDynamicObject", &amxIndex))
+							{
 								amx_Push(*a, amx_ftoc(fRotZ));
 								amx_Push(*a, amx_ftoc(fRotY));
 								amx_Push(*a, amx_ftoc(fRotX));
@@ -163,12 +197,16 @@ namespace event {
 								amx_Push(*a, amx_ftoc(fY));
 								amx_Push(*a, amx_ftoc(fX));
 								amx_Push(*a, static_cast<cell>(response));
-								amx_Push(*a, static_cast<cell>(objectid));
+								amx_Push(*a, static_cast<cell>(dynObjectId));
 								amx_Push(*a, static_cast<cell>(playerid));
-								amx_Exec(*a, NULL, amxIndex);
+								amx_Exec(*a, &amxRetVal, amxIndex);
+								if (amxRetVal)
+								{
+									break;
+								}
 							}
 						}
-						break;
+						return true;
 					}
 				}
 			}
@@ -177,25 +215,36 @@ namespace event {
 	}
 
 	bool OnPlayerSelectObject(int playerid, int type, int objectid, int modelid, float x, float y, float z) {
-		if (type == SELECT_OBJECT_PLAYER_OBJECT) {
+		if (type == SELECT_OBJECT_PLAYER_OBJECT)
+		{
 			boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(playerid);
-			if (p != core->getData()->players.end()) {
-				for (boost::unordered_map<int, int>::iterator i = p->second.internalObjects.begin(); i != p->second.internalObjects.end(); ++i) {
-					if (i->second == objectid) {
-						int objectid = i->first;
-						for (std::set<AMX*>::iterator a = core->getData()->interfaces.begin(); a != core->getData()->interfaces.end(); ++a) {
+			if (p != core->getData()->players.end())
+			{
+				for (boost::unordered_map<int, int>::iterator i = p->second.internalObjects.begin(); i != p->second.internalObjects.end(); ++i)
+				{
+					if (i->second == objectid)
+					{
+						int dynObjectId = i->first;
+						for (std::set<AMX*>::iterator a = core->getData()->interfaces.begin(); a != core->getData()->interfaces.end(); ++a)
+						{
 							int amxIndex = 0;
-							if (!amx_FindPublic(*a, "OnPlayerSelectDynamicObject", &amxIndex)) {
+							cell amxRetVal = 0;
+							if (!amx_FindPublic(*a, "OnPlayerSelectDynamicObject", &amxIndex))
+							{
 								amx_Push(*a, amx_ftoc(z));
 								amx_Push(*a, amx_ftoc(y));
 								amx_Push(*a, amx_ftoc(x));
 								amx_Push(*a, static_cast<cell>(modelid));
-								amx_Push(*a, static_cast<cell>(objectid));
+								amx_Push(*a, static_cast<cell>(dynObjectId));
 								amx_Push(*a, static_cast<cell>(playerid));
-								amx_Exec(*a, NULL, amxIndex);
+								amx_Exec(*a, &amxRetVal, amxIndex);
+								if (amxRetVal)
+								{
+									break;
+								}
 							}
 						}
-						break;
+						return true;
 					}
 				}
 			}
@@ -205,16 +254,22 @@ namespace event {
 
 	bool OnPlayerWeaponShot(int playerid, int weaponid, int hittype, int hitid, float x, float y, float z) {
 		bool retVal = true;
-		if (hittype == BULLET_HIT_TYPE_PLAYER_OBJECT) {
+		if (hittype == BULLET_HIT_TYPE_PLAYER_OBJECT)
+		{
 			boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(playerid);
-			if (p != core->getData()->players.end()) {
-				for (boost::unordered_map<int, int>::iterator i = p->second.internalObjects.begin(); i != p->second.internalObjects.end(); ++i) {
-					if (i->second == hitid) {
+			if (p != core->getData()->players.end())
+			{
+				for (boost::unordered_map<int, int>::iterator i = p->second.internalObjects.begin(); i != p->second.internalObjects.end(); ++i)
+				{
+					if (i->second == hitid)
+					{
 						int objectid = i->first;
-						for (std::set<AMX*>::iterator a = core->getData()->interfaces.begin(); a != core->getData()->interfaces.end(); ++a) {
+						for (std::set<AMX*>::iterator a = core->getData()->interfaces.begin(); a != core->getData()->interfaces.end(); ++a)
+						{
 							int amxIndex = 0;
 							cell amxRetVal = 0;
-							if (!amx_FindPublic(*a, "OnPlayerShootDynamicObject", &amxIndex)) {
+							if (!amx_FindPublic(*a, "OnPlayerShootDynamicObject", &amxIndex))
+							{
 								amx_Push(*a, amx_ftoc(z));
 								amx_Push(*a, amx_ftoc(y));
 								amx_Push(*a, amx_ftoc(x));
@@ -222,7 +277,8 @@ namespace event {
 								amx_Push(*a, static_cast<cell>(weaponid));
 								amx_Push(*a, static_cast<cell>(playerid));
 								amx_Exec(*a, &amxRetVal, amxIndex);
-								if (!amxRetVal) {
+								if (!amxRetVal)
+								{
 									retVal = false;
 								}
 							}
@@ -236,35 +292,48 @@ namespace event {
 	}
 
 	bool OnPlayerGiveDamageActor(int playerid, int actorid, float amount, int weaponid, int bodypart) {
-		for (boost::unordered_map<int, int>::iterator i = core->getData()->internalActors.begin(); i != core->getData()->internalActors.end(); ++i) {
-			if (i->second == actorid) {
-				int actorid = i->first;
-				for (std::set<AMX*>::iterator a = core->getData()->interfaces.begin(); a != core->getData()->interfaces.end(); ++a) {
+		for (boost::unordered_map<int, int>::iterator i = core->getData()->internalActors.begin(); i != core->getData()->internalActors.end(); ++i)
+		{
+			if (i->second == actorid)
+			{
+				int dynActorId = i->first;
+				for (std::set<AMX*>::iterator a = core->getData()->interfaces.begin(); a != core->getData()->interfaces.end(); ++a)
+				{
 					int amxIndex = 0;
-					if (!amx_FindPublic(*a, "OnPlayerGiveDamageDynamicActor", &amxIndex)) {
+					cell amxRetVal = 0;
+					if (!amx_FindPublic(*a, "OnPlayerGiveDamageDynamicActor", &amxIndex))
+					{
 						amx_Push(*a, static_cast<cell>(bodypart));
 						amx_Push(*a, static_cast<cell>(weaponid));
 						amx_Push(*a, amx_ftoc(amount));
-						amx_Push(*a, static_cast<cell>(actorid));
+						amx_Push(*a, static_cast<cell>(dynActorId));
 						amx_Push(*a, static_cast<cell>(playerid));
-						amx_Exec(*a, NULL, amxIndex);
+						amx_Exec(*a, &amxRetVal, amxIndex);
+						if (amxRetVal)
+						{
+							break;
+						}
 					}
 				}
-				break;
+				return true;
 			}
 		}
-		return true;
+		return false;
 	}
 
 	bool OnActorStreamIn(int actorid, int forplayerid) {
-		for (boost::unordered_map<int, int>::iterator i = core->getData()->internalActors.begin(); i != core->getData()->internalActors.end(); ++i) {
-			if (i->second == actorid) {
-				int actorid = i->first;
-				for (std::set<AMX*>::iterator a = core->getData()->interfaces.begin(); a != core->getData()->interfaces.end(); ++a) {
+		for (boost::unordered_map<int, int>::iterator i = core->getData()->internalActors.begin(); i != core->getData()->internalActors.end(); ++i)
+		{
+			if (i->second == actorid)
+			{
+				int dynActorId = i->first;
+				for (std::set<AMX*>::iterator a = core->getData()->interfaces.begin(); a != core->getData()->interfaces.end(); ++a)
+				{
 					int amxIndex = 0;
-					if (!amx_FindPublic(*a, "OnDynamicActorStreamIn", &amxIndex)) {
+					if (!amx_FindPublic(*a, "OnDynamicActorStreamIn", &amxIndex))
+					{
 						amx_Push(*a, static_cast<cell>(forplayerid));
-						amx_Push(*a, static_cast<cell>(actorid));
+						amx_Push(*a, static_cast<cell>(dynActorId));
 						amx_Exec(*a, NULL, amxIndex);
 					}
 				}
@@ -275,14 +344,18 @@ namespace event {
 	}
 
 	bool OnActorStreamOut(int actorid, int forplayerid) {
-		for (boost::unordered_map<int, int>::iterator i = core->getData()->internalActors.begin(); i != core->getData()->internalActors.end(); ++i) {
-			if (i->second == actorid) {
-				int actorid = i->first;
-				for (std::set<AMX*>::iterator a = core->getData()->interfaces.begin(); a != core->getData()->interfaces.end(); ++a) {
+		for (boost::unordered_map<int, int>::iterator i = core->getData()->internalActors.begin(); i != core->getData()->internalActors.end(); ++i)
+		{
+			if (i->second == actorid)
+			{
+				int dynActorId = i->first;
+				for (std::set<AMX*>::iterator a = core->getData()->interfaces.begin(); a != core->getData()->interfaces.end(); ++a)
+				{
 					int amxIndex = 0;
-					if (!amx_FindPublic(*a, "OnDynamicActorStreamOut", &amxIndex)) {
+					if (!amx_FindPublic(*a, "OnDynamicActorStreamOut", &amxIndex))
+					{
 						amx_Push(*a, static_cast<cell>(forplayerid));
-						amx_Push(*a, static_cast<cell>(actorid));
+						amx_Push(*a, static_cast<cell>(dynActorId));
 						amx_Exec(*a, NULL, amxIndex);
 					}
 				}

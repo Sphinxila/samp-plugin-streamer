@@ -36,15 +36,15 @@ int CreateDynamicPickup(int id, int type, float x, float y, float z, int worldid
 		return 0;
 	}
 
-	int pickupID = Item::Pickup::identifier.get();
+	int pickupId = Item::Pickup::identifier.get();
 	Item::SharedPickup pickup(new Item::Pickup);
 	//pickup->amx = amx;
-	pickup->pickupID = pickupID;
+	pickup->pickupId = pickupId;
 	pickup->inverseAreaChecking = false;
 	pickup->originalComparableStreamDistance = -1.0f;
 	pickup->positionOffset = Eigen::Vector3f::Zero();
 	pickup->streamCallbacks = false;
-	pickup->modelID = id;
+	pickup->modelId = id;
 	pickup->type = type;
 	pickup->position = Eigen::Vector3f(x, y, z);
 
@@ -57,8 +57,8 @@ int CreateDynamicPickup(int id, int type, float x, float y, float z, int worldid
 	Utility::addToContainer(pickup->areas, areaid);
 	pickup->priority = priority;
 	core->getGrid()->addPickup(pickup);
-	core->getData()->pickups.insert(std::make_pair(pickupID, pickup));
-	return static_cast<cell>(pickupID);
+	core->getData()->pickups.insert(std::make_pair(pickupId, pickup));
+	return static_cast<cell>(pickupId);
 }
 
 int DestroyDynamicPickup(int id) {

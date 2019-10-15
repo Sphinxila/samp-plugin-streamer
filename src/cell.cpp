@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-#include "cell.h"
-
 #include "common.h"
 
+#include "cell.h"
+
 Cell::Cell() : references(0) {}
-Cell::Cell(CellID cellID) : cellID(cellID), references(0) {}
+Cell::Cell(CellId passedCellId) : cellId(passedCellId), references(0) {}

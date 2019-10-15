@@ -18,17 +18,7 @@
 #define PLAYER_H
 
 #include "cell.h"
-#include "common.h"
 #include "identifier.h"
-
-#include <boost/intrusive_ptr.hpp>
-#include <boost/unordered_map.hpp>
-#include <boost/unordered_set.hpp>
-
-#include <Eigen/Core>
-
-#include <bitset>
-#include <map>
 
 struct Player
 {
@@ -48,11 +38,11 @@ struct Player
 	bool delayedUpdateFreeze;
 	boost::chrono::steady_clock::time_point delayedUpdateTime;
 	int delayedUpdateType;
-	int interiorID;
+	int interiorId;
 	std::size_t maxVisibleMapIcons;
 	std::size_t maxVisibleObjects;
 	std::size_t maxVisibleTextLabels;
-	int playerID;
+	int playerId;
 	Eigen::Vector3f position;
 	float radiusMultipliers[STREAMER_MAX_TYPES];
 	int references;
@@ -64,26 +54,27 @@ struct Player
 	SharedCell visibleCell;
 	int visibleCheckpoint;
 	int visibleRaceCheckpoint;
-	int worldID;
+	int worldId;
 
 	std::bitset<STREAMER_MAX_TYPES> enabledItems;
 	std::bitset<STREAMER_MAX_TYPES> processingChunks;
 
-	std::multimap<std::pair<int, float>, Item::SharedMapIcon, Item::Compare> discoveredMapIcons;
-	std::multimap<std::pair<int, float>, Item::SharedMapIcon, Item::Compare> existingMapIcons;
-	std::multimap<std::pair<int, float>, Item::SharedObject, Item::Compare> discoveredObjects;
-	std::multimap<std::pair<int, float>, Item::SharedObject, Item::Compare> existingObjects;
-	std::multimap<std::pair<int, float>, Item::SharedTextLabel, Item::Compare> discoveredTextLabels;
-	std::multimap<std::pair<int, float>, Item::SharedTextLabel, Item::Compare> existingTextLabels;
+	Item::Bimap<Item::SharedMapIcon>::Type discoveredMapIcons;
+	Item::Bimap<Item::SharedObject>::Type discoveredObjects;
+	Item::Bimap<Item::SharedTextLabel>::Type discoveredTextLabels;
+
+	Item::Bimap<Item::SharedMapIcon>::Type existingMapIcons;
+	Item::Bimap<Item::SharedObject>::Type existingObjects;
+	Item::Bimap<Item::SharedTextLabel>::Type existingTextLabels;
 
 	boost::unordered_set<int> internalAreas;
 	boost::unordered_map<int, int> internalMapIcons;
 	boost::unordered_map<int, int> internalObjects;
 	boost::unordered_map<int, int> internalTextLabels;
 
-	std::vector<int> removedMapIcons;
-	std::vector<int> removedObjects;
-	std::vector<int> removedTextLabels;
+	boost::unordered_set<int> removedMapIcons;
+	boost::unordered_set<int> removedObjects;
+	boost::unordered_set<int> removedTextLabels;
 
 	Identifier mapIconIdentifier;
 

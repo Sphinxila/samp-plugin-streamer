@@ -1,12 +1,8 @@
 #################################################
-# Boost lib settings
+# Boost lib
 #################################################
 
-if ("${BOOST_LIB_PATH}" STREQUAL "")
-	# Set paths
-	SET(BOOST_LIB_PATH ${SAMP_STREAMER_EXTERNAL}/boost)
-endif()
-add_subdirectory(${BOOST_LIB_PATH})
+add_subdirectory(${SAMP_STREAMER_EXTERNAL}/boost)
 
 #################################################
 # Eigen lib
@@ -16,6 +12,14 @@ if ("${EIGEN_LIB_PATH}" STREQUAL "")
 	# Set paths
 	SET(EIGEN_LIB_PATH ${SAMP_STREAMER_EXTERNAL}/eigen)
 endif()
+
+add_library(eigen INTERFACE)
+target_include_directories(
+    eigen
+    INTERFACE
+    "$<BUILD_INTERFACE:${EIGEN_LIB_PATH}/eigen>"
+    "$<INSTALL_INTERFACE:include>"
+)
 
 ##################################################
 # SAMPGDK Settings

@@ -17,21 +17,18 @@
 #ifndef CELL_H
 #define CELL_H
 
-#include "common.h"
 #include "item.h"
-
-#include <boost/intrusive_ptr.hpp>
-#include <boost/unordered_map.hpp>
 
 class Cell
 {
 public:
 	Cell();
-	Cell(CellID cellID);
+	Cell(CellId cellId);
 
-	CellID cellID;
+	CellId cellId;
 	int references;
 
+	boost::unordered_map<int, Item::SharedActor> actors;
 	boost::unordered_map<int, Item::SharedArea> areas;
 	boost::unordered_map<int, Item::SharedCheckpoint> checkpoints;
 	boost::unordered_map<int, Item::SharedMapIcon> mapIcons;
@@ -39,7 +36,6 @@ public:
 	boost::unordered_map<int, Item::SharedPickup> pickups;
 	boost::unordered_map<int, Item::SharedRaceCheckpoint> raceCheckpoints;
 	boost::unordered_map<int, Item::SharedTextLabel> textLabels;
-	boost::unordered_map<int, Item::SharedActor> actors;
 };
 
 #endif

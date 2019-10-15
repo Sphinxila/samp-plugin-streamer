@@ -27,6 +27,7 @@ namespace Manipulation
 	int isInArrayData(AMX *amx, cell *params);
 	int appendArrayData(AMX *amx, cell *params);
 	int removeArrayData(AMX *amx, cell *params);
+	int getArrayDataLength(AMX *amx, cell *params);
 
 	template <typename T>
 	int getArrayDataForItem(T &container, AMX *amx, int id, int data, cell output, cell size, int &error)
@@ -36,23 +37,23 @@ namespace Manipulation
 		{
 			switch (data)
 			{
-				case AreaID:
+				case AreaId:
 				{
 					return Utility::convertContainerToArray(amx, output, size, i->second->areas) != 0;
 				}
-				case ExtraID:
+				case ExtraId:
 				{
 					return Utility::convertContainerToArray(amx, output, size, i->second->extras) != 0;
 				}
-				case InteriorID:
+				case InteriorId:
 				{
 					return Utility::convertContainerToArray(amx, output, size, i->second->interiors) != 0;
 				}
-				case PlayerID:
+				case PlayerId:
 				{
 					return Utility::convertContainerToArray(amx, output, size, i->second->players) != 0;
 				}
-				case WorldID:
+				case WorldId:
 				{
 					return Utility::convertContainerToArray(amx, output, size, i->second->worlds) != 0;
 				}
@@ -65,7 +66,7 @@ namespace Manipulation
 		}
 		else
 		{
-			error = InvalidID;
+			error = InvalidId;
 		}
 		return 0;
 	}
@@ -78,23 +79,23 @@ namespace Manipulation
 		{
 			switch (data)
 			{
-				case AreaID:
+				case AreaId:
 				{
 					return Utility::convertArrayToContainer(amx, input, size, i->second->areas) != 0;
 				}
-				case ExtraID:
+				case ExtraId:
 				{
 					return Utility::convertArrayToContainer(amx, input, size, i->second->extras) != 0;
 				}
-				case InteriorID:
+				case InteriorId:
 				{
 					return Utility::convertArrayToContainer(amx, input, size, i->second->interiors) != 0;
 				}
-				case PlayerID:
+				case PlayerId:
 				{
 					return Utility::convertArrayToContainer(amx, input, size, i->second->players) != 0;
 				}
-				case WorldID:
+				case WorldId:
 				{
 					return Utility::convertArrayToContainer(amx, input, size, i->second->worlds) != 0;
 				}
@@ -105,7 +106,7 @@ namespace Manipulation
 				}
 			}
 		}
-		error = InvalidID;
+		error = InvalidId;
 		return 0;
 	}
 
@@ -117,23 +118,23 @@ namespace Manipulation
 		{
 			switch (data)
 			{
-				case AreaID:
+				case AreaId:
 				{
 					return Utility::isInContainer(i->second->areas, value) != 0;
 				}
-				case ExtraID:
+				case ExtraId:
 				{
 					return Utility::isInContainer(i->second->extras, value) != 0;
 				}
-				case InteriorID:
+				case InteriorId:
 				{
 					return Utility::isInContainer(i->second->interiors, value) != 0;
 				}
-				case PlayerID:
+				case PlayerId:
 				{
 					return Utility::isInContainer(i->second->players, value) != 0;
 				}
-				case WorldID:
+				case WorldId:
 				{
 					return Utility::isInContainer(i->second->worlds, value) != 0;
 				}
@@ -146,7 +147,7 @@ namespace Manipulation
 		}
 		else
 		{
-			error = InvalidID;
+			error = InvalidId;
 		}
 		return 0;
 	}
@@ -159,23 +160,23 @@ namespace Manipulation
 		{
 			switch (data)
 			{
-				case AreaID:
+				case AreaId:
 				{
 					return Utility::addToContainer(i->second->areas, value) != 0;
 				}
-				case ExtraID:
+				case ExtraId:
 				{
 					return Utility::addToContainer(i->second->extras, value) != 0;
 				}
-				case InteriorID:
+				case InteriorId:
 				{
 					return Utility::addToContainer(i->second->interiors, value) != 0;
 				}
-				case PlayerID:
+				case PlayerId:
 				{
 					return Utility::addToContainer(i->second->players, value) != 0;
 				}
-				case WorldID:
+				case WorldId:
 				{
 					return Utility::addToContainer(i->second->worlds, value) != 0;
 				}
@@ -188,7 +189,7 @@ namespace Manipulation
 		}
 		else
 		{
-			error = InvalidID;
+			error = InvalidId;
 		}
 		return 0;
 	}
@@ -201,23 +202,23 @@ namespace Manipulation
 		{
 			switch (data)
 			{
-				case AreaID:
+				case AreaId:
 				{
 					return Utility::removeFromContainer(i->second->areas, value) != 0;
 				}
-				case ExtraID:
+				case ExtraId:
 				{
 					return Utility::removeFromContainer(i->second->extras, value) != 0;
 				}
-				case InteriorID:
+				case InteriorId:
 				{
 					return Utility::removeFromContainer(i->second->interiors, value) != 0;
 				}
-				case PlayerID:
+				case PlayerId:
 				{
 					return Utility::removeFromContainer(i->second->players, value) != 0;
 				}
-				case WorldID:
+				case WorldId:
 				{
 					return Utility::removeFromContainer(i->second->worlds, value) != 0;
 				}
@@ -230,7 +231,52 @@ namespace Manipulation
 		}
 		else
 		{
-			error = InvalidID;
+			error = InvalidId;
+		}
+		return 0;
+	}
+
+	template <typename T>
+	int getArrayDataLengthForItem(T &container, int id, int data, int &error)
+	{
+		typename T::iterator i = container.find(id);
+		if (i != container.end())
+		{
+			switch (data)
+			{
+				case AreaId:
+				{
+					int size = static_cast<int>(i->second->areas.size());
+					return size ? size : -1;
+				}
+				case ExtraId:
+				{
+					return static_cast<int>(i->second->extras.size());
+				}
+				case InteriorId:
+				{
+					int size = static_cast<int>(i->second->interiors.size());
+					return size ? size : -1;
+				}
+				case PlayerId:
+				{
+					return static_cast<int>(i->second->players.count());
+				}
+				case WorldId:
+				{
+					int size = static_cast<int>(i->second->worlds.size());
+					return size ? size : -1;
+				}
+				default:
+				{
+					error = InvalidData;
+					break;
+				}
+			}
+		}
+		else
+		{
+			error = InvalidId;
 		}
 		return 0;
 	}

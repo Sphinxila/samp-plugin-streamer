@@ -24,6 +24,8 @@
 
 #include <boost/scoped_ptr.hpp>
 
+#include <sampgdk/core.h>
+
 #include <set>
 
 extern void *pAMXFunctions;

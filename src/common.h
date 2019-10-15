@@ -17,8 +17,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#define INVALID_ALTERNATE_ID (-1)
-#define INVALID_GENERIC_ID (0xFFFF)
+#define INVALID_PICKUP_ID (-1)
 #define INVALID_STREAMER_ID (0)
 
 #define STREAMER_MAX_TYPES (8)
@@ -32,7 +31,7 @@
 #define STREAMER_TYPE_AREA (6)
 #define STREAMER_TYPE_ACTOR (7)
 
-#define STREAMER_MAX_AREA_TYPES (5)
+#define STREAMER_MAX_AREA_TYPES (6)
 
 #define STREAMER_AREA_TYPE_CIRCLE (0)
 #define STREAMER_AREA_TYPE_CYLINDER (1)
@@ -64,38 +63,54 @@ inline void intrusive_ptr_release(T *t)
 	}
 }
 
+#include <boost/bimap.hpp>
+#include <boost/bimap/multiset_of.hpp>
+#include <boost/bimap/unordered_set_of.hpp>
+#include <boost/chrono.hpp>
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/geometries.hpp>
 #include <boost/intrusive_ptr.hpp>
+#include <boost/scoped_ptr.hpp>
 #include <boost/tuple/tuple.hpp>
+#include <boost/unordered_map.hpp>
+#include <boost/unordered_set.hpp>
+#include <boost/variant.hpp>
 
 #include <Eigen/Core>
-#include "sampgdk.h"
+
+#include <algorithm>
+#include <bitset>
+#include <cmath>
+#include <functional>
+#include <limits>
+#include <map>
+#include <queue>
+#include <set>
+#include <sstream>
+#include <string>
+#include <vector>
 #include <utility>
 
-#ifdef MAX_PLAYERS
-	#undef MAX_PLAYERS
-	#define MAX_PLAYERS (1000)
-#endif
+#include <sampgdk/sdk.h>
 
 class Cell;
 class Data;
 class Events;
-class Identifier;
 class Grid;
+class Identifier;
 struct Player;
 class Streamer;
 
-typedef std::pair<int, int> CellID;
+typedef std::pair<int, int> CellId;
 typedef boost::intrusive_ptr<Cell> SharedCell;
 
-typedef boost::geometry::model::polygon<Eigen::Vector2f> Polygon2D;
-
-typedef boost::geometry::model::box<Eigen::Vector2f> Box2D;
-typedef boost::geometry::model::box<Eigen::Vector3f> Box3D;
+typedef boost::geometry::model::box<Eigen::Vector2f> Box2d;
+typedef boost::geometry::model::box<Eigen::Vector3f> Box3d;
+typedef boost::geometry::model::polygon<Eigen::Vector2f> Polygon2d;
 
 namespace Item
 {
+	struct Actor;
 	struct Area;
 	struct Checkpoint;
 	struct MapIcon;
@@ -103,8 +118,8 @@ namespace Item
 	struct Pickup;
 	struct RaceCheckpoint;
 	struct TextLabel;
-	struct Actor;
 
+	typedef boost::intrusive_ptr<Actor> SharedActor;
 	typedef boost::intrusive_ptr<Area> SharedArea;
 	typedef boost::intrusive_ptr<Checkpoint> SharedCheckpoint;
 	typedef boost::intrusive_ptr<MapIcon> SharedMapIcon;
@@ -112,11 +127,22 @@ namespace Item
 	typedef boost::intrusive_ptr<Pickup> SharedPickup;
 	typedef boost::intrusive_ptr<RaceCheckpoint> SharedRaceCheckpoint;
 	typedef boost::intrusive_ptr<TextLabel> SharedTextLabel;
-	typedef boost::intrusive_ptr<Actor> SharedActor;
 
-	struct Compare
+	template<typename T>
+	struct Hash
 	{
-		bool operator()(std::pair<int, float> const &a, std::pair<int, float> const &b)
+		std::size_t operator()(boost::tuple<int, T> const &t) const
+		{
+			std::size_t seed = 0;
+			boost::hash_combine(seed, boost::get<0>(t));
+			boost::hash_combine(seed, boost::get<1>(t));
+			return seed;
+		}
+	};
+
+	struct PairCompare
+	{
+		bool operator()(std::pair<int, float> const &a, std::pair<int, float> const &b) const
 		{
 			if (a.first != b.first)
 			{
@@ -124,6 +150,34 @@ namespace Item
 			}
 			return a.second < b.second;
 		}
+	};
+
+	template<typename T>
+	struct LeftTupleCompare
+	{
+		bool operator()(boost::tuple<int, float> const &a, boost::tuple<int, float> const &b) const
+		{
+			if (boost::get<0>(a) != boost::get<0>(b))
+			{
+				return boost::get<0>(a) > boost::get<0>(b);
+			}
+			return boost::get<1>(a) < boost::get<1>(b);
+		}
+	};
+
+	template<typename T>
+	struct RightTupleCompare
+	{
+		bool operator()(boost::tuple<int, T> const &a, boost::tuple<int, T> const &b) const
+		{
+			return boost::get<0>(a) == boost::get<0>(b) && boost::get<1>(a) == boost::get<1>(b);
+		}
+	};
+
+	template<typename T>
+	struct Bimap
+	{
+		typedef boost::bimap<boost::bimaps::multiset_of<boost::tuple<int, float>, LeftTupleCompare<T> >, boost::bimaps::unordered_set_of<boost::tuple<int, T>, Hash<T>, RightTupleCompare<T> > > Type;
 	};
 }
 

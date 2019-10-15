@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-#include "main.h"
+#include "common.h"
 
+#include "main.h"
 #include "core.h"
 #include "natives.h"
 #include "utility.h"
 
-#include <boost/scoped_ptr.hpp>
+#include <sampgdk/core.h>
 
-#include <set>
 
 extern void *pAMXFunctions;
 
@@ -54,6 +54,8 @@ AMX_NATIVE_INFO natives[] =
 	{ "Streamer_SetTickRate", Natives::Streamer_SetTickRate },
 	{ "Streamer_GetPlayerTickRate", Natives::Streamer_GetPlayerTickRate },
 	{ "Streamer_SetPlayerTickRate", Natives::Streamer_SetPlayerTickRate },
+	{ "Streamer_ToggleChunkStream", Natives::Streamer_ToggleChunkStream },
+	{ "Streamer_IsToggleChunkStream", Natives::Streamer_IsToggleChunkStream },
 	{ "Streamer_GetChunkTickRate", Natives::Streamer_GetChunkTickRate },
 	{ "Streamer_SetChunkTickRate", Natives::Streamer_SetChunkTickRate },
 	{ "Streamer_GetChunkSize", Natives::Streamer_GetChunkSize },
@@ -78,6 +80,7 @@ AMX_NATIVE_INFO natives[] =
 	{ "Streamer_IsToggleItemCallbacks", Natives::Streamer_IsToggleItemCallbacks },
 	{ "Streamer_ToggleErrorCallback", Natives::Streamer_ToggleErrorCallback },
 	{ "Streamer_IsToggleErrorCallback", Natives::Streamer_IsToggleErrorCallback },
+	{ "Streamer_AmxUnloadDestroyItems", Natives::Streamer_AmxUnloadDestroyItems },
 	// Updates
 	{ "Streamer_ProcessActiveItems", Natives::Streamer_ProcessActiveItems },
 	{ "Streamer_ToggleIdleUpdate", Natives::Streamer_ToggleIdleUpdate },
@@ -99,6 +102,7 @@ AMX_NATIVE_INFO natives[] =
 	{ "Streamer_IsInArrayData", Natives::Streamer_IsInArrayData },
 	{ "Streamer_AppendArrayData", Natives::Streamer_AppendArrayData },
 	{ "Streamer_RemoveArrayData", Natives::Streamer_RemoveArrayData },
+	{ "Streamer_GetArrayDataLength", Natives::Streamer_GetArrayDataLength },
 	{ "Streamer_GetUpperBound", Natives::Streamer_GetUpperBound },
 	// Miscellaneous
 	{ "Streamer_GetDistanceToItem", Natives::Streamer_GetDistanceToItem },
@@ -114,6 +118,8 @@ AMX_NATIVE_INFO natives[] =
 	{ "Streamer_CountItems", Natives::Streamer_CountItems },
 	{ "Streamer_GetNearbyItems", Natives::Streamer_GetNearbyItems },
 	{ "Streamer_GetAllVisibleItems", Natives::Streamer_GetAllVisibleItems },
+	{ "Streamer_GetItemPos", Natives::Streamer_GetItemPos },
+	{ "Streamer_SetItemPos", Natives::Streamer_SetItemPos },
 	{ "Streamer_GetItemOffset", Natives::Streamer_GetItemOffset },
 	{ "Streamer_SetItemOffset", Natives::Streamer_SetItemOffset },
 	// Objects
@@ -177,6 +183,7 @@ AMX_NATIVE_INFO natives[] =
 	{ "CreateDynamicPolygon", Natives::CreateDynamicPolygon },
 	{ "DestroyDynamicArea", Natives::DestroyDynamicArea },
 	{ "IsValidDynamicArea", Natives::IsValidDynamicArea },
+	{ "GetDynamicAreaType", Natives::GetDynamicAreaType },
 	{ "GetDynamicPolygonPoints", Natives::GetDynamicPolygonPoints },
 	{ "GetDynamicPolygonNumberPoints", Natives::GetDynamicPolygonNumberPoints },
 	{ "IsPlayerInDynamicArea", Natives::IsPlayerInDynamicArea },
@@ -205,6 +212,7 @@ AMX_NATIVE_INFO natives[] =
 	{ "IsDynamicActorStreamedIn", Natives::IsDynamicActorStreamedIn },
 	{ "GetDynamicActorVirtualWorld", Natives::GetDynamicActorVirtualWorld },
 	{ "SetDynamicActorVirtualWorld", Natives::SetDynamicActorVirtualWorld },
+	{ "GetDynamicActorAnimation", Natives::GetDynamicActorAnimation },
 	{ "ApplyDynamicActorAnimation", Natives::ApplyDynamicActorAnimation },
 	{ "ClearDynamicActorAnimations", Natives::ClearDynamicActorAnimations },
 	{ "GetDynamicActorFacingAngle", Natives::GetDynamicActorFacingAngle },
@@ -265,13 +273,18 @@ AMX_NATIVE_INFO natives[] =
 PLUGIN_EXPORT int PLUGIN_CALL AmxLoad(AMX *amx)
 {
 	core->getData()->interfaces.insert(amx);
+	core->getData()->amxUnloadDestroyItems.insert(amx);
 	return Utility::checkInterfaceAndRegisterNatives(amx, natives);
 }
 
 PLUGIN_EXPORT int PLUGIN_CALL AmxUnload(AMX *amx)
 {
 	core->getData()->interfaces.erase(amx);
-	Utility::destroyAllItemsInInterface(amx);
+	if (core->getData()->amxUnloadDestroyItems.find(amx) != core->getData()->amxUnloadDestroyItems.end())
+	{
+		Utility::destroyAllItemsInInterface(amx);
+		core->getData()->amxUnloadDestroyItems.erase(amx);
+	}
 	return AMX_ERR_NONE;
 }
 

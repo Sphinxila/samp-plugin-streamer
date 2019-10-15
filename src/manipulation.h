@@ -17,13 +17,11 @@
 #ifndef MANIPULATION_H
 #define MANIPULATION_H
 
-#include "common.h"
-
 namespace Manipulation
 {
 	enum
 	{
-		AreaID,
+		AreaId,
 		AttachedObject,
 		AttachedPlayer,
 		AttachedVehicle,
@@ -38,9 +36,9 @@ namespace Manipulation
 		AttachZ,
 		Color,
 		DrawDistance,
-		ExtraID,
+		ExtraId,
 		Health,
-		InteriorID,
+		InteriorId,
 		Invulnerable,
 		MaxX,
 		MaxY,
@@ -48,7 +46,7 @@ namespace Manipulation
 		MinX,
 		MinY,
 		MinZ,
-		ModelID,
+		ModelId,
 		MoveRX,
 		MoveRY,
 		MoveRZ,
@@ -59,7 +57,7 @@ namespace Manipulation
 		NextX,
 		NextY,
 		NextZ,
-		PlayerID,
+		PlayerId,
 		Priority,
 		Rotation,
 		RX,
@@ -71,7 +69,7 @@ namespace Manipulation
 		SyncRotation,
 		TestLOS,
 		Type,
-		WorldID,
+		WorldId,
 		X,
 		Y,
 		Z
@@ -80,7 +78,7 @@ namespace Manipulation
 	enum
 	{
 		InvalidData,
-		InvalidID,
+		InvalidId,
 		InvalidType
 	};
 }

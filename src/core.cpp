@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-#include "core.h"
+#include "common.h"
 
-#include <boost/scoped_ptr.hpp>
+#include "core.h"
 
 boost::scoped_ptr<Core> core;
 
@@ -24,5 +24,6 @@ Core::Core()
 {
 	data.reset(new Data);
 	grid.reset(new Grid);
+	chunkStreamer.reset(new ChunkStreamer);
 	streamer.reset(new Streamer);
 }

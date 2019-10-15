@@ -14,33 +14,23 @@
  * limitations under the License.
  */
 
-#include "../natives.h"
+#include "../common.h"
 
+#include "../natives.h"
 #include "../core.h"
 #include "../utility.h"
 
-#include <boost/geometry.hpp>
-#include <boost/geometry/geometries/geometries.hpp>
-#include <boost/intrusive_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
-#include <boost/unordered_map.hpp>
-#include <boost/unordered_set.hpp>
-
-#include <Eigen/Core>
-
-#include <string>
-
 cell AMX_NATIVE_CALL Natives::CreateDynamic3DTextLabel(AMX *amx, cell *params)
 {
-	CHECK_PARAMS(15, "CreateDynamic3DTextLabel");
+	CHECK_PARAMS(15);
 	if (core->getData()->getGlobalMaxItems(STREAMER_TYPE_3D_TEXT_LABEL) == core->getData()->textLabels.size())
 	{
-		return 0;
+		return INVALID_STREAMER_ID;
 	}
-	int textLabelID = Item::TextLabel::identifier.get();
+	int textLabelId = Item::TextLabel::identifier.get();
 	Item::SharedTextLabel textLabel(new Item::TextLabel);
 	textLabel->amx = amx;
-	textLabel->textLabelID = textLabelID;
+	textLabel->textLabelId = textLabelId;
 	textLabel->inverseAreaChecking = false;
 	textLabel->originalComparableStreamDistance = -1.0f;
 	textLabel->positionOffset = Eigen::Vector3f::Zero();
@@ -49,7 +39,7 @@ cell AMX_NATIVE_CALL Natives::CreateDynamic3DTextLabel(AMX *amx, cell *params)
 	textLabel->color = static_cast<int>(params[2]);
 	textLabel->position = Eigen::Vector3f(amx_ctof(params[3]), amx_ctof(params[4]), amx_ctof(params[5]));
 	textLabel->drawDistance = amx_ctof(params[6]);
-	if (static_cast<int>(params[7]) != INVALID_GENERIC_ID || static_cast<int>(params[8]) != INVALID_GENERIC_ID)
+	if (static_cast<int>(params[7]) != INVALID_PLAYER_ID || static_cast<int>(params[8]) != INVALID_VEHICLE_ID)
 	{
 		textLabel->attach = boost::intrusive_ptr<Item::TextLabel::Attach>(new Item::TextLabel::Attach);
 		textLabel->attach->player = static_cast<int>(params[7]);
@@ -69,13 +59,13 @@ cell AMX_NATIVE_CALL Natives::CreateDynamic3DTextLabel(AMX *amx, cell *params)
 	Utility::addToContainer(textLabel->areas, static_cast<int>(params[14]));
 	textLabel->priority = static_cast<int>(params[15]);
 	core->getGrid()->addTextLabel(textLabel);
-	core->getData()->textLabels.insert(std::make_pair(textLabelID, textLabel));
-	return static_cast<cell>(textLabelID);
+	core->getData()->textLabels.insert(std::make_pair(textLabelId, textLabel));
+	return static_cast<cell>(textLabelId);
 }
 
 cell AMX_NATIVE_CALL Natives::DestroyDynamic3DTextLabel(AMX *amx, cell *params)
 {
-	CHECK_PARAMS(1, "DestroyDynamic3DTextLabel");
+	CHECK_PARAMS(1);
 	boost::unordered_map<int, Item::SharedTextLabel>::iterator t = core->getData()->textLabels.find(static_cast<int>(params[1]));
 	if (t != core->getData()->textLabels.end())
 	{
@@ -87,7 +77,7 @@ cell AMX_NATIVE_CALL Natives::DestroyDynamic3DTextLabel(AMX *amx, cell *params)
 
 cell AMX_NATIVE_CALL Natives::IsValidDynamic3DTextLabel(AMX *amx, cell *params)
 {
-	CHECK_PARAMS(1, "IsValidDynamic3DTextLabel");
+	CHECK_PARAMS(1);
 	boost::unordered_map<int, Item::SharedTextLabel>::iterator t = core->getData()->textLabels.find(static_cast<int>(params[1]));
 	if (t != core->getData()->textLabels.end())
 	{
@@ -98,7 +88,7 @@ cell AMX_NATIVE_CALL Natives::IsValidDynamic3DTextLabel(AMX *amx, cell *params)
 
 cell AMX_NATIVE_CALL Natives::GetDynamic3DTextLabelText(AMX *amx, cell *params)
 {
-	CHECK_PARAMS(3, "GetDynamic3DTextLabelText");
+	CHECK_PARAMS(3);
 	boost::unordered_map<int, Item::SharedTextLabel>::iterator t = core->getData()->textLabels.find(static_cast<int>(params[1]));
 	if (t != core->getData()->textLabels.end())
 	{
@@ -112,7 +102,7 @@ cell AMX_NATIVE_CALL Natives::GetDynamic3DTextLabelText(AMX *amx, cell *params)
 
 cell AMX_NATIVE_CALL Natives::UpdateDynamic3DTextLabelText(AMX *amx, cell *params)
 {
-	CHECK_PARAMS(3, "UpdateDynamic3DTextLabelText");
+	CHECK_PARAMS(3);
 	boost::unordered_map<int, Item::SharedTextLabel>::iterator t = core->getData()->textLabels.find(static_cast<int>(params[1]));
 	if (t != core->getData()->textLabels.end())
 	{

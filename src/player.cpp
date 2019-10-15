@@ -14,16 +14,10 @@
  * limitations under the License.
  */
 
+#include "common.h"
+
 #include "player.h"
-
 #include "core.h"
-
-#include <boost/intrusive_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
-
-#include <Eigen/Core>
-
-#include <bitset>
 
 Player::Player(int id)
 {
@@ -43,12 +37,15 @@ Player::Player(int id)
 	delayedRaceCheckpoint = 0;
 	delayedUpdate = false;
 	delayedUpdateType = 0;
-	enabledItems.set();
-	interiorID = 0;
+	if (!sampgdk::IsPlayerNPC(id))
+	{
+		enabledItems.set();
+	}
+	interiorId = 0;
 	maxVisibleMapIcons = core->getData()->getGlobalMaxVisibleItems(STREAMER_TYPE_MAP_ICON);
 	maxVisibleObjects = core->getData()->getGlobalMaxVisibleItems(STREAMER_TYPE_OBJECT);
 	maxVisibleTextLabels = core->getData()->getGlobalMaxVisibleItems(STREAMER_TYPE_3D_TEXT_LABEL);
-	playerID = id;
+	playerId = id;
 	position.setZero();
 	radiusMultipliers[STREAMER_TYPE_OBJECT] = core->getData()->getGlobalRadiusMultiplier(STREAMER_TYPE_OBJECT);
 	radiusMultipliers[STREAMER_TYPE_PICKUP] = core->getData()->getGlobalRadiusMultiplier(STREAMER_TYPE_PICKUP);
@@ -66,5 +63,5 @@ Player::Player(int id)
 	visibleCell = SharedCell(new Cell());
 	visibleCheckpoint = 0;
 	visibleRaceCheckpoint = 0;
-	worldID = 0;
+	worldId = 0;
 }

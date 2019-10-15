@@ -59,11 +59,11 @@ bool Streamer_SetChunkTickRate(int type, std::size_t value, int playerid) {
 }
 
 size_t Streamer_GetChunkSize(int type) {
-	return core->getStreamer()->getChunkSize(type);
+	return core->getChunkStreamer()->getChunkSize(type);
 }
 
 bool Streamer_SetChunkSize(int type, std::size_t size) {
-	return core->getStreamer()->setChunkSize(type, size);
+	return core->getChunkStreamer()->setChunkSize(type, size);
 }
 
 int Streamer_GetMaxItems(int type) {
@@ -259,6 +259,15 @@ int Streamer_ToggleItemStatic(int type, int id, bool toggle) {
 	}
 	}
 	return 0;
+}
+
+int Streamer_IsToggleChunkStream() {
+	return core->getChunkStreamer()->getChunkStreamingEnabled() ? 1 : 0;
+}
+
+void Streamer_ToggleChunkStream(bool status)
+{
+	core->getChunkStreamer()->setChunkStreamingEnabled(status);
 }
 
 int Streamer_IsToggleItemStatic(int type, int id) {

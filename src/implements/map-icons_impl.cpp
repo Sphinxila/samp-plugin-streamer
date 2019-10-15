@@ -49,10 +49,10 @@ int CreateDynamicMapIcon(
 	if (core->getData()->getGlobalMaxItems(STREAMER_TYPE_MAP_ICON) == core->getData()->mapIcons.size()) {
 		return 0;
 	}
-	int mapIconID = Item::MapIcon::identifier.get();
+	int mapIconId = Item::MapIcon::identifier.get();
 	Item::SharedMapIcon mapIcon(new Item::MapIcon);
 	//mapIcon->amx = amx;
-	mapIcon->mapIconID = mapIconID;
+	mapIcon->mapIconId = mapIconId;
 	mapIcon->inverseAreaChecking = false;
 	mapIcon->originalComparableStreamDistance = -1.0f;
 	mapIcon->positionOffset = Eigen::Vector3f::Zero();
@@ -71,8 +71,8 @@ int CreateDynamicMapIcon(
 	Utility::addToContainer(mapIcon->areas, areaid);
 	mapIcon->priority = priority;
 	core->getGrid()->addMapIcon(mapIcon);
-	core->getData()->mapIcons.insert(std::make_pair(mapIconID, mapIcon));
-	return static_cast<cell>(mapIconID);
+	core->getData()->mapIcons.insert(std::make_pair(mapIconId, mapIcon));
+	return static_cast<cell>(mapIconId);
 }
 
 int DestroyDynamicMapIcon(int id) {

@@ -33,6 +33,10 @@
 
 #include <Eigen/Core>
 
+#include <a_actor.h>
+#include <a_objects.h>
+#include <a_players.h>
+
 STREAMER_BEGIN_NS
 
 int Streamer_GetDistanceToItem(float x, float y, float z, int type, int id, float &distance, int dimensions) {
@@ -106,7 +110,7 @@ int Streamer_GetDistanceToItem(float x, float y, float z, int type, int id, floa
 		boost::unordered_map<int, Item::SharedArea>::iterator a = core->getData()->areas.find(id);
 		if (a != core->getData()->areas.end())
 		{
-			boost::variant<Polygon2D, Box2D, Box3D, Eigen::Vector2f, Eigen::Vector3f> areaPosition;
+			boost::variant<Polygon2d, Box2d, Box3d, Eigen::Vector2f, Eigen::Vector3f> areaPosition;
 			if (a->second->attach) {
 				areaPosition = a->second->position;
 			} else {
@@ -128,19 +132,19 @@ int Streamer_GetDistanceToItem(float x, float y, float z, int type, int id, floa
 			}
 			case STREAMER_AREA_TYPE_RECTANGLE:
 			{
-				Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Box2D>(areaPosition));
+				Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Box2d>(areaPosition));
 				distance = static_cast<float>(boost::geometry::distance(Eigen::Vector2f(x, y), centroid));
 				return 1;
 			}
 			case STREAMER_AREA_TYPE_CUBOID:
 			{
-				Eigen::Vector3f centroid = boost::geometry::return_centroid<Eigen::Vector3f>(boost::get<Box3D>(areaPosition));
+				Eigen::Vector3f centroid = boost::geometry::return_centroid<Eigen::Vector3f>(boost::get<Box3d>(areaPosition));
 				distance = static_cast<float>(boost::geometry::distance(Eigen::Vector3f(x, y, z), centroid));
 				return 1;
 			}
 			case STREAMER_AREA_TYPE_POLYGON:
 			{
-				Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Polygon2D>(areaPosition));
+				Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Polygon2d>(areaPosition));
 				distance = static_cast<float>(boost::geometry::distance(Eigen::Vector2f(x, y), centroid));
 				return 1;
 			}
@@ -499,81 +503,93 @@ int Streamer_GetItemInternalID(int playerid, int type, int streamerid) {
 	{
 	case STREAMER_TYPE_PICKUP:
 	{
-		boost::unordered_map<int, int>::iterator i = core->getData()->internalPickups.find(streamerid);
-		if (i != core->getData()->internalPickups.end())
+		int pickupId = static_cast<int>(streamerid);
+		Item::SharedPickup p = core->getData()->pickups[pickupId];
+		for (boost::unordered_set<int>::const_iterator w = p->worlds.begin(); w != p->worlds.end(); ++w)
 		{
-			return static_cast<cell>(i->second);
+			boost::unordered_map<std::pair<int, int>, int>::iterator i = core->getData()->internalPickups.find(std::make_pair(pickupId, *w));
+			if (i != core->getData()->internalPickups.end())
+			{
+				return static_cast<cell>(i->second);
+			}
 		}
-		return 0;
+		return INVALID_PICKUP_ID;
 	}
 	case STREAMER_TYPE_ACTOR:
 	{
-		boost::unordered_map<int, int>::iterator i = core->getData()->internalActors.find(streamerid);
+		boost::unordered_map<int, int>::iterator i = core->getData()->internalActors.find(static_cast<int>(streamerid));
 		if (i != core->getData()->internalActors.end())
 		{
 			return static_cast<cell>(i->second);
 		}
-		return 0;
+		return INVALID_ACTOR_ID;
 	}
 	}
-	boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(playerid);
+	boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(static_cast<int>(playerid));
 	if (p != core->getData()->players.end())
 	{
-		switch (type)
+		switch (static_cast<int>(type))
 		{
 		case STREAMER_TYPE_OBJECT:
 		{
-			boost::unordered_map<int, int>::iterator i = p->second.internalObjects.find(playerid);
-			if (i != p->second.internalObjects.end()) {
+			boost::unordered_map<int, int>::iterator i = p->second.internalObjects.find(static_cast<int>(streamerid));
+			if (i != p->second.internalObjects.end())
+			{
 				return static_cast<cell>(i->second);
 			}
-			return 0;
+			return INVALID_OBJECT_ID;
 		}
 		case STREAMER_TYPE_CP:
 		{
-			if (p->second.visibleCheckpoint == streamerid) {
+			if (p->second.visibleCheckpoint == static_cast<int>(streamerid))
+			{
 				return 1;
 			}
-			return 0;
+			return -1;
 		}
 		case STREAMER_TYPE_RACE_CP:
 		{
-			if (p->second.visibleRaceCheckpoint == streamerid) {
+			if (p->second.visibleRaceCheckpoint == static_cast<int>(streamerid))
+			{
 				return 1;
 			}
-			return 0;
+			return -1;
 		}
 		case STREAMER_TYPE_MAP_ICON:
 		{
-			boost::unordered_map<int, int>::iterator i = p->second.internalMapIcons.find(streamerid);
-			if (i != p->second.internalMapIcons.end()) {
+			boost::unordered_map<int, int>::iterator i = p->second.internalMapIcons.find(static_cast<int>(streamerid));
+			if (i != p->second.internalMapIcons.end())
+			{
 				return static_cast<cell>(i->second);
 			}
-			return 0;
+			return -1;
 		}
 		case STREAMER_TYPE_3D_TEXT_LABEL:
 		{
-			boost::unordered_map<int, int>::iterator i = p->second.internalTextLabels.find(streamerid);
-			if (i != p->second.internalTextLabels.end()) {
+			boost::unordered_map<int, int>::iterator i = p->second.internalTextLabels.find(static_cast<int>(streamerid));
+			if (i != p->second.internalTextLabels.end())
+			{
 				return static_cast<cell>(i->second);
 			}
+			return INVALID_3DTEXT_ID;
 		}
 		case STREAMER_TYPE_AREA:
 		{
-			boost::unordered_set<int>::iterator i = p->second.internalAreas.find(streamerid);
-			if (i != p->second.internalAreas.end()) {
+			boost::unordered_set<int>::iterator i = p->second.internalAreas.find(static_cast<int>(streamerid));
+			if (i != p->second.internalAreas.end())
+			{
 				return *i;
 			}
-			return 0;
+			return INVALID_STREAMER_ID;
 		}
 		default:
 		{
 			Utility::logError("Streamer_GetItemInternalID: Invalid type specified.");
-			return 0;
+			return -1;
 		}
 		}
 	}
-	return 0;
+	return -1;
 }
 
 int Streamer_GetItemStreamerID(int playerid, int type, int internalid) {
@@ -581,19 +597,123 @@ int Streamer_GetItemStreamerID(int playerid, int type, int internalid) {
 	{
 	case STREAMER_TYPE_PICKUP:
 	{
-		for (boost::unordered_map<int, int>::iterator i = core->getData()->internalPickups.begin(); i != core->getData()->internalPickups.end(); ++i) {
-			if (i->second == internalid) {
+		for (boost::unordered_map<std::pair<int, int>, int>::iterator i = core->getData()->internalPickups.begin(); i != core->getData()->internalPickups.end(); ++i)
+		{
+			if (i->second == static_cast<int>(internalid))
+			{
+				return i->first.first;
+			}
+		}
+		return INVALID_STREAMER_ID;
+	}
+	case STREAMER_TYPE_ACTOR:
+	{
+		for (boost::unordered_map<int, int>::iterator i = core->getData()->internalActors.begin(); i != core->getData()->internalActors.end(); ++i)
+		{
+			if (i->second == static_cast<int>(internalid))
+			{
 				return i->first;
+			}
+		}
+		return INVALID_STREAMER_ID;
+	}
+	}
+	boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(static_cast<int>(playerid));
+	if (p != core->getData()->players.end())
+	{
+		switch (static_cast<int>(type))
+		{
+		case STREAMER_TYPE_OBJECT:
+		{
+			for (boost::unordered_map<int, int>::iterator i = p->second.internalObjects.begin(); i != p->second.internalObjects.end(); ++i)
+			{
+				if (i->second == static_cast<int>(internalid))
+				{
+					return i->first;
+				}
+			}
+			return INVALID_STREAMER_ID;
+		}
+		case STREAMER_TYPE_CP:
+		{
+			if (p->second.visibleCheckpoint == static_cast<int>(internalid))
+			{
+				return 1;
+			}
+			return INVALID_STREAMER_ID;
+		}
+		case STREAMER_TYPE_RACE_CP:
+		{
+			if (p->second.visibleRaceCheckpoint == static_cast<int>(internalid))
+			{
+				return 1;
+			}
+			return INVALID_STREAMER_ID;
+		}
+		case STREAMER_TYPE_MAP_ICON:
+		{
+			for (boost::unordered_map<int, int>::iterator i = p->second.internalMapIcons.begin(); i != p->second.internalMapIcons.end(); ++i)
+			{
+				if (i->second == static_cast<int>(internalid))
+				{
+					return i->first;
+				}
+			}
+			return INVALID_STREAMER_ID;
+		}
+		case STREAMER_TYPE_3D_TEXT_LABEL:
+		{
+			for (boost::unordered_map<int, int>::iterator i = p->second.internalTextLabels.begin(); i != p->second.internalTextLabels.end(); ++i)
+			{
+				if (i->second == static_cast<int>(internalid))
+				{
+					return i->first;
+				}
+			}
+			return INVALID_STREAMER_ID;
+		}
+		case STREAMER_TYPE_AREA:
+		{
+			boost::unordered_set<int>::iterator i = p->second.internalAreas.find(static_cast<int>(internalid));
+			if (i != p->second.internalAreas.end())
+			{
+				return *i;
+			}
+			return INVALID_STREAMER_ID;
+		}
+		default:
+		{
+			Utility::logError("Streamer_GetItemStreamerID: Invalid type specified.");
+			return INVALID_STREAMER_ID;
+		}
+		}
+	}
+	return INVALID_STREAMER_ID;
+}
+
+int Streamer_IsItemVisible(int playerid, int type, int id) {
+	switch (type)
+	{
+	case STREAMER_TYPE_PICKUP:
+	{
+		int pickupId = static_cast<int>(id);
+		Item::SharedPickup p = core->getData()->pickups[pickupId];
+		for (boost::unordered_set<int>::const_iterator w = p->worlds.begin(); w != p->worlds.end(); ++w)
+		{
+			boost::unordered_map<std::pair<int, int>, int>::iterator i = core->getData()->internalPickups.find(std::make_pair(pickupId, *w));
+			if (i != core->getData()->internalPickups.end())
+			{
+				return 1;
 			}
 		}
 		return 0;
 	}
 	case STREAMER_TYPE_ACTOR:
 	{
-		for (boost::unordered_map<int, int>::iterator i = core->getData()->internalActors.begin(); i != core->getData()->internalActors.end(); ++i) {
-			if (i->second == internalid) {
-				return i->first;
-			}
+		boost::unordered_map<int, int>::iterator i = core->getData()->internalActors.find(id);
+		if (i != core->getData()->internalActors.end())
+		{
+			return 1;
 		}
 		return 0;
 	}
@@ -605,106 +725,25 @@ int Streamer_GetItemStreamerID(int playerid, int type, int internalid) {
 		{
 		case STREAMER_TYPE_OBJECT:
 		{
-			for (boost::unordered_map<int, int>::iterator i = p->second.internalObjects.begin(); i != p->second.internalObjects.end(); ++i) {
-				if (i->second == internalid) {
-					return i->first;
-				}
-			}
-			return 0;
-		}
-		case STREAMER_TYPE_CP:
-		{
-			if (p->second.visibleCheckpoint == internalid) {
-				return 1;
-			}
-			return 0;
-		}
-		case STREAMER_TYPE_RACE_CP:
-		{
-			if (p->second.visibleRaceCheckpoint == internalid) {
-				return 1;
-			}
-			return 0;
-		}
-		case STREAMER_TYPE_MAP_ICON:
-		{
-			for (boost::unordered_map<int, int>::iterator i = p->second.internalMapIcons.begin(); i != p->second.internalMapIcons.end(); ++i) {
-				if (i->second == internalid) {
-					return i->first;
-				}
-			}
-			return 0;
-		}
-		case STREAMER_TYPE_3D_TEXT_LABEL:
-		{
-			for (boost::unordered_map<int, int>::iterator i = p->second.internalTextLabels.begin(); i != p->second.internalTextLabels.end(); ++i) {
-				if (i->second == internalid) {
-					return i->first;
-				}
-			}
-			return 0;
-		}
-		case STREAMER_TYPE_AREA:
-		{
-			boost::unordered_set<int>::iterator i = p->second.internalAreas.find(internalid);
-			if (i != p->second.internalAreas.end()) {
-				return *i;
-			}
-			return 0;
-		}
-		default:
-		{
-			Utility::logError("Streamer_GetItemStreamerID: Invalid type specified.");
-			return 0;
-		}
-		}
-	}
-	return 0;
-}
-
-int Streamer_IsItemVisible(int playerid, int type, int id) {
-	switch (type)
-	{
-	case STREAMER_TYPE_PICKUP:
-	{
-		boost::unordered_map<int, int>::iterator i = core->getData()->internalPickups.find(id);
-		if (i != core->getData()->internalPickups.end())
-		{
-			return 1;
-		}
-		return 0;
-	}
-	case STREAMER_TYPE_ACTOR:
-	{
-		boost::unordered_map<int, int>::iterator i = core->getData()->internalActors.find(id);
-		if (i != core->getData()->internalActors.end()) {
-			return 1;
-		}
-		return 0;
-	}
-	}
-	boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(playerid);
-	if (p != core->getData()->players.end()) {
-		switch (type)
-		{
-		case STREAMER_TYPE_OBJECT:
-		{
 			boost::unordered_map<int, int>::iterator i = p->second.internalObjects.find(id);
-			if (i != p->second.internalObjects.end()) {
+			if (i != p->second.internalObjects.end())
+			{
 				return 1;
 			}
 			return 0;
 		}
 		case STREAMER_TYPE_CP:
 		{
-			if (p->second.visibleCheckpoint == id) {
+			if (p->second.visibleCheckpoint == id)
+			{
 				return 1;
 			}
 			return 0;
 		}
 		case STREAMER_TYPE_RACE_CP:
 		{
-			if (p->second.visibleRaceCheckpoint == id) {
+			if (p->second.visibleRaceCheckpoint == id)
+			{
 				return 1;
 			}
 			return 0;
@@ -712,7 +751,8 @@ int Streamer_IsItemVisible(int playerid, int type, int id) {
 		case STREAMER_TYPE_MAP_ICON:
 		{
 			boost::unordered_map<int, int>::iterator i = p->second.internalMapIcons.find(id);
-			if (i != p->second.internalMapIcons.end()) {
+			if (i != p->second.internalMapIcons.end())
+			{
 				return 1;
 			}
 			return 0;
@@ -720,14 +760,16 @@ int Streamer_IsItemVisible(int playerid, int type, int id) {
 		case STREAMER_TYPE_3D_TEXT_LABEL:
 		{
 			boost::unordered_map<int, int>::iterator i = p->second.internalTextLabels.find(id);
-			if (i != p->second.internalTextLabels.end()) {
+			if (i != p->second.internalTextLabels.end())
+			{
 				return 1;
 			}
 		}
 		case STREAMER_TYPE_AREA:
 		{
 			boost::unordered_set<int>::iterator i = p->second.internalAreas.find(id);
-			if (i != p->second.internalAreas.end()) {
+			if (i != p->second.internalAreas.end())
+			{
 				return 1;
 			}
 			return 0;
@@ -748,45 +790,43 @@ int Streamer_DestroyAllVisibleItems(int playerid, int type, bool serverWide) {
 
 	switch (type)
 	{
-		case STREAMER_TYPE_PICKUP:
+	case STREAMER_TYPE_PICKUP:
+	{
+		boost::unordered_map<std::pair<int, int>, int>::iterator i = core->getData()->internalPickups.begin();
+		while (i != core->getData()->internalPickups.end())
 		{
-			boost::unordered_map<int, int>::iterator i = core->getData()->internalPickups.begin();
-			while (i != core->getData()->internalPickups.end())
+			boost::unordered_map<int, Item::SharedPickup>::iterator p = core->getData()->pickups.find(i->first.first);
+			if (serverWide || (p != core->getData()->pickups.end() && p->second->amx == amx))
 			{
-				boost::unordered_map<int, Item::SharedPickup>::iterator p = core->getData()->pickups.find(i->first);
-				if (serverWide || (p != core->getData()->pickups.end() && p->second->amx == amx))
-				{
-					sampgdk::DestroyPickup(i->second);
-					i = core->getData()->internalPickups.erase(i);
-				}
-				else
-				{
-					++i;
-				}
+				sampgdk::DestroyPickup(i->second);
+				i = core->getData()->internalPickups.erase(i);
 			}
-			return 1;
-		}
-		case STREAMER_TYPE_ACTOR:
-		{
-			boost::unordered_map<int, int>::iterator i = core->getData()->internalActors.begin();
-			while (i != core->getData()->internalActors.end())
+			else
 			{
-				boost::unordered_map<int, Item::SharedActor>::iterator a = core->getData()->actors.find(i->first);
-				if (serverWide || (a != core->getData()->actors.end() && a->second->amx == amx))
-				{
-					sampgdk::DestroyActor(i->second);
-					i = core->getData()->internalActors.erase(i);
-				}
-				else
-				{
-					++i;
-				}
+				++i;
 			}
-			return 1;
 		}
+		return 1;
 	}
-	
-	
+	case STREAMER_TYPE_ACTOR:
+	{
+		boost::unordered_map<int, int>::iterator i = core->getData()->internalActors.begin();
+		while (i != core->getData()->internalActors.end())
+		{
+			boost::unordered_map<int, Item::SharedActor>::iterator a = core->getData()->actors.find(i->first);
+			if (serverWide || (a != core->getData()->actors.end() && a->second->amx == amx))
+			{
+				sampgdk::DestroyActor(i->second);
+				i = core->getData()->internalActors.erase(i);
+			}
+			else
+			{
+				++i;
+			}
+		}
+		return 1;
+	}
+	}
 	boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(playerid);
 	if (p != core->getData()->players.end())
 	{
@@ -815,7 +855,8 @@ int Streamer_DestroyAllVisibleItems(int playerid, int type, bool serverWide) {
 			if (p->second.visibleCheckpoint)
 			{
 				boost::unordered_map<int, Item::SharedCheckpoint>::iterator c = core->getData()->checkpoints.find(p->second.visibleCheckpoint);
-				if (serverWide || (c != core->getData()->checkpoints.end() && c->second->amx == amx)) {
+				if (serverWide || (c != core->getData()->checkpoints.end() && c->second->amx == amx))
+				{
 					sampgdk::DisablePlayerCheckpoint(p->first);
 					p->second.activeCheckpoint = 0;
 					p->second.visibleCheckpoint = 0;
@@ -826,9 +867,11 @@ int Streamer_DestroyAllVisibleItems(int playerid, int type, bool serverWide) {
 		}
 		case STREAMER_TYPE_RACE_CP:
 		{
-			if (p->second.visibleRaceCheckpoint) {
+			if (p->second.visibleRaceCheckpoint)
+			{
 				boost::unordered_map<int, Item::SharedRaceCheckpoint>::iterator r = core->getData()->raceCheckpoints.find(p->second.visibleRaceCheckpoint);
-				if (serverWide || (r != core->getData()->raceCheckpoints.end() && r->second->amx == amx)) {
+				if (serverWide || (r != core->getData()->raceCheckpoints.end() && r->second->amx == amx))
+				{
 					sampgdk::DisablePlayerRaceCheckpoint(p->first);
 					p->second.activeRaceCheckpoint = 0;
 					p->second.visibleRaceCheckpoint = 0;
@@ -1375,7 +1418,7 @@ std::vector<int> Streamer_GetNearbyItems(float x, float y, float z, int type, fl
 		{
 			for (std::vector<SharedCell>::const_iterator p = pointCells.begin(); p != pointCells.end(); ++p) {
 				for (boost::unordered_map<int, Item::SharedArea>::const_iterator a = (*p)->areas.begin(); a != (*p)->areas.end(); ++a) {
-					boost::variant<Polygon2D, Box2D, Box3D, Eigen::Vector2f, Eigen::Vector3f> position;
+					boost::variant<Polygon2d, Box2d, Box3d, Eigen::Vector2f, Eigen::Vector3f> position;
 					if (a->second->attach) {
 						position = a->second->position;
 					} else {
@@ -1398,19 +1441,19 @@ std::vector<int> Streamer_GetNearbyItems(float x, float y, float z, int type, fl
 						}
 						case STREAMER_AREA_TYPE_RECTANGLE:
 						{
-							Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Box2D>(position));
+							Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Box2d>(position));
 							distance = static_cast<float>(boost::geometry::comparable_distance(position2D, centroid));
 							break;
 						}
 						case STREAMER_AREA_TYPE_CUBOID:
 						{
-							Eigen::Vector3f centroid = boost::geometry::return_centroid<Eigen::Vector3f>(boost::get<Box3D>(position));
+							Eigen::Vector3f centroid = boost::geometry::return_centroid<Eigen::Vector3f>(boost::get<Box3d>(position));
 							distance = static_cast<float>(boost::geometry::comparable_distance(position3D, centroid));
 							break;
 						}
 						case STREAMER_AREA_TYPE_POLYGON:
 						{
-							Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Polygon2D>(position));
+							Eigen::Vector2f centroid = boost::geometry::return_centroid<Eigen::Vector2f>(boost::get<Polygon2d>(position));
 							distance = static_cast<float>(boost::geometry::comparable_distance(position2D, centroid));
 							break;
 						}
@@ -1614,73 +1657,117 @@ int Streamer_SetItemOffset(int type, int id, float x, float y, float z) {
 std::vector<int> Streamer_GetAllVisibleItems(int playerid, int type) {
 	std::multimap<float, int> orderedItems;
 	boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(playerid);
-	if (p != core->getData()->players.end()) {
-		switch (type) {
-			case STREAMER_TYPE_OBJECT:
+	if (p != core->getData()->players.end())
+	{
+		switch (type)
+		{
+		case STREAMER_TYPE_OBJECT:
+		{
+			for (boost::unordered_map<int, int>::iterator i = p->second.internalObjects.begin(); i != p->second.internalObjects.end(); ++i)
 			{
-				for (boost::unordered_map<int, int>::iterator i = p->second.internalObjects.begin(); i != p->second.internalObjects.end(); ++i) {
-					boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(i->first);
-					if (o != core->getData()->objects.end()) {
-						float distance = 0.0f;
-						if (o->second->attach) {
-							distance = static_cast<float>(boost::geometry::comparable_distance(p->second.position, o->second->attach->position));
-						} else {
-							distance = static_cast<float>(boost::geometry::comparable_distance(p->second.position, o->second->position));
-						}
-						orderedItems.insert(std::pair<float, int>(distance, o->first));
+				boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(i->first);
+				if (o != core->getData()->objects.end())
+				{
+					float distance = 0.0f;
+					if (o->second->attach)
+					{
+						distance = static_cast<float>(boost::geometry::comparable_distance(p->second.position, o->second->attach->position));
 					}
+					else
+					{
+						distance = static_cast<float>(boost::geometry::comparable_distance(p->second.position, o->second->position));
+					}
+					orderedItems.insert(std::pair<float, int>(distance, o->first));
 				}
-				break;
 			}
-			case STREAMER_TYPE_PICKUP:
+			break;
+		}
+		case STREAMER_TYPE_PICKUP:
+		{
+			for (boost::unordered_map<std::pair<int, int>, int>::iterator i = core->getData()->internalPickups.begin(); i != core->getData()->internalPickups.end(); ++i)
 			{
-				for (boost::unordered_map<int, int>::iterator i = core->getData()->internalPickups.begin(); i != core->getData()->internalPickups.end(); ++i) {
-					boost::unordered_map<int, Item::SharedPickup>::iterator q = core->getData()->pickups.find(i->first);
-					if (q != core->getData()->pickups.end()) {
-						float distance = static_cast<float>(boost::geometry::comparable_distance(p->second.position, q->second->position));
-						orderedItems.insert(std::pair<float, int>(distance, q->first));
-					}
+				boost::unordered_map<int, Item::SharedPickup>::iterator q = core->getData()->pickups.find(i->first.first);
+				if (q != core->getData()->pickups.end())
+				{
+					float distance = static_cast<float>(boost::geometry::comparable_distance(p->second.position, q->second->position));
+					orderedItems.insert(std::pair<float, int>(distance, q->first));
 				}
-				break;
 			}
-			case STREAMER_TYPE_MAP_ICON:
+			break;
+		}
+		case STREAMER_TYPE_CP:
+		{
+			if (p->second.visibleCheckpoint != INVALID_STREAMER_ID)
 			{
-				for (boost::unordered_map<int, int>::iterator i = p->second.internalMapIcons.begin(); i != p->second.internalMapIcons.end(); ++i) {
-					boost::unordered_map<int, Item::SharedMapIcon>::iterator m = core->getData()->mapIcons.find(i->first);
-					if (m != core->getData()->mapIcons.end()) {
-						float distance = static_cast<float>(boost::geometry::comparable_distance(p->second.position, m->second->position));
-						orderedItems.insert(std::pair<float, int>(distance, m->first));
-					}
+				boost::unordered_map<int, Item::SharedCheckpoint>::iterator c = core->getData()->checkpoints.find(p->second.visibleCheckpoint);
+				if (c != core->getData()->checkpoints.end())
+				{
+					float distance = static_cast<float>(boost::geometry::comparable_distance(p->second.position, c->second->position));
+					orderedItems.insert(std::pair<float, int>(distance, c->first));
 				}
-				break;
 			}
-			case STREAMER_TYPE_3D_TEXT_LABEL:
+			break;
+		}
+		case STREAMER_TYPE_RACE_CP:
+		{
+			if (p->second.visibleRaceCheckpoint != INVALID_STREAMER_ID)
 			{
-				for (boost::unordered_map<int, int>::iterator i = p->second.internalTextLabels.begin(); i != p->second.internalTextLabels.end(); ++i) {
-					boost::unordered_map<int, Item::SharedTextLabel>::iterator t = core->getData()->textLabels.find(i->first);
-					if (t != core->getData()->textLabels.end()) {
-						float distance = 0.0f;
-						if (t->second->attach) {
-							distance = static_cast<float>(boost::geometry::comparable_distance(p->second.position, t->second->attach->position));
-						} else {
-							distance = static_cast<float>(boost::geometry::comparable_distance(p->second.position, t->second->position));
-						}
-						orderedItems.insert(std::pair<float, int>(distance, t->first));
-					}
+				boost::unordered_map<int, Item::SharedRaceCheckpoint>::iterator c = core->getData()->raceCheckpoints.find(p->second.visibleRaceCheckpoint);
+				if (c != core->getData()->raceCheckpoints.end())
+				{
+					float distance = static_cast<float>(boost::geometry::comparable_distance(p->second.position, c->second->position));
+					orderedItems.insert(std::pair<float, int>(distance, c->first));
 				}
-				break;
 			}
-			case STREAMER_TYPE_ACTOR:
+			break;
+		}
+		case STREAMER_TYPE_MAP_ICON:
+		{
+			for (boost::unordered_map<int, int>::iterator i = p->second.internalMapIcons.begin(); i != p->second.internalMapIcons.end(); ++i)
 			{
-				for (boost::unordered_map<int, int>::iterator i = core->getData()->internalActors.begin(); i != core->getData()->internalActors.end(); ++i) {
-					boost::unordered_map<int, Item::SharedActor>::iterator a = core->getData()->actors.find(i->first);
-					if (a != core->getData()->actors.end()) {
-						float distance = static_cast<float>(boost::geometry::comparable_distance(p->second.position, a->second->position));
-						orderedItems.insert(std::pair<float, int>(distance, a->first));
-					}
+				boost::unordered_map<int, Item::SharedMapIcon>::iterator m = core->getData()->mapIcons.find(i->first);
+				if (m != core->getData()->mapIcons.end())
+				{
+					float distance = static_cast<float>(boost::geometry::comparable_distance(p->second.position, m->second->position));
+					orderedItems.insert(std::pair<float, int>(distance, m->first));
 				}
-				break;
 			}
+			break;
+		}
+		case STREAMER_TYPE_3D_TEXT_LABEL:
+		{
+			for (boost::unordered_map<int, int>::iterator i = p->second.internalTextLabels.begin(); i != p->second.internalTextLabels.end(); ++i)
+			{
+				boost::unordered_map<int, Item::SharedTextLabel>::iterator t = core->getData()->textLabels.find(i->first);
+				if (t != core->getData()->textLabels.end())
+				{
+					float distance = 0.0f;
+					if (t->second->attach)
+					{
+						distance = static_cast<float>(boost::geometry::comparable_distance(p->second.position, t->second->attach->position));
+					}
+					else
+					{
+						distance = static_cast<float>(boost::geometry::comparable_distance(p->second.position, t->second->position));
+					}
+					orderedItems.insert(std::pair<float, int>(distance, t->first));
+				}
+			}
+			break;
+		}
+		case STREAMER_TYPE_ACTOR:
+		{
+			for (boost::unordered_map<int, int>::iterator i = core->getData()->internalActors.begin(); i != core->getData()->internalActors.end(); ++i)
+			{
+				boost::unordered_map<int, Item::SharedActor>::iterator a = core->getData()->actors.find(i->first);
+				if (a != core->getData()->actors.end())
+				{
+					float distance = static_cast<float>(boost::geometry::comparable_distance(p->second.position, a->second->position));
+					orderedItems.insert(std::pair<float, int>(distance, a->first));
+				}
+			}
+			break;
+		}
 		}
 	}
 

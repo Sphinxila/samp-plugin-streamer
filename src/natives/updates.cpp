@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-#include "../natives.h"
+#include "../common.h"
 
+#include "../natives.h"
 #include "../core.h"
 
-#include <boost/intrusive_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
-#include <boost/unordered_map.hpp>
-
-#include <Eigen/Core>
-
-#include <bitset>
+#include <a_players.h>
+#include <a_objects.h>
+#include <a_actor.h>
+#include <sampgdk/interop.h>
 
 cell AMX_NATIVE_CALL Natives::Streamer_ProcessActiveItems(AMX *amx, cell *params)
 {
@@ -34,7 +32,7 @@ cell AMX_NATIVE_CALL Natives::Streamer_ProcessActiveItems(AMX *amx, cell *params
 
 cell AMX_NATIVE_CALL Natives::Streamer_ToggleIdleUpdate(AMX *amx, cell *params)
 {
-	CHECK_PARAMS(2, "Streamer_ToggleIdleUpdate");
+	CHECK_PARAMS(2);
 	boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(static_cast<int>(params[1]));
 	if (p != core->getData()->players.end())
 	{
@@ -46,7 +44,7 @@ cell AMX_NATIVE_CALL Natives::Streamer_ToggleIdleUpdate(AMX *amx, cell *params)
 
 cell AMX_NATIVE_CALL Natives::Streamer_IsToggleIdleUpdate(AMX *amx, cell *params)
 {
-	CHECK_PARAMS(1, "Streamer_IsToggleIdleUpdate");
+	CHECK_PARAMS(1);
 	boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(static_cast<int>(params[1]));
 	if (p != core->getData()->players.end())
 	{
@@ -57,7 +55,7 @@ cell AMX_NATIVE_CALL Natives::Streamer_IsToggleIdleUpdate(AMX *amx, cell *params
 
 cell AMX_NATIVE_CALL Natives::Streamer_ToggleCameraUpdate(AMX *amx, cell *params)
 {
-	CHECK_PARAMS(2, "Streamer_ToggleCameraUpdate");
+	CHECK_PARAMS(2);
 	boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(static_cast<int>(params[1]));
 	if (p != core->getData()->players.end())
 	{
@@ -69,7 +67,7 @@ cell AMX_NATIVE_CALL Natives::Streamer_ToggleCameraUpdate(AMX *amx, cell *params
 
 cell AMX_NATIVE_CALL Natives::Streamer_IsToggleCameraUpdate(AMX *amx, cell *params)
 {
-	CHECK_PARAMS(1, "Streamer_IsToggleCameraUpdate");
+	CHECK_PARAMS(1);
 	boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(static_cast<int>(params[1]));
 	if (p != core->getData()->players.end())
 	{
@@ -80,13 +78,13 @@ cell AMX_NATIVE_CALL Natives::Streamer_IsToggleCameraUpdate(AMX *amx, cell *para
 
 cell AMX_NATIVE_CALL Natives::Streamer_ToggleItemUpdate(AMX *amx, cell *params)
 {
-	CHECK_PARAMS(3, "Streamer_ToggleItemUpdate");
+	CHECK_PARAMS(3);
 	boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(static_cast<int>(params[1]));
 	if (p != core->getData()->players.end())
 	{
-		if (static_cast<size_t>(params[2]) >= 0 && static_cast<size_t>(params[2]) < STREAMER_MAX_TYPES)
+		if (static_cast<int>(params[2]) >= 0 && static_cast<int>(params[2]) < STREAMER_MAX_TYPES)
 		{
-			p->second.enabledItems.set(static_cast<size_t>(params[2]), static_cast<int>(params[3]) != 0);
+			p->second.enabledItems.set(static_cast<size_t>(params[2]), params[3] != 0);
 			return 1;
 		}
 	}
@@ -95,11 +93,11 @@ cell AMX_NATIVE_CALL Natives::Streamer_ToggleItemUpdate(AMX *amx, cell *params)
 
 cell AMX_NATIVE_CALL Natives::Streamer_IsToggleItemUpdate(AMX *amx, cell *params)
 {
-	CHECK_PARAMS(2, "Streamer_IsToggleItemUpdate");
+	CHECK_PARAMS(2);
 	boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(static_cast<int>(params[1]));
 	if (p != core->getData()->players.end())
 	{
-		if (static_cast<size_t>(params[2]) >= 0 && static_cast<size_t>(params[2]) < STREAMER_MAX_TYPES)
+		if (static_cast<int>(params[2]) >= 0 && static_cast<int>(params[2]) < STREAMER_MAX_TYPES)
 		{
 			return static_cast<cell>(p->second.enabledItems.test(params[2]) != 0);
 		}
@@ -109,19 +107,19 @@ cell AMX_NATIVE_CALL Natives::Streamer_IsToggleItemUpdate(AMX *amx, cell *params
 
 cell AMX_NATIVE_CALL Natives::Streamer_GetLastUpdateTime(AMX *amx, cell *params)
 {
-	CHECK_PARAMS(1, "Streamer_GetLastUpdateTime");
+	CHECK_PARAMS(1);
 	Utility::storeFloatInNative(amx, params[1], core->getStreamer()->getLastUpdateTime());
 	return 1;
 }
 
 cell AMX_NATIVE_CALL Natives::Streamer_Update(AMX *amx, cell *params)
 {
-	CHECK_PARAMS(2, "Streamer_Update");
+	CHECK_PARAMS(2);
 	boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(static_cast<int>(params[1]));
 	if (p != core->getData()->players.end())
 	{
-		p->second.interiorID = sampgdk::GetPlayerInterior(p->first);
-		p->second.worldID = sampgdk::GetPlayerVirtualWorld(p->first);
+		p->second.interiorId = sampgdk::GetPlayerInterior(p->first);
+		p->second.worldId = sampgdk::GetPlayerVirtualWorld(p->first);
 		sampgdk::GetPlayerPos(p->first, &p->second.position[0], &p->second.position[1], &p->second.position[2]);
 		core->getStreamer()->startManualUpdate(p->second, static_cast<int>(params[2]));
 		return 1;
@@ -131,26 +129,26 @@ cell AMX_NATIVE_CALL Natives::Streamer_Update(AMX *amx, cell *params)
 
 cell AMX_NATIVE_CALL Natives::Streamer_UpdateEx(AMX *amx, cell *params)
 {
-	CHECK_PARAMS(9, "Streamer_UpdateEx");
+	CHECK_PARAMS(9);
 	boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(static_cast<int>(params[1]));
 	if (p != core->getData()->players.end())
 	{
 		p->second.position = Eigen::Vector3f(amx_ctof(params[2]), amx_ctof(params[3]), amx_ctof(params[4]));
 		if (static_cast<int>(params[5]) >= 0)
 		{
-			p->second.worldID = static_cast<int>(params[5]);
+			p->second.worldId = static_cast<int>(params[5]);
 		}
 		else
 		{
-			p->second.worldID = sampgdk::GetPlayerVirtualWorld(p->first);
+			p->second.worldId = sampgdk::GetPlayerVirtualWorld(p->first);
 		}
 		if (static_cast<int>(params[6]) >= 0)
 		{
-			p->second.interiorID = static_cast<int>(params[6]);
+			p->second.interiorId = static_cast<int>(params[6]);
 		}
 		else
 		{
-			p->second.interiorID = sampgdk::GetPlayerInterior(p->first);
+			p->second.interiorId = sampgdk::GetPlayerInterior(p->first);
 		}
 		if (static_cast<int>(params[8]) >= 0)
 		{

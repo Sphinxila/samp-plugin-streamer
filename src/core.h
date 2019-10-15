@@ -17,11 +17,10 @@
 #ifndef CORE_H
 #define CORE_H
 
+#include "chunk-streamer.h"
 #include "data.h"
 #include "grid.h"
 #include "streamer.h"
-
-#include <boost/scoped_ptr.hpp>
 
 class Core
 {
@@ -38,6 +37,11 @@ public:
 		return grid.get();
 	}
 
+	inline ChunkStreamer *getChunkStreamer()
+	{
+		return chunkStreamer.get();
+	}
+
 	inline Streamer *getStreamer()
 	{
 		return streamer.get();
@@ -45,6 +49,8 @@ public:
 private:
 	boost::scoped_ptr<Data> data;
 	boost::scoped_ptr<Grid> grid;
+
+	boost::scoped_ptr<ChunkStreamer> chunkStreamer;
 	boost::scoped_ptr<Streamer> streamer;
 };
 
