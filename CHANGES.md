@@ -1,6 +1,31 @@
 SA-MP Streamer Plugin
 =====================
 
+v2.9.4
+------
+
+- Fixed map icon bug with Streamer_SetItemOffset
+- Improved tags in include file (thanks Y_Less)
+- Fixed crash on GMX that occurred when actors were streamed in
+
+v2.9.3
+------
+
+- Added Streamer_(G/S)etItemPos, Streamer_GetArrayDataLength,
+  GetDynamicAreaType, and Streamer_AmxUnloadDestroyItems (thanks
+  IstuntmanI)
+- Added virtual world support for Streamer_GetNearbyItems (thanks
+  TommyB)
+- Fixed various bugs
+
+v2.9.2
+------
+
+- Fixed some attached object bugs
+- Added GetDynamicActorAnimation (thanks IstuntmanI)
+- Made chunk streaming toggleable (now disabled by default)
+- Added Streamer_(Is)ToggleChunkStream
+
 v2.9.1
 ------
 

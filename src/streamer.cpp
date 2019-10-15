@@ -14,86 +14,18 @@
  * limitations under the License.
  */
 
+#include "precompiled.h"
+
 #include "streamer.h"
-
 #include "core.h"
-#include "utility.h"
-
-#include <boost/chrono.hpp>
-#include <boost/geometry.hpp>
-#include <boost/geometry/geometries/geometries.hpp>
-#include <boost/intrusive_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
-#include <boost/tuple/tuple.hpp>
-#include <boost/unordered_map.hpp>
-#include <boost/unordered_set.hpp>
-#include <boost/variant.hpp>
-
-#include <Eigen/Core>
-
-#include <bitset>
-#include <limits>
-#include <map>
-#include <set>
-#include <string>
-#include <vector>
 
 Streamer::Streamer()
 {
 	averageElapsedTime = 0.0f;
-	chunkSize[STREAMER_TYPE_OBJECT] = 100;
-	chunkSize[STREAMER_TYPE_MAP_ICON] = 100;
-	chunkSize[STREAMER_TYPE_3D_TEXT_LABEL] = 100;
 	lastUpdateTime = 0.0f;
 	tickCount = 0;
 	tickRate = 50;
 	velocityBoundaries = boost::make_tuple(0.25f, 7.5f);
-}
-
-std::size_t Streamer::getChunkSize(int type)
-{
-	switch (type)
-	{
-		case STREAMER_TYPE_OBJECT:
-		{
-			return chunkSize[STREAMER_TYPE_OBJECT];
-		}
-		case STREAMER_TYPE_MAP_ICON:
-		{
-			return chunkSize[STREAMER_TYPE_MAP_ICON];
-		}
-		case STREAMER_TYPE_3D_TEXT_LABEL:
-		{
-			return chunkSize[STREAMER_TYPE_3D_TEXT_LABEL];
-		}
-	}
-	return 0;
-}
-
-bool Streamer::setChunkSize(int type, std::size_t value)
-{
-	if (value > 0)
-	{
-		switch (type)
-		{
-			case STREAMER_TYPE_OBJECT:
-			{
-				chunkSize[STREAMER_TYPE_OBJECT] = value;
-				return true;
-			}
-			case STREAMER_TYPE_MAP_ICON:
-			{
-				chunkSize[STREAMER_TYPE_MAP_ICON] = value;
-				return true;
-			}
-			case STREAMER_TYPE_3D_TEXT_LABEL:
-			{
-				chunkSize[STREAMER_TYPE_3D_TEXT_LABEL] = value;
-				return true;
-			}
-		}
-	}
-	return false;
 }
 
 void Streamer::calculateAverageElapsedTime()
@@ -127,9 +59,9 @@ void Streamer::startAutomaticUpdate()
 			bool updatedActiveItems = false;
 			for (boost::unordered_map<int, Player>::iterator p = core->getData()->players.begin(); p != core->getData()->players.end(); ++p)
 			{
-				if (p->second.processingChunks.any())
+				if (core->getChunkStreamer()->getChunkStreamingEnabled() && p->second.processingChunks.any())
 				{
-					performPlayerChunkUpdate(p->second, true);
+					core->getChunkStreamer()->performPlayerChunkUpdate(p->second, true);
 				}
 				else
 				{
@@ -199,44 +131,47 @@ void Streamer::startManualUpdate(Player &player, int type)
 		{
 			if (player.delayedUpdateFreeze)
 			{
-				sampgdk::TogglePlayerControllable(player.playerID, true);
+				sampgdk::TogglePlayerControllable(player.playerId, true);
 			}
 			player.delayedUpdate = false;
 		}
 	}
 	if (type >= 0 && type < STREAMER_MAX_TYPES)
 	{
-		switch (type)
+		if (core->getChunkStreamer()->getChunkStreamingEnabled())
 		{
-			case STREAMER_TYPE_OBJECT:
+			switch (type)
 			{
-				player.discoveredObjects.clear();
-				player.existingObjects.clear();
-				player.processingChunks.reset(STREAMER_TYPE_OBJECT);
-				break;
-			}
-			case STREAMER_TYPE_MAP_ICON:
-			{
-				player.discoveredMapIcons.clear();
-				player.existingMapIcons.clear();
-				player.processingChunks.reset(STREAMER_TYPE_MAP_ICON);
-				break;
-			}
-			case STREAMER_TYPE_3D_TEXT_LABEL:
-			{
-				player.discoveredTextLabels.clear();
-				player.existingTextLabels.clear();
-				player.processingChunks.reset(STREAMER_TYPE_3D_TEXT_LABEL);
-				break;
+				case STREAMER_TYPE_OBJECT:
+				{
+					player.discoveredObjects.clear();
+					player.existingObjects.clear();
+					player.processingChunks.reset(STREAMER_TYPE_OBJECT);
+					break;
+				}
+				case STREAMER_TYPE_MAP_ICON:
+				{
+					player.discoveredMapIcons.clear();
+					player.existingMapIcons.clear();
+					player.processingChunks.reset(STREAMER_TYPE_MAP_ICON);
+					break;
+				}
+				case STREAMER_TYPE_3D_TEXT_LABEL:
+				{
+					player.discoveredTextLabels.clear();
+					player.existingTextLabels.clear();
+					player.processingChunks.reset(STREAMER_TYPE_3D_TEXT_LABEL);
+					break;
+				}
 			}
 		}
 		player.enabledItems.reset();
 		player.enabledItems.set(type);
 	}
-	else
+	else if (core->getChunkStreamer()->getChunkStreamingEnabled())
 	{
-		player.discoveredObjects.clear();
 		player.discoveredMapIcons.clear();
+		player.discoveredObjects.clear();
 		player.discoveredTextLabels.clear();
 		player.existingMapIcons.clear();
 		player.existingObjects.clear();
@@ -245,42 +180,11 @@ void Streamer::startManualUpdate(Player &player, int type)
 	}
 	processActiveItems();
 	performPlayerUpdate(player, false);
-	performPlayerChunkUpdate(player, false);
-	player.enabledItems = enabledItems;
-}
-
-void Streamer::performPlayerChunkUpdate(Player &player, bool automatic)
-{
-	for (std::vector<int>::const_iterator t = core->getData()->typePriority.begin(); t != core->getData()->typePriority.end(); ++t)
+	if (core->getChunkStreamer()->getChunkStreamingEnabled())
 	{
-		switch (*t)
-		{
-			case STREAMER_TYPE_OBJECT:
-			{
-				if (!player.discoveredObjects.empty() || !player.removedObjects.empty())
-				{
-					streamObjects(player, automatic);
-				}
-				break;
-			}
-			case STREAMER_TYPE_MAP_ICON:
-			{
-				if (!player.discoveredMapIcons.empty() || !player.removedMapIcons.empty())
-				{
-					streamMapIcons(player, automatic);
-				}
-				break;
-			}
-			case STREAMER_TYPE_3D_TEXT_LABEL:
-			{
-				if (!player.discoveredTextLabels.empty() || !player.removedTextLabels.empty())
-				{
-					streamTextLabels(player, automatic);
-				}
-				break;
-			}
-		}
+		core->getChunkStreamer()->performPlayerChunkUpdate(player, false);
 	}
+	player.enabledItems = enabledItems;
 }
 
 void Streamer::performPlayerUpdate(Player &player, bool automatic)
@@ -289,20 +193,20 @@ void Streamer::performPlayerUpdate(Player &player, bool automatic)
 	bool update = true;
 	if (automatic)
 	{
-		player.interiorID = sampgdk::GetPlayerInterior(player.playerID);
-		player.worldID = sampgdk::GetPlayerVirtualWorld(player.playerID);
+		player.interiorId = sampgdk::GetPlayerInterior(player.playerId);
+		player.worldId = sampgdk::GetPlayerVirtualWorld(player.playerId);
 		if (!player.updateUsingCameraPosition)
 		{
-			int state = sampgdk::GetPlayerState(player.playerID);
+			int state = sampgdk::GetPlayerState(player.playerId);
 			if ((state != PLAYER_STATE_NONE && state != PLAYER_STATE_WASTED) || (state == PLAYER_STATE_SPECTATING && !player.requestingClass))
 			{
-				if (!sampgdk::IsPlayerInAnyVehicle(player.playerID))
+				if (!sampgdk::IsPlayerInAnyVehicle(player.playerId))
 				{
-					sampgdk::GetPlayerPos(player.playerID, &player.position[0], &player.position[1], &player.position[2]);
+					sampgdk::GetPlayerPos(player.playerId, &player.position[0], &player.position[1], &player.position[2]);
 				}
 				else
 				{
-					sampgdk::GetVehiclePos(sampgdk::GetPlayerVehicleID(player.playerID), &player.position[0], &player.position[1], &player.position[2]);
+					sampgdk::GetVehiclePos(sampgdk::GetPlayerVehicleID(player.playerId), &player.position[0], &player.position[1], &player.position[2]);
 				}
 				if (player.position != position)
 				{
@@ -310,11 +214,11 @@ void Streamer::performPlayerUpdate(Player &player, bool automatic)
 					Eigen::Vector3f velocity = Eigen::Vector3f::Zero();
 					if (state == PLAYER_STATE_ONFOOT)
 					{
-						sampgdk::GetPlayerVelocity(player.playerID, &velocity[0], &velocity[1], &velocity[2]);
+						sampgdk::GetPlayerVelocity(player.playerId, &velocity[0], &velocity[1], &velocity[2]);
 					}
 					else if (state == PLAYER_STATE_DRIVER || state == PLAYER_STATE_PASSENGER)
 					{
-						sampgdk::GetVehicleVelocity(sampgdk::GetPlayerVehicleID(player.playerID), &velocity[0], &velocity[1], &velocity[2]);
+						sampgdk::GetVehicleVelocity(sampgdk::GetPlayerVehicleID(player.playerId), &velocity[0], &velocity[1], &velocity[2]);
 					}
 					float velocityNorm = velocity.squaredNorm();
 					if (velocityNorm > velocityBoundaries.get<0>() && velocityNorm < velocityBoundaries.get<1>())
@@ -334,14 +238,14 @@ void Streamer::performPlayerUpdate(Player &player, bool automatic)
 		}
 		else
 		{
-			sampgdk::GetPlayerCameraPos(player.playerID, &player.position[0], &player.position[1], &player.position[2]);
+			sampgdk::GetPlayerCameraPos(player.playerId, &player.position[0], &player.position[1], &player.position[2]);
 		}
 		if (player.delayedCheckpoint)
 		{
 			boost::unordered_map<int, Item::SharedCheckpoint>::iterator c = core->getData()->checkpoints.find(player.delayedCheckpoint);
 			if (c != core->getData()->checkpoints.end())
 			{
-				sampgdk::SetPlayerCheckpoint(player.playerID, c->second->position[0], c->second->position[1], c->second->position[2], c->second->size);
+				sampgdk::SetPlayerCheckpoint(player.playerId, c->second->position[0], c->second->position[1], c->second->position[2], c->second->size);
 				if (c->second->streamCallbacks)
 				{
 					streamInCallbacks.push_back(boost::make_tuple(STREAMER_TYPE_CP, c->first));
@@ -355,7 +259,7 @@ void Streamer::performPlayerUpdate(Player &player, bool automatic)
 			boost::unordered_map<int, Item::SharedRaceCheckpoint>::iterator r = core->getData()->raceCheckpoints.find(player.delayedRaceCheckpoint);
 			if (r != core->getData()->raceCheckpoints.end())
 			{
-				sampgdk::SetPlayerRaceCheckpoint(player.playerID, r->second->type, r->second->position[0], r->second->position[1], r->second->position[2], r->second->next[0], r->second->next[1], r->second->next[2], r->second->size);
+				sampgdk::SetPlayerRaceCheckpoint(player.playerId, r->second->type, r->second->position[0], r->second->position[1], r->second->position[2], r->second->next[0], r->second->next[1], r->second->next[2], r->second->size);
 				if (r->second->streamCallbacks)
 				{
 					streamInCallbacks.push_back(boost::make_tuple(STREAMER_TYPE_RACE_CP, r->first));
@@ -388,9 +292,16 @@ void Streamer::performPlayerUpdate(Player &player, bool automatic)
 				{
 					case STREAMER_TYPE_OBJECT:
 					{
-						if (!core->getData()->objects.empty() && player.enabledItems[STREAMER_TYPE_OBJECT] && !sampgdk::IsPlayerNPC(player.playerID))
+						if (!core->getData()->objects.empty() && player.enabledItems[STREAMER_TYPE_OBJECT])
 						{
-							discoverObjects(player, cells);
+							if (core->getChunkStreamer()->getChunkStreamingEnabled())
+							{
+								core->getChunkStreamer()->discoverObjects(player, cells);
+							}
+							else
+							{
+								processObjects(player, cells);
+							}
 						}
 						break;
 					}
@@ -412,17 +323,31 @@ void Streamer::performPlayerUpdate(Player &player, bool automatic)
 					}
 					case STREAMER_TYPE_MAP_ICON:
 					{
-						if (!core->getData()->mapIcons.empty() && player.enabledItems[STREAMER_TYPE_MAP_ICON] && !sampgdk::IsPlayerNPC(player.playerID))
+						if (!core->getData()->mapIcons.empty() && player.enabledItems[STREAMER_TYPE_MAP_ICON])
 						{
-							discoverMapIcons(player, cells);
+							if (core->getChunkStreamer()->getChunkStreamingEnabled())
+							{
+								core->getChunkStreamer()->discoverMapIcons(player, cells);
+							}
+							else
+							{
+								processMapIcons(player, cells);
+							}
 						}
 						break;
 					}
 					case STREAMER_TYPE_3D_TEXT_LABEL:
 					{
-						if (!core->getData()->textLabels.empty() && player.enabledItems[STREAMER_TYPE_3D_TEXT_LABEL] && !sampgdk::IsPlayerNPC(player.playerID))
+						if (!core->getData()->textLabels.empty() && player.enabledItems[STREAMER_TYPE_3D_TEXT_LABEL])
 						{
-							discoverTextLabels(player, cells);
+							if (core->getChunkStreamer()->getChunkStreamingEnabled())
+							{
+								core->getChunkStreamer()->discoverTextLabels(player, cells);
+							}
+							else
+							{
+								processTextLabels(player, cells);
+							}
 						}
 						break;
 					}
@@ -683,23 +608,26 @@ void Streamer::executeCallbacks()
 
 void Streamer::discoverActors(Player &player, const std::vector<SharedCell> &cells)
 {
-	for (std::vector<SharedCell>::const_iterator c = cells.begin(); c != cells.end(); ++c)
+	if (!sampgdk::IsPlayerNPC(player.playerId))
 	{
-		for (boost::unordered_map<int, Item::SharedActor>::const_iterator a = (*c)->actors.begin(); a != (*c)->actors.end(); ++a)
+		for (std::vector<SharedCell>::const_iterator c = cells.begin(); c != cells.end(); ++c)
 		{
-			boost::unordered_map<int, Item::SharedActor>::iterator d = core->getData()->discoveredActors.find(a->first);
-			if (d == core->getData()->discoveredActors.end())
+			for (boost::unordered_map<int, Item::SharedActor>::const_iterator a = (*c)->actors.begin(); a != (*c)->actors.end(); ++a)
 			{
-				if (doesPlayerSatisfyConditions(a->second->players, player.playerID, a->second->interiors, player.interiorID, a->second->worlds, player.worldID, a->second->areas, player.internalAreas, a->second->inverseAreaChecking))
+				boost::unordered_map<int, Item::SharedActor>::iterator d = core->getData()->discoveredActors.find(a->first);
+				if (d == core->getData()->discoveredActors.end())
 				{
-					if (a->second->comparableStreamDistance < STREAMER_STATIC_DISTANCE_CUTOFF || boost::geometry::comparable_distance(player.position, Eigen::Vector3f(a->second->position + a->second->positionOffset)) < (a->second->comparableStreamDistance * player.radiusMultipliers[STREAMER_TYPE_ACTOR]))
+					if (doesPlayerSatisfyConditions(a->second->players, player.playerId, a->second->interiors, player.interiorId, a->second->worlds, player.worldId, a->second->areas, player.internalAreas, a->second->inverseAreaChecking))
 					{
-						boost::unordered_map<int, int>::iterator i = core->getData()->internalActors.find(a->first);
-						if (i == core->getData()->internalActors.end())
+						if (a->second->comparableStreamDistance < STREAMER_STATIC_DISTANCE_CUTOFF || boost::geometry::comparable_distance(player.position, Eigen::Vector3f(a->second->position + a->second->positionOffset)) < (a->second->comparableStreamDistance * player.radiusMultipliers[STREAMER_TYPE_ACTOR]))
 						{
-							a->second->worldID = !a->second->worlds.empty() ? player.worldID : 0;
+							boost::unordered_map<int, int>::iterator i = core->getData()->internalActors.find(a->first);
+							if (i == core->getData()->internalActors.end())
+							{
+								a->second->worldId = !a->second->worlds.empty() ? player.worldId : 0;
+							}
+							core->getData()->discoveredActors.insert(*a);
 						}
-						core->getData()->discoveredActors.insert(*a);
 					}
 				}
 			}
@@ -731,25 +659,25 @@ void Streamer::streamActors()
 		sortedActors.insert(std::make_pair(d->second->priority, d->second));
 	}
 	core->getData()->discoveredActors.clear();
-	for (std::multimap<int, Item::SharedActor>::iterator i = sortedActors.begin(); i != sortedActors.end(); ++i)
+	for (std::multimap<int, Item::SharedActor>::iterator s = sortedActors.begin(); s != sortedActors.end(); ++s)
 	{
 		if (core->getData()->internalActors.size() == core->getData()->getGlobalMaxVisibleItems(STREAMER_TYPE_ACTOR))
 		{
 			break;
 		}
-		int internalID = sampgdk::CreateActor(i->second->modelID, i->second->position[0], i->second->position[1], i->second->position[2], i->second->rotation);
-		if (internalID == INVALID_ALTERNATE_ID)
+		int internalId = sampgdk::CreateActor(s->second->modelId, s->second->position[0], s->second->position[1], s->second->position[2], s->second->rotation);
+		if (internalId == INVALID_ACTOR_ID)
 		{
 			break;
 		}
-		sampgdk::SetActorInvulnerable(internalID, i->second->invulnerable);
-		sampgdk::SetActorHealth(internalID, i->second->health);
-		sampgdk::SetActorVirtualWorld(internalID, i->second->worldID);
-		if (i->second->anim)
+		sampgdk::SetActorInvulnerable(internalId, s->second->invulnerable);
+		sampgdk::SetActorHealth(internalId, s->second->health);
+		sampgdk::SetActorVirtualWorld(internalId, s->second->worldId);
+		if (s->second->anim)
 		{
-			sampgdk::ApplyActorAnimation(internalID, i->second->anim->lib.c_str(), i->second->anim->name.c_str(), i->second->anim->delta, i->second->anim->loop, i->second->anim->lockx, i->second->anim->locky, i->second->anim->freeze, i->second->anim->time);
+			sampgdk::ApplyActorAnimation(internalId, s->second->anim->lib.c_str(), s->second->anim->name.c_str(), s->second->anim->delta, s->second->anim->loop, s->second->anim->lockx, s->second->anim->locky, s->second->anim->freeze, s->second->anim->time);
 		}
-		core->getData()->internalActors.insert(std::make_pair(i->second->actorID, internalID));
+		core->getData()->internalActors.insert(std::make_pair(s->second->actorId, internalId));
 	}
 	for (boost::unordered_map<int, Player>::iterator p = core->getData()->players.begin(); p != core->getData()->players.end(); ++p)
 	{
@@ -759,50 +687,56 @@ void Streamer::streamActors()
 
 void Streamer::processAreas(Player &player, const std::vector<SharedCell> &cells)
 {
+	int state = sampgdk::GetPlayerState(player.playerId);
 	for (std::vector<SharedCell>::const_iterator c = cells.begin(); c != cells.end(); ++c)
 	{
-		int state = sampgdk::GetPlayerState(player.playerID);
 		for (boost::unordered_map<int, Item::SharedArea>::const_iterator a = (*c)->areas.begin(); a != (*c)->areas.end(); ++a)
 		{
-			bool inArea = false;
-			if (doesPlayerSatisfyConditions(a->second->players, player.playerID, a->second->interiors, player.interiorID, a->second->worlds, player.worldID) && ((!a->second->spectateMode && state != PLAYER_STATE_SPECTATING) || a->second->spectateMode))
-			{
-				inArea = Utility::isPointInArea(player.position, a->second);
-			}
-			boost::unordered_set<int>::iterator i = player.internalAreas.find(a->first);
-			if (inArea)
-			{
-				if (i == player.internalAreas.end())
-				{
-					player.internalAreas.insert(a->first);
-					areaEnterCallbacks.insert(std::make_pair(a->second->priority, boost::make_tuple(a->first, player.playerID)));
-				}
-				if (a->second->cell)
-				{
-					player.visibleCell->areas.insert(*a);
-				}
-			}
-			else
-			{
-				if (i != player.internalAreas.end())
-				{
-					player.internalAreas.quick_erase(i);
-					areaLeaveCallbacks.insert(std::make_pair(a->second->priority, boost::make_tuple(a->first, player.playerID)));
-				}
-			}
+			Streamer::processPlayerArea(player, a->second, state);
 		}
 	}
 }
 
+bool Streamer::processPlayerArea(Player &player, const Item::SharedArea &a, const int state)
+{
+	bool inArea = false;
+	if (doesPlayerSatisfyConditions(a->players, player.playerId, a->interiors, player.interiorId, a->worlds, player.worldId) && ((!a->spectateMode && state != PLAYER_STATE_SPECTATING) || a->spectateMode))
+	{
+		inArea = Utility::isPointInArea(player.position, a);
+	}
+	boost::unordered_set<int>::iterator foundArea = player.internalAreas.find(a->areaId);
+	if (inArea)
+	{
+		if (foundArea == player.internalAreas.end())
+		{
+			player.internalAreas.insert(a->areaId);
+			areaEnterCallbacks.insert(std::make_pair(a->priority, boost::make_tuple(a->areaId, player.playerId)));
+		}
+		if (a->cell)
+		{
+			player.visibleCell->areas.insert(std::make_pair(a->areaId, a));
+		}
+	}
+	else
+	{
+		if (foundArea != player.internalAreas.end())
+		{
+			player.internalAreas.erase(foundArea);
+			areaLeaveCallbacks.insert(std::make_pair(a->priority, boost::make_tuple(a->areaId, player.playerId)));
+		}
+	}
+	return inArea;
+}
+
 void Streamer::processCheckpoints(Player &player, const std::vector<SharedCell> &cells)
 {
-	std::multimap<std::pair<int, float>, Item::SharedCheckpoint, Item::Compare> discoveredCheckpoints;
+	std::multimap<std::pair<int, float>, Item::SharedCheckpoint, Item::PairCompare> discoveredCheckpoints;
 	for (std::vector<SharedCell>::const_iterator c = cells.begin(); c != cells.end(); ++c)
 	{
 		for (boost::unordered_map<int, Item::SharedCheckpoint>::const_iterator d = (*c)->checkpoints.begin(); d != (*c)->checkpoints.end(); ++d)
 		{
 			float distance = std::numeric_limits<float>::infinity();
-			if (doesPlayerSatisfyConditions(d->second->players, player.playerID, d->second->interiors, player.interiorID, d->second->worlds, player.worldID, d->second->areas, player.internalAreas, d->second->inverseAreaChecking))
+			if (doesPlayerSatisfyConditions(d->second->players, player.playerId, d->second->interiors, player.interiorId, d->second->worlds, player.worldId, d->second->areas, player.internalAreas, d->second->inverseAreaChecking))
 			{
 				if (d->second->comparableStreamDistance < STREAMER_STATIC_DISTANCE_CUTOFF)
 				{
@@ -821,10 +755,10 @@ void Streamer::processCheckpoints(Player &player, const std::vector<SharedCell> 
 			{
 				if (d->first == player.visibleCheckpoint)
 				{
-					sampgdk::DisablePlayerCheckpoint(player.playerID);
+					sampgdk::DisablePlayerCheckpoint(player.playerId);
 					if (d->second->streamCallbacks)
 					{
-						streamOutCallbacks.push_back(boost::make_tuple(STREAMER_TYPE_CP, d->second->checkpointID));
+						streamOutCallbacks.push_back(boost::make_tuple(STREAMER_TYPE_CP, d->second->checkpointId));
 					}
 					player.activeCheckpoint = 0;
 					player.visibleCheckpoint = 0;
@@ -835,35 +769,36 @@ void Streamer::processCheckpoints(Player &player, const std::vector<SharedCell> 
 	}
 	if (!discoveredCheckpoints.empty())
 	{
-		std::multimap<std::pair<int, float>, Item::SharedCheckpoint, Item::Compare>::iterator d = discoveredCheckpoints.begin();
-		if (d->second->checkpointID != player.visibleCheckpoint)
+		std::multimap<std::pair<int, float>, Item::SharedCheckpoint, Item::PairCompare>::iterator d = discoveredCheckpoints.begin();
+		if (d->second->checkpointId != player.visibleCheckpoint)
 		{
 			if (player.visibleCheckpoint)
 			{
-				sampgdk::DisablePlayerCheckpoint(player.playerID);
+				sampgdk::DisablePlayerCheckpoint(player.playerId);
 				if (d->second->streamCallbacks)
 				{
-					streamOutCallbacks.push_back(boost::make_tuple(STREAMER_TYPE_CP, d->second->checkpointID));
+					streamOutCallbacks.push_back(boost::make_tuple(STREAMER_TYPE_CP, d->second->checkpointId));
 				}
 				player.activeCheckpoint = 0;
 			}
-			player.delayedCheckpoint = d->second->checkpointID;
+			player.delayedCheckpoint = d->second->checkpointId;
 		}
 		if (d->second->cell)
 		{
-			player.visibleCell->checkpoints.insert(std::make_pair(d->second->checkpointID, d->second));
+			player.visibleCell->checkpoints.insert(std::make_pair(d->second->checkpointId, d->second));
 		}
 	}
 }
 
-void Streamer::discoverMapIcons(Player &player, const std::vector<SharedCell> &cells)
+void Streamer::processMapIcons(Player &player, const std::vector<SharedCell> &cells)
 {
+	std::multimap<std::pair<int, float>, Item::SharedMapIcon, Item::PairCompare> discoveredMapIcons, existingMapIcons;
 	for (std::vector<SharedCell>::const_iterator c = cells.begin(); c != cells.end(); ++c)
 	{
 		for (boost::unordered_map<int, Item::SharedMapIcon>::const_iterator m = (*c)->mapIcons.begin(); m != (*c)->mapIcons.end(); ++m)
 		{
 			float distance = std::numeric_limits<float>::infinity();
-			if (doesPlayerSatisfyConditions(m->second->players, player.playerID, m->second->interiors, player.interiorID, m->second->worlds, player.worldID, m->second->areas, player.internalAreas, m->second->inverseAreaChecking))
+			if (doesPlayerSatisfyConditions(m->second->players, player.playerId, m->second->interiors, player.interiorId, m->second->worlds, player.worldId, m->second->areas, player.internalAreas, m->second->inverseAreaChecking))
 			{
 				if (m->second->comparableStreamDistance < STREAMER_STATIC_DISTANCE_CUTOFF)
 				{
@@ -879,7 +814,7 @@ void Streamer::discoverMapIcons(Player &player, const std::vector<SharedCell> &c
 			{
 				if (i == player.internalMapIcons.end())
 				{
-					player.discoveredMapIcons.insert(std::make_pair(std::make_pair(m->second->priority, distance), m->second));
+					discoveredMapIcons.insert(std::make_pair(std::make_pair(m->second->priority, distance), m->second));
 				}
 				else
 				{
@@ -887,133 +822,84 @@ void Streamer::discoverMapIcons(Player &player, const std::vector<SharedCell> &c
 					{
 						player.visibleCell->mapIcons.insert(*m);
 					}
-					player.existingMapIcons.insert(std::make_pair(std::make_pair(m->second->priority, distance), m->second));
+					existingMapIcons.insert(std::make_pair(std::make_pair(m->second->priority, distance), m->second));
 				}
 			}
 			else
 			{
 				if (i != player.internalMapIcons.end())
 				{
-					player.removedMapIcons.push_back(i->first);
-				}
-			}
-		}
-	}
-	if (!player.discoveredMapIcons.empty() || !player.removedMapIcons.empty())
-	{
-		player.processingChunks.set(STREAMER_TYPE_MAP_ICON);
-	}
-}
-
-void Streamer::streamMapIcons(Player &player, bool automatic)
-{
-	if (!automatic || ++player.chunkTickCount[STREAMER_TYPE_MAP_ICON] >= player.chunkTickRate[STREAMER_TYPE_MAP_ICON])
-	{
-		std::size_t chunkCount = 0;
-		if (!player.removedMapIcons.empty())
-		{
-			std::vector<int>::iterator r = player.removedMapIcons.begin();
-			while (r != player.removedMapIcons.end())
-			{
-				if (automatic && ++chunkCount > chunkSize[STREAMER_TYPE_MAP_ICON])
-				{
-					break;
-				}
-				boost::unordered_map<int, int>::iterator i = player.internalMapIcons.find(*r);
-				if (i != player.internalMapIcons.end())
-				{
-					sampgdk::RemovePlayerMapIcon(player.playerID, i->second);
-					boost::unordered_map<int, Item::SharedMapIcon>::iterator m = core->getData()->mapIcons.find(*r);
-					if (m != core->getData()->mapIcons.end())
+					sampgdk::RemovePlayerMapIcon(player.playerId, i->second);
+					if (m->second->streamCallbacks)
 					{
-						if (m->second->streamCallbacks)
-						{
-							streamOutCallbacks.push_back(boost::make_tuple(STREAMER_TYPE_MAP_ICON, *r));
-						}
+						streamOutCallbacks.push_back(boost::make_tuple(STREAMER_TYPE_MAP_ICON, m->first));
 					}
 					player.mapIconIdentifier.remove(i->second, player.internalMapIcons.size());
-					player.internalMapIcons.quick_erase(i);
+					player.internalMapIcons.erase(i);
 				}
-				r = player.removedMapIcons.erase(r);
 			}
 		}
-		else
-		{
-			std::multimap<std::pair<int, float>, Item::SharedMapIcon, Item::Compare>::iterator d = player.discoveredMapIcons.begin();
-			while (d != player.discoveredMapIcons.end())
-			{
-				if (automatic && ++chunkCount > chunkSize[STREAMER_TYPE_MAP_ICON])
-				{
-					break;
-				}
-				boost::unordered_map<int, Item::SharedMapIcon>::iterator m = core->getData()->mapIcons.find(d->second->mapIconID);
-				if (m == core->getData()->mapIcons.end())
-				{
-					player.discoveredMapIcons.erase(d++);
-					continue;
-				}
-				if (player.internalMapIcons.size() == player.maxVisibleMapIcons)
-				{
-					std::multimap<std::pair<int, float>, Item::SharedMapIcon, Item::Compare>::reverse_iterator e = player.existingMapIcons.rbegin();
-					if (e != player.existingMapIcons.rend())
-					{
-						if (e->first.first < d->first.first || (e->first.second > STREAMER_STATIC_DISTANCE_CUTOFF && d->first.second < e->first.second))
-						{
-							boost::unordered_map<int, int>::iterator i = player.internalMapIcons.find(e->second->mapIconID);
-							if (i != player.internalMapIcons.end())
-							{
-								sampgdk::RemovePlayerMapIcon(player.playerID, i->second);
-								if (e->second->streamCallbacks)
-								{
-									streamOutCallbacks.push_back(boost::make_tuple(STREAMER_TYPE_MAP_ICON, e->second->mapIconID));
-								}
-								player.mapIconIdentifier.remove(i->second, player.internalMapIcons.size());
-								player.internalMapIcons.quick_erase(i);
-							}
-							if (e->second->cell)
-							{
-								player.visibleCell->mapIcons.erase(e->second->mapIconID);
-							}
-							player.existingMapIcons.erase(--e.base());
-						}
-					}
-					if (player.internalMapIcons.size() == player.maxVisibleMapIcons)
-					{
-						player.discoveredMapIcons.clear();
-						break;
-					}
-				}
-				int internalID = player.mapIconIdentifier.get();
-				sampgdk::SetPlayerMapIcon(player.playerID, internalID, d->second->position[0], d->second->position[1], d->second->position[2], d->second->type, d->second->color, d->second->style);
-				if (d->second->streamCallbacks)
-				{
-					streamInCallbacks.push_back(boost::make_tuple(STREAMER_TYPE_MAP_ICON, d->second->mapIconID));
-				}
-				player.internalMapIcons.insert(std::make_pair(d->second->mapIconID, internalID));
-				if (d->second->cell)
-				{
-					player.visibleCell->mapIcons.insert(std::make_pair(d->second->mapIconID, d->second));
-				}
-				player.discoveredMapIcons.erase(d++);
-			}
-		}
-		player.chunkTickCount[STREAMER_TYPE_MAP_ICON] = 0;
 	}
-	if (player.discoveredMapIcons.empty() && player.removedMapIcons.empty())
+	for (std::multimap<std::pair<int, float>, Item::SharedMapIcon, Item::PairCompare>::iterator d = discoveredMapIcons.begin(); d != discoveredMapIcons.end(); ++d)
 	{
-		player.existingMapIcons.clear();
-		player.processingChunks.reset(STREAMER_TYPE_MAP_ICON);
+		boost::unordered_map<int, int>::iterator i = player.internalMapIcons.find(d->second->mapIconId);
+		if (i != player.internalMapIcons.end())
+		{
+			continue;
+		}
+		if (player.internalMapIcons.size() == player.maxVisibleMapIcons)
+		{
+			std::multimap<std::pair<int, float>, Item::SharedMapIcon, Item::PairCompare>::reverse_iterator e = existingMapIcons.rbegin();
+			if (e != existingMapIcons.rend())
+			{
+				if (e->first.first < d->first.first || (e->first.second > STREAMER_STATIC_DISTANCE_CUTOFF && d->first.second < e->first.second))
+				{
+					boost::unordered_map<int, int>::iterator j = player.internalMapIcons.find(e->second->mapIconId);
+					if (j != player.internalMapIcons.end())
+					{
+						sampgdk::RemovePlayerMapIcon(player.playerId, j->second);
+						if (e->second->streamCallbacks)
+						{
+							streamOutCallbacks.push_back(boost::make_tuple(STREAMER_TYPE_MAP_ICON, e->second->mapIconId));
+						}
+						player.mapIconIdentifier.remove(j->second, player.internalMapIcons.size());
+						player.internalMapIcons.erase(j);
+					}
+					if (e->second->cell)
+					{
+						player.visibleCell->mapIcons.erase(e->second->mapIconId);
+					}
+					existingMapIcons.erase(--e.base());
+				}
+			}
+			if (player.internalMapIcons.size() == player.maxVisibleMapIcons)
+			{
+				break;
+			}
+		}
+		int internalId = player.mapIconIdentifier.get();
+		sampgdk::SetPlayerMapIcon(player.playerId, internalId, d->second->position[0], d->second->position[1], d->second->position[2], d->second->type, d->second->color, d->second->style);
+		if (d->second->streamCallbacks)
+		{
+			streamInCallbacks.push_back(boost::make_tuple(STREAMER_TYPE_MAP_ICON, d->second->mapIconId));
+		}
+		player.internalMapIcons.insert(std::make_pair(d->second->mapIconId, internalId));
+		if (d->second->cell)
+		{
+			player.visibleCell->mapIcons.insert(std::make_pair(d->second->mapIconId, d->second));
+		}
 	}
 }
 
-void Streamer::discoverObjects(Player &player, const std::vector<SharedCell> &cells)
+void Streamer::processObjects(Player &player, const std::vector<SharedCell> &cells)
 {
+	std::multimap<std::pair<int, float>, Item::SharedObject, Item::PairCompare> discoveredObjects, existingObjects;
 	for (std::vector<SharedCell>::const_iterator c = cells.begin(); c != cells.end(); ++c)
 	{
 		for (boost::unordered_map<int, Item::SharedObject>::const_iterator o = (*c)->objects.begin(); o != (*c)->objects.end(); ++o)
 		{
 			float distance = std::numeric_limits<float>::infinity();
-			if (doesPlayerSatisfyConditions(o->second->players, player.playerID, o->second->interiors, player.interiorID, o->second->worlds, player.worldID, o->second->areas, player.internalAreas, o->second->inverseAreaChecking))
+			if (doesPlayerSatisfyConditions(o->second->players, player.playerId, o->second->interiors, player.interiorId, o->second->attach ? o->second->attach->worlds : o->second->worlds, player.worldId, o->second->areas, player.internalAreas, o->second->inverseAreaChecking))
 			{
 				if (o->second->comparableStreamDistance < STREAMER_STATIC_DISTANCE_CUTOFF)
 				{
@@ -1023,7 +909,7 @@ void Streamer::discoverObjects(Player &player, const std::vector<SharedCell> &ce
 				{
 					if (o->second->attach)
 					{
-						distance = static_cast<float>(boost::geometry::comparable_distance(player.position, o->second->attach->position) + std::numeric_limits<float>::epsilon());
+						distance = static_cast<float>(boost::geometry::comparable_distance(player.position, o->second->attach->position)) + std::numeric_limits<float>::epsilon();
 					}
 					else
 					{
@@ -1036,7 +922,7 @@ void Streamer::discoverObjects(Player &player, const std::vector<SharedCell> &ce
 			{
 				if (i == player.internalObjects.end())
 				{
-					player.discoveredObjects.insert(std::make_pair(std::make_pair(o->second->priority, distance), o->second));
+					discoveredObjects.insert(std::make_pair(std::make_pair(o->second->priority, distance), o->second));
 				}
 				else
 				{
@@ -1044,172 +930,130 @@ void Streamer::discoverObjects(Player &player, const std::vector<SharedCell> &ce
 					{
 						player.visibleCell->objects.insert(*o);
 					}
-					player.existingObjects.insert(std::make_pair(std::make_pair(o->second->priority, distance), o->second));
+					existingObjects.insert(std::make_pair(std::make_pair(o->second->priority, distance), o->second));
 				}
 			}
 			else
 			{
 				if (i != player.internalObjects.end())
 				{
-					player.removedObjects.push_back(i->first);
-				}
-			}
-		}
-	}
-	if (!player.discoveredObjects.empty() || !player.removedObjects.empty())
-	{
-		player.processingChunks.set(STREAMER_TYPE_OBJECT);
-	}
-}
-
-void Streamer::streamObjects(Player &player, bool automatic)
-{
-	if (!automatic || ++player.chunkTickCount[STREAMER_TYPE_OBJECT] >= player.chunkTickRate[STREAMER_TYPE_OBJECT])
-	{
-		std::size_t chunkCount = 0;
-		if (!player.removedObjects.empty())
-		{
-			std::vector<int>::iterator r = player.removedObjects.begin();
-			while (r != player.removedObjects.end())
-			{
-				if (automatic && ++chunkCount > chunkSize[STREAMER_TYPE_OBJECT])
-				{
-					break;
-				}
-				boost::unordered_map<int, int>::iterator i = player.internalObjects.find(*r);
-				if (i != player.internalObjects.end())
-				{
-					sampgdk::DestroyPlayerObject(player.playerID, i->second);
-					boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(*r);
-					if (o != core->getData()->objects.end())
+					sampgdk::DestroyPlayerObject(player.playerId, i->second);
+					if (o->second->streamCallbacks)
 					{
-						if (o->second->streamCallbacks)
-						{
-							streamOutCallbacks.push_back(boost::make_tuple(STREAMER_TYPE_OBJECT, *r));
-						}
+						streamOutCallbacks.push_back(boost::make_tuple(STREAMER_TYPE_OBJECT, o->first));
 					}
-					player.internalObjects.quick_erase(i);
+					player.internalObjects.erase(i);
 				}
-				r = player.removedObjects.erase(r);
 			}
 		}
-		else
+	}
+	for (std::multimap<std::pair<int, float>, Item::SharedObject, Item::PairCompare>::iterator d = discoveredObjects.begin(); d != discoveredObjects.end(); ++d)
+	{
+		boost::unordered_map<int, int>::iterator i = player.internalObjects.find(d->second->objectId);
+		if (i != player.internalObjects.end())
 		{
-			std::multimap<std::pair<int, float>, Item::SharedObject, Item::Compare>::iterator d = player.discoveredObjects.begin();
-			while (d != player.discoveredObjects.end())
+			continue;
+		}
+		int internalBaseId = INVALID_STREAMER_ID;
+		if (d->second->attach)
+		{
+			if (d->second->attach->object != INVALID_STREAMER_ID)
 			{
-				if (automatic && ++chunkCount > chunkSize[STREAMER_TYPE_OBJECT])
+				boost::unordered_map<int, int>::iterator j = player.internalObjects.find(d->second->attach->object);
+				if (j == player.internalObjects.end())
 				{
-					break;
-				}
-				boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(d->second->objectID);
-				if (o == core->getData()->objects.end())
-				{
-					player.discoveredObjects.erase(d++);
 					continue;
 				}
-				if (player.internalObjects.size() == player.currentVisibleObjects)
-				{
-					std::multimap<std::pair<int, float>, Item::SharedObject, Item::Compare>::reverse_iterator e = player.existingObjects.rbegin();
-					if (e != player.existingObjects.rend())
-					{
-						if (e->first.first < d->first.first || (e->first.second > STREAMER_STATIC_DISTANCE_CUTOFF && d->first.second < e->first.second))
-						{
-							boost::unordered_map<int, int>::iterator i = player.internalObjects.find(e->second->objectID);
-							if (i != player.internalObjects.end())
-							{
-								sampgdk::DestroyPlayerObject(player.playerID, i->second);
-								if (e->second->streamCallbacks)
-								{
-									streamOutCallbacks.push_back(boost::make_tuple(STREAMER_TYPE_OBJECT, e->second->objectID));
-								}
-								player.internalObjects.quick_erase(i);
-							}
-							if (e->second->cell)
-							{
-								player.visibleCell->objects.erase(e->second->objectID);
-							}
-							player.existingObjects.erase(--e.base());
-						}
-					}
-				}
-				if (player.internalObjects.size() == player.maxVisibleObjects)
-				{
-					player.currentVisibleObjects = player.internalObjects.size();
-					player.discoveredObjects.clear();
-					break;
-				}
-				int internalID = sampgdk::CreatePlayerObject(player.playerID, d->second->modelID, d->second->position[0], d->second->position[1], d->second->position[2], d->second->rotation[0], d->second->rotation[1], d->second->rotation[2], d->second->drawDistance);
-				if (internalID == INVALID_GENERIC_ID)
-				{
-					player.currentVisibleObjects = player.internalObjects.size();
-					player.discoveredObjects.clear();
-					break;
-				}
-				if (d->second->streamCallbacks)
-				{
-					streamInCallbacks.push_back(boost::make_tuple(STREAMER_TYPE_OBJECT, d->second->objectID));
-				}
-				if (d->second->attach)
-				{
-					if (d->second->attach->object != INVALID_STREAMER_ID)
-					{
-						boost::unordered_map<int, int>::iterator i = player.internalObjects.find(d->second->attach->object);
-						if (i != player.internalObjects.end())
-						{
-							AMX_NATIVE native = sampgdk::FindNative("AttachPlayerObjectToObject");
-							if (native != NULL)
-							{
-								sampgdk::InvokeNative(native, "dddffffffb", player.playerID, internalID, i->second, d->second->attach->positionOffset[0], d->second->attach->positionOffset[1], d->second->attach->positionOffset[2], d->second->attach->rotation[0], d->second->attach->rotation[1], d->second->attach->rotation[2], d->second->attach->syncRotation);
-							}
-						}
-					}
-					else if (d->second->attach->player != INVALID_GENERIC_ID)
-					{
-						AMX_NATIVE native = sampgdk::FindNative("AttachPlayerObjectToPlayer");
-						if (native != NULL)
-						{
-							sampgdk::InvokeNative(native, "dddffffffd", player.playerID, internalID, d->second->attach->player, d->second->attach->positionOffset[0], d->second->attach->positionOffset[1], d->second->attach->positionOffset[2], d->second->attach->rotation[0], d->second->attach->rotation[1], d->second->attach->rotation[2], 1);
-						}
-					}
-					else if (d->second->attach->vehicle != INVALID_GENERIC_ID)
-					{
-						sampgdk::AttachPlayerObjectToVehicle(player.playerID, internalID, d->second->attach->vehicle, d->second->attach->positionOffset[0], d->second->attach->positionOffset[1], d->second->attach->positionOffset[2], d->second->attach->rotation[0], d->second->attach->rotation[1], d->second->attach->rotation[2]);
-					}
-				}
-				else if (d->second->move)
-				{
-					sampgdk::MovePlayerObject(player.playerID, internalID, d->second->move->position.get<0>()[0], d->second->move->position.get<0>()[1], d->second->move->position.get<0>()[2], d->second->move->speed, d->second->move->rotation.get<0>()[0], d->second->move->rotation.get<0>()[1], d->second->move->rotation.get<0>()[2]);
-				}
-				for (boost::unordered_map<int, Item::Object::Material>::iterator m = d->second->materials.begin(); m != d->second->materials.end(); ++m)
-				{
-					if (m->second.main)
-					{
-						sampgdk::SetPlayerObjectMaterial(player.playerID, internalID, m->first, m->second.main->modelID, m->second.main->txdFileName.c_str(), m->second.main->textureName.c_str(), m->second.main->materialColor);
-					}
-					else if (m->second.text)
-					{
-						sampgdk::SetPlayerObjectMaterialText(player.playerID, internalID, m->second.text->materialText.c_str(), m->first, m->second.text->materialSize, m->second.text->fontFace.c_str(), m->second.text->fontSize, m->second.text->bold, m->second.text->fontColor, m->second.text->backColor, m->second.text->textAlignment);
-					}
-				}
-				if (d->second->noCameraCollision)
-				{
-					sampgdk::SetPlayerObjectNoCameraCol(player.playerID, internalID);
-				}
-				player.internalObjects.insert(std::make_pair(d->second->objectID, internalID));
-				if (d->second->cell)
-				{
-					player.visibleCell->objects.insert(std::make_pair(d->second->objectID, d->second));
-				}
-				player.discoveredObjects.erase(d++);
+				internalBaseId = j->second;
 			}
 		}
-		player.chunkTickCount[STREAMER_TYPE_OBJECT] = 0;
-	}
-	if (player.discoveredObjects.empty() && player.removedObjects.empty())
-	{
-		player.existingObjects.clear();
-		player.processingChunks.reset(STREAMER_TYPE_OBJECT);
+		if (player.internalObjects.size() == player.currentVisibleObjects)
+		{
+			std::multimap<std::pair<int, float>, Item::SharedObject, Item::PairCompare>::reverse_iterator e = existingObjects.rbegin();
+			if (e != existingObjects.rend())
+			{
+				if (e->first.first < d->first.first || (e->first.second > STREAMER_STATIC_DISTANCE_CUTOFF && d->first.second < e->first.second))
+				{
+					boost::unordered_map<int, int>::iterator j = player.internalObjects.find(e->second->objectId);
+					if (j != player.internalObjects.end())
+					{
+						sampgdk::DestroyPlayerObject(player.playerId, j->second);
+						if (e->second->streamCallbacks)
+						{
+							streamOutCallbacks.push_back(boost::make_tuple(STREAMER_TYPE_OBJECT, e->second->objectId));
+						}
+						player.internalObjects.erase(j);
+					}
+					if (e->second->cell)
+					{
+						player.visibleCell->objects.erase(e->second->objectId);
+					}
+					existingObjects.erase(--e.base());
+				}
+			}
+		}
+		if (player.internalObjects.size() == player.maxVisibleObjects)
+		{
+			player.currentVisibleObjects = player.internalObjects.size();
+			break;
+		}
+		int internalId = sampgdk::CreatePlayerObject(player.playerId, d->second->modelId, d->second->position[0], d->second->position[1], d->second->position[2], d->second->rotation[0], d->second->rotation[1], d->second->rotation[2], d->second->drawDistance);
+		if (internalId == INVALID_OBJECT_ID)
+		{
+			player.currentVisibleObjects = player.internalObjects.size();
+			break;
+		}
+		if (d->second->streamCallbacks)
+		{
+			streamInCallbacks.push_back(boost::make_tuple(STREAMER_TYPE_OBJECT, d->second->objectId));
+		}
+		if (d->second->attach)
+		{
+			if (internalBaseId != INVALID_STREAMER_ID)
+			{
+				static AMX_NATIVE native = sampgdk::FindNative("AttachPlayerObjectToObject");
+				if (native != NULL)
+				{
+					sampgdk::InvokeNative(native, "dddffffffb", player.playerId, internalId, internalBaseId, d->second->attach->positionOffset[0], d->second->attach->positionOffset[1], d->second->attach->positionOffset[2], d->second->attach->rotation[0], d->second->attach->rotation[1], d->second->attach->rotation[2], d->second->attach->syncRotation);
+				}
+			}
+			else if (d->second->attach->player != INVALID_PLAYER_ID)
+			{
+				static AMX_NATIVE native = sampgdk::FindNative("AttachPlayerObjectToPlayer");
+				if (native != NULL)
+				{
+					sampgdk::InvokeNative(native, "dddffffffd", player.playerId, internalId, d->second->attach->player, d->second->attach->positionOffset[0], d->second->attach->positionOffset[1], d->second->attach->positionOffset[2], d->second->attach->rotation[0], d->second->attach->rotation[1], d->second->attach->rotation[2], 1);
+				}
+			}
+			else if (d->second->attach->vehicle != INVALID_VEHICLE_ID)
+			{
+				sampgdk::AttachPlayerObjectToVehicle(player.playerId, internalId, d->second->attach->vehicle, d->second->attach->positionOffset[0], d->second->attach->positionOffset[1], d->second->attach->positionOffset[2], d->second->attach->rotation[0], d->second->attach->rotation[1], d->second->attach->rotation[2]);
+			}
+		}
+		else if (d->second->move)
+		{
+			sampgdk::MovePlayerObject(player.playerId, internalId, d->second->move->position.get<0>()[0], d->second->move->position.get<0>()[1], d->second->move->position.get<0>()[2], d->second->move->speed, d->second->move->rotation.get<0>()[0], d->second->move->rotation.get<0>()[1], d->second->move->rotation.get<0>()[2]);
+		}
+		for (boost::unordered_map<int, Item::Object::Material>::iterator m = d->second->materials.begin(); m != d->second->materials.end(); ++m)
+		{
+			if (m->second.main)
+			{
+				sampgdk::SetPlayerObjectMaterial(player.playerId, internalId, m->first, m->second.main->modelId, m->second.main->txdFileName.c_str(), m->second.main->textureName.c_str(), m->second.main->materialColor);
+			}
+			else if (m->second.text)
+			{
+				sampgdk::SetPlayerObjectMaterialText(player.playerId, internalId, m->second.text->materialText.c_str(), m->first, m->second.text->materialSize, m->second.text->fontFace.c_str(), m->second.text->fontSize, m->second.text->bold, m->second.text->fontColor, m->second.text->backColor, m->second.text->textAlignment);
+			}
+		}
+		if (d->second->noCameraCollision)
+		{
+			sampgdk::SetPlayerObjectNoCameraCol(player.playerId, internalId);
+		}
+		player.internalObjects.insert(std::make_pair(d->second->objectId, internalId));
+		if (d->second->cell)
+		{
+			player.visibleCell->objects.insert(std::make_pair(d->second->objectId, d->second));
+		}
 	}
 }
 
@@ -1219,19 +1063,29 @@ void Streamer::discoverPickups(Player &player, const std::vector<SharedCell> &ce
 	{
 		for (boost::unordered_map<int, Item::SharedPickup>::const_iterator p = (*c)->pickups.begin(); p != (*c)->pickups.end(); ++p)
 		{
-			boost::unordered_map<int, Item::SharedPickup>::iterator d = core->getData()->discoveredPickups.find(p->first);
-			if (d == core->getData()->discoveredPickups.end())
+			boost::unordered_set<int> worlds = p->second->worlds;
+			if (worlds.empty())
 			{
-				if (doesPlayerSatisfyConditions(p->second->players, player.playerID, p->second->interiors, player.interiorID, p->second->worlds, player.worldID, p->second->areas, player.internalAreas, p->second->inverseAreaChecking))
+				worlds.insert(-1);
+			}
+
+			for (boost::unordered_set<int>::const_iterator w = worlds.begin(); w != worlds.end(); ++w)
+			{
+				if (player.worldId != *w && *w != -1)
 				{
-					if (p->second->comparableStreamDistance < STREAMER_STATIC_DISTANCE_CUTOFF || boost::geometry::comparable_distance(player.position, Eigen::Vector3f(p->second->position + p->second->positionOffset)) < (p->second->comparableStreamDistance * player.radiusMultipliers[STREAMER_TYPE_PICKUP]))
+					continue;
+				}
+
+				boost::unordered_map<std::pair<int, int>, Item::SharedPickup>::iterator d = core->getData()->discoveredPickups.find(std::make_pair(p->first, *w));
+				if (d == core->getData()->discoveredPickups.end())
+				{
+					const int playerWorldId = *w == -1 ? -1 : player.worldId;
+					if (doesPlayerSatisfyConditions(p->second->players, player.playerId, p->second->interiors, player.interiorId, p->second->worlds, playerWorldId, p->second->areas, player.internalAreas, p->second->inverseAreaChecking))
 					{
-						boost::unordered_map<int, int>::iterator i = core->getData()->internalPickups.find(p->first);
-						if (i == core->getData()->internalPickups.end())
+						if (p->second->comparableStreamDistance < STREAMER_STATIC_DISTANCE_CUTOFF || boost::geometry::comparable_distance(player.position, Eigen::Vector3f(p->second->position + p->second->positionOffset)) < (p->second->comparableStreamDistance * player.radiusMultipliers[STREAMER_TYPE_PICKUP]))
 						{
-							p->second->worldID = !p->second->worlds.empty() ? player.worldID : -1;
+							core->getData()->discoveredPickups.insert(std::make_pair(std::make_pair(p->first, *w), p->second));
 						}
-						core->getData()->discoveredPickups.insert(*p);
 					}
 				}
 			}
@@ -1242,19 +1096,19 @@ void Streamer::discoverPickups(Player &player, const std::vector<SharedCell> &ce
 
 void Streamer::streamPickups()
 {
-	boost::unordered_map<int, int>::iterator i = core->getData()->internalPickups.begin();
+	boost::unordered_map<std::pair<int, int>, int>::iterator i = core->getData()->internalPickups.begin();
 	while (i != core->getData()->internalPickups.end())
 	{
-		boost::unordered_map<int, Item::SharedPickup>::iterator d = core->getData()->discoveredPickups.find(i->first);
+		boost::unordered_map<std::pair<int, int>, Item::SharedPickup>::iterator d = core->getData()->discoveredPickups.find(i->first);
 		if (d == core->getData()->discoveredPickups.end())
 		{
 			sampgdk::DestroyPickup(i->second);
-			boost::unordered_map<int, Item::SharedPickup>::iterator p = core->getData()->pickups.find(i->first);
+			boost::unordered_map<int, Item::SharedPickup>::iterator p = core->getData()->pickups.find(i->first.first);
 			if (p != core->getData()->pickups.end())
 			{
 				if (p->second->streamCallbacks)
 				{
-					streamOutCallbacks.push_back(boost::make_tuple(STREAMER_TYPE_PICKUP, i->first));
+					streamOutCallbacks.push_back(boost::make_tuple(STREAMER_TYPE_PICKUP, i->first.first));
 				}
 			}
 			i = core->getData()->internalPickups.erase(i);
@@ -1265,28 +1119,28 @@ void Streamer::streamPickups()
 			++i;
 		}
 	}
-	std::multimap<int, Item::SharedPickup> sortedPickups;
-	for (boost::unordered_map<int, Item::SharedPickup>::iterator d = core->getData()->discoveredPickups.begin(); d != core->getData()->discoveredPickups.end(); ++d)
+	std::multimap<int, std::pair<int, Item::SharedPickup> > sortedPickups;
+	for (boost::unordered_map<std::pair<int, int>, Item::SharedPickup>::iterator d = core->getData()->discoveredPickups.begin(); d != core->getData()->discoveredPickups.end(); ++d)
 	{
-		sortedPickups.insert(std::make_pair(d->second->priority, d->second));
+		sortedPickups.insert(std::make_pair(d->second->priority, std::make_pair(d->first.second, d->second)));
 	}
 	core->getData()->discoveredPickups.clear();
-	for (std::multimap<int, Item::SharedPickup>::iterator i = sortedPickups.begin(); i != sortedPickups.end(); ++i)
+	for (std::multimap<int, std::pair<int, Item::SharedPickup> >::iterator s = sortedPickups.begin(); s != sortedPickups.end(); ++s)
 	{
 		if (core->getData()->internalPickups.size() == core->getData()->getGlobalMaxVisibleItems(STREAMER_TYPE_PICKUP))
 		{
 			break;
 		}
-		int internalID = sampgdk::CreatePickup(i->second->modelID, i->second->type, i->second->position[0], i->second->position[1], i->second->position[2], i->second->worldID);
-		if (internalID == INVALID_ALTERNATE_ID)
+		int internalId = sampgdk::CreatePickup(s->second.second->modelId, s->second.second->type, s->second.second->position[0], s->second.second->position[1], s->second.second->position[2], s->second.first);
+		if (internalId == INVALID_PICKUP_ID)
 		{
 			break;
 		}
-		if (i->second->streamCallbacks)
+		if (s->second.second->streamCallbacks)
 		{
-			streamInCallbacks.push_back(boost::make_tuple(STREAMER_TYPE_PICKUP, i->second->pickupID));
+			streamInCallbacks.push_back(boost::make_tuple(STREAMER_TYPE_PICKUP, s->second.second->pickupId));
 		}
-		core->getData()->internalPickups.insert(std::make_pair(i->second->pickupID, internalID));
+		core->getData()->internalPickups.insert(std::make_pair(std::make_pair(s->second.second->pickupId, s->second.first), internalId));
 	}
 	for (boost::unordered_map<int, Player>::iterator p = core->getData()->players.begin(); p != core->getData()->players.end(); ++p)
 	{
@@ -1296,13 +1150,13 @@ void Streamer::streamPickups()
 
 void Streamer::processRaceCheckpoints(Player &player, const std::vector<SharedCell> &cells)
 {
-	std::multimap<std::pair<int, float>, Item::SharedRaceCheckpoint, Item::Compare> discoveredRaceCheckpoints;
+	std::multimap<std::pair<int, float>, Item::SharedRaceCheckpoint, Item::PairCompare> discoveredRaceCheckpoints;
 	for (std::vector<SharedCell>::const_iterator c = cells.begin(); c != cells.end(); ++c)
 	{
 		for (boost::unordered_map<int, Item::SharedRaceCheckpoint>::const_iterator r = (*c)->raceCheckpoints.begin(); r != (*c)->raceCheckpoints.end(); ++r)
 		{
 			float distance = std::numeric_limits<float>::infinity();
-			if (doesPlayerSatisfyConditions(r->second->players, player.playerID, r->second->interiors, player.interiorID, r->second->worlds, player.worldID, r->second->areas, player.internalAreas, r->second->inverseAreaChecking))
+			if (doesPlayerSatisfyConditions(r->second->players, player.playerId, r->second->interiors, player.interiorId, r->second->worlds, player.worldId, r->second->areas, player.internalAreas, r->second->inverseAreaChecking))
 			{
 				if (r->second->comparableStreamDistance < STREAMER_STATIC_DISTANCE_CUTOFF)
 				{
@@ -1321,10 +1175,10 @@ void Streamer::processRaceCheckpoints(Player &player, const std::vector<SharedCe
 			{
 				if (r->first == player.visibleRaceCheckpoint)
 				{
-					sampgdk::DisablePlayerRaceCheckpoint(player.playerID);
+					sampgdk::DisablePlayerRaceCheckpoint(player.playerId);
 					if (r->second->streamCallbacks)
 					{
-						streamOutCallbacks.push_back(boost::make_tuple(STREAMER_TYPE_RACE_CP, r->second->raceCheckpointID));
+						streamOutCallbacks.push_back(boost::make_tuple(STREAMER_TYPE_RACE_CP, r->second->raceCheckpointId));
 					}
 					player.activeRaceCheckpoint = 0;
 					player.visibleRaceCheckpoint = 0;
@@ -1334,35 +1188,36 @@ void Streamer::processRaceCheckpoints(Player &player, const std::vector<SharedCe
 	}
 	if (!discoveredRaceCheckpoints.empty())
 	{
-		std::multimap<std::pair<int, float>, Item::SharedRaceCheckpoint, Item::Compare>::iterator d = discoveredRaceCheckpoints.begin();
-		if (d->second->raceCheckpointID != player.visibleRaceCheckpoint)
+		std::multimap<std::pair<int, float>, Item::SharedRaceCheckpoint, Item::PairCompare>::iterator d = discoveredRaceCheckpoints.begin();
+		if (d->second->raceCheckpointId != player.visibleRaceCheckpoint)
 		{
 			if (player.visibleRaceCheckpoint)
 			{
-				sampgdk::DisablePlayerRaceCheckpoint(player.playerID);
+				sampgdk::DisablePlayerRaceCheckpoint(player.playerId);
 				if (d->second->streamCallbacks)
 				{
-					streamOutCallbacks.push_back(boost::make_tuple(STREAMER_TYPE_RACE_CP, d->second->raceCheckpointID));
+					streamOutCallbacks.push_back(boost::make_tuple(STREAMER_TYPE_RACE_CP, d->second->raceCheckpointId));
 				}
 				player.activeRaceCheckpoint = 0;
 			}
-			player.delayedRaceCheckpoint = d->second->raceCheckpointID;
+			player.delayedRaceCheckpoint = d->second->raceCheckpointId;
 		}
 		if (d->second->cell)
 		{
-			player.visibleCell->raceCheckpoints.insert(std::make_pair(d->second->raceCheckpointID, d->second));
+			player.visibleCell->raceCheckpoints.insert(std::make_pair(d->second->raceCheckpointId, d->second));
 		}
 	}
 }
 
-void Streamer::discoverTextLabels(Player &player, const std::vector<SharedCell> &cells)
+void Streamer::processTextLabels(Player &player, const std::vector<SharedCell> &cells)
 {
+	std::multimap<std::pair<int, float>, Item::SharedTextLabel, Item::PairCompare> discoveredTextLabels, existingTextLabels;
 	for (std::vector<SharedCell>::const_iterator c = cells.begin(); c != cells.end(); ++c)
 	{
 		for (boost::unordered_map<int, Item::SharedTextLabel>::const_iterator t = (*c)->textLabels.begin(); t != (*c)->textLabels.end(); ++t)
 		{
 			float distance = std::numeric_limits<float>::infinity();
-			if (doesPlayerSatisfyConditions(t->second->players, player.playerID, t->second->interiors, player.interiorID, t->second->worlds, player.worldID, t->second->areas, player.internalAreas, t->second->inverseAreaChecking))
+			if (doesPlayerSatisfyConditions(t->second->players, player.playerId, t->second->interiors, player.interiorId, t->second->attach ? t->second->attach->worlds : t->second->worlds, player.worldId, t->second->areas, player.internalAreas, t->second->inverseAreaChecking))
 			{
 				if (t->second->comparableStreamDistance < STREAMER_STATIC_DISTANCE_CUTOFF)
 				{
@@ -1385,7 +1240,7 @@ void Streamer::discoverTextLabels(Player &player, const std::vector<SharedCell> 
 			{
 				if (i == player.internalTextLabels.end())
 				{
-					player.discoveredTextLabels.insert(std::make_pair(std::make_pair(t->second->priority, distance), t->second));
+					discoveredTextLabels.insert(std::make_pair(std::make_pair(t->second->priority, distance), t->second));
 				}
 				else
 				{
@@ -1393,126 +1248,75 @@ void Streamer::discoverTextLabels(Player &player, const std::vector<SharedCell> 
 					{
 						player.visibleCell->textLabels.insert(*t);
 					}
-					player.existingTextLabels.insert(std::make_pair(std::make_pair(t->second->priority, distance), t->second));
+					existingTextLabels.insert(std::make_pair(std::make_pair(t->second->priority, distance), t->second));
 				}
 			}
 			else
 			{
 				if (i != player.internalTextLabels.end())
 				{
-					player.removedTextLabels.push_back(i->first);
-				}
-			}
-		}
-	}
-	if (!player.discoveredTextLabels.empty() || !player.removedTextLabels.empty())
-	{
-		player.processingChunks.set(STREAMER_TYPE_3D_TEXT_LABEL);
-	}
-}
-
-void Streamer::streamTextLabels(Player &player, bool automatic)
-{
-	if (!automatic || ++player.chunkTickCount[STREAMER_TYPE_3D_TEXT_LABEL] >= player.chunkTickRate[STREAMER_TYPE_3D_TEXT_LABEL])
-	{
-		std::size_t chunkCount = 0;
-		if (!player.removedTextLabels.empty())
-		{
-			std::vector<int>::iterator r = player.removedTextLabels.begin();
-			while (r != player.removedTextLabels.end())
-			{
-				if (automatic && ++chunkCount > chunkSize[STREAMER_TYPE_3D_TEXT_LABEL])
-				{
-					break;
-				}
-				boost::unordered_map<int, int>::iterator i = player.internalTextLabels.find(*r);
-				if (i != player.internalTextLabels.end())
-				{
-					sampgdk::DeletePlayer3DTextLabel(player.playerID, i->second);
-					boost::unordered_map<int, Item::SharedTextLabel>::iterator t = core->getData()->textLabels.find(*r);
-					if (t != core->getData()->textLabels.end())
+					sampgdk::DeletePlayer3DTextLabel(player.playerId, i->second);
+					if (t->second->streamCallbacks)
 					{
-						if (t->second->streamCallbacks)
-						{
-							streamOutCallbacks.push_back(boost::make_tuple(STREAMER_TYPE_3D_TEXT_LABEL, *r));
-						}
+						streamOutCallbacks.push_back(boost::make_tuple(STREAMER_TYPE_3D_TEXT_LABEL, t->first));
 					}
-					player.internalTextLabels.quick_erase(i);
+					player.internalTextLabels.erase(i);
 				}
-				r = player.removedTextLabels.erase(r);
 			}
 		}
-		else
-		{
-			std::multimap<std::pair<int, float>, Item::SharedTextLabel, Item::Compare>::iterator d = player.discoveredTextLabels.begin();
-			while (d != player.discoveredTextLabels.end())
-			{
-				if (automatic && ++chunkCount > chunkSize[STREAMER_TYPE_3D_TEXT_LABEL])
-				{
-					break;
-				}
-				boost::unordered_map<int, Item::SharedTextLabel>::iterator t = core->getData()->textLabels.find(d->second->textLabelID);
-				if (t == core->getData()->textLabels.end())
-				{
-					player.discoveredTextLabels.erase(d++);
-					continue;
-				}
-				if (player.internalTextLabels.size() == player.currentVisibleTextLabels)
-				{
-					std::multimap<std::pair<int, float>, Item::SharedTextLabel, Item::Compare>::reverse_iterator e = player.existingTextLabels.rbegin();
-					if (e != player.existingTextLabels.rend())
-					{
-						if (e->first.first < d->first.first || (e->first.second > STREAMER_STATIC_DISTANCE_CUTOFF && d->first.second < e->first.second))
-						{
-							boost::unordered_map<int, int>::iterator i = player.internalTextLabels.find(e->second->textLabelID);
-							if (i != player.internalTextLabels.end())
-							{
-								sampgdk::DeletePlayer3DTextLabel(player.playerID, i->second);
-								if (e->second->streamCallbacks)
-								{
-									streamOutCallbacks.push_back(boost::make_tuple(STREAMER_TYPE_3D_TEXT_LABEL, e->second->textLabelID));
-								}
-								player.internalTextLabels.quick_erase(i);
-							}
-							if (e->second->cell)
-							{
-								player.visibleCell->textLabels.erase(e->second->textLabelID);
-							}
-							player.existingTextLabels.erase(--e.base());
-						}
-					}
-				}
-				if (player.internalTextLabels.size() == player.maxVisibleTextLabels)
-				{
-					player.currentVisibleTextLabels = player.internalTextLabels.size();
-					player.discoveredTextLabels.clear();
-					break;
-				}
-				int internalID = sampgdk::CreatePlayer3DTextLabel(player.playerID, d->second->text.c_str(), d->second->color, d->second->position[0], d->second->position[1], d->second->position[2], d->second->drawDistance, d->second->attach ? d->second->attach->player : INVALID_GENERIC_ID, d->second->attach ? d->second->attach->vehicle : INVALID_GENERIC_ID, d->second->testLOS);
-				if (internalID == INVALID_GENERIC_ID)
-				{
-					player.currentVisibleTextLabels = player.internalTextLabels.size();
-					player.discoveredTextLabels.clear();
-					break;
-				}
-				if (d->second->streamCallbacks)
-				{
-					streamInCallbacks.push_back(boost::make_tuple(STREAMER_TYPE_3D_TEXT_LABEL, d->second->textLabelID));
-				}
-				player.internalTextLabels.insert(std::make_pair(d->second->textLabelID, internalID));
-				if (d->second->cell)
-				{
-					player.visibleCell->textLabels.insert(std::make_pair(d->second->textLabelID, d->second));
-				}
-				player.discoveredTextLabels.erase(d++);
-			}
-		}
-		player.chunkTickCount[STREAMER_TYPE_3D_TEXT_LABEL] = 0;
 	}
-	if (player.discoveredTextLabels.empty() && player.removedTextLabels.empty())
+	for (std::multimap<std::pair<int, float>, Item::SharedTextLabel, Item::PairCompare>::iterator d = discoveredTextLabels.begin(); d != discoveredTextLabels.end(); ++d)
 	{
-		player.existingTextLabels.clear();
-		player.processingChunks.reset(STREAMER_TYPE_3D_TEXT_LABEL);
+		boost::unordered_map<int, int>::iterator i = player.internalTextLabels.find(d->second->textLabelId);
+		if (i != player.internalTextLabels.end())
+		{
+			continue;
+		}
+		if (player.internalTextLabels.size() == player.currentVisibleTextLabels)
+		{
+			std::multimap<std::pair<int, float>, Item::SharedTextLabel, Item::PairCompare>::reverse_iterator e = existingTextLabels.rbegin();
+			if (e != existingTextLabels.rend())
+			{
+				if (e->first.first < d->first.first || (e->first.second > STREAMER_STATIC_DISTANCE_CUTOFF && d->first.second < e->first.second))
+				{
+					boost::unordered_map<int, int>::iterator j = player.internalTextLabels.find(e->second->textLabelId);
+					if (j != player.internalTextLabels.end())
+					{
+						sampgdk::DeletePlayer3DTextLabel(player.playerId, j->second);
+						if (e->second->streamCallbacks)
+						{
+							streamOutCallbacks.push_back(boost::make_tuple(STREAMER_TYPE_3D_TEXT_LABEL, e->second->textLabelId));
+						}
+						player.internalTextLabels.erase(j);
+					}
+					if (e->second->cell)
+					{
+						player.visibleCell->textLabels.erase(e->second->textLabelId);
+					}
+					existingTextLabels.erase(--e.base());
+				}
+			}
+		}
+		if (player.internalTextLabels.size() == player.maxVisibleTextLabels)
+		{
+			player.currentVisibleTextLabels = player.internalTextLabels.size();
+			break;
+		}
+		int internalId = sampgdk::CreatePlayer3DTextLabel(player.playerId, d->second->text.c_str(), d->second->color, d->second->position[0], d->second->position[1], d->second->position[2], d->second->drawDistance, d->second->attach ? d->second->attach->player : INVALID_PLAYER_ID, d->second->attach ? d->second->attach->vehicle : INVALID_VEHICLE_ID, d->second->testLOS);
+		if (internalId == INVALID_3DTEXT_ID)
+		{
+			player.currentVisibleTextLabels = player.internalTextLabels.size();
+			break;
+		}
+		if (d->second->streamCallbacks)
+		{
+			streamInCallbacks.push_back(boost::make_tuple(STREAMER_TYPE_3D_TEXT_LABEL, d->second->textLabelId));
+		}
+		player.internalTextLabels.insert(std::make_pair(d->second->textLabelId, internalId));
+		if (d->second->cell)
+		{
+			player.visibleCell->textLabels.insert(std::make_pair(d->second->textLabelId, d->second));
+		}
 	}
 }
 
@@ -1545,7 +1349,7 @@ void Streamer::processMovingObjects()
 		if ((*o)->move)
 		{
 			boost::chrono::duration<float, boost::milli> elapsedTime = boost::chrono::steady_clock::now() - (*o)->move->time;
-			if (elapsedTime.count() < (*o)->move->duration)
+			if (boost::chrono::duration_cast<boost::chrono::milliseconds>(elapsedTime).count() < (*o)->move->duration)
 			{
 				(*o)->position = (*o)->move->position.get<1>() + ((*o)->move->position.get<2>() * elapsedTime.count());
 				if (!Utility::almostEquals((*o)->move->rotation.get<0>().maxCoeff(), -1000.0f))
@@ -1561,7 +1365,7 @@ void Streamer::processMovingObjects()
 					(*o)->rotation = (*o)->move->rotation.get<0>();
 				}
 				(*o)->move.reset();
-				objectMoveCallbacks.push_back((*o)->objectID);
+				objectMoveCallbacks.push_back((*o)->objectId);
 				objectFinishedMoving = true;
 			}
 			if ((*o)->cell)
@@ -1587,7 +1391,7 @@ void Streamer::processAttachedAreas()
 		if ((*a)->attach)
 		{
 			bool adjust = false;
-			if (((*a)->attach->object.get<0>() != INVALID_GENERIC_ID && (*a)->attach->object.get<1>() != STREAMER_OBJECT_TYPE_DYNAMIC) || ((*a)->attach->object.get<0>() != INVALID_STREAMER_ID && (*a)->attach->object.get<1>() == STREAMER_OBJECT_TYPE_DYNAMIC))
+			if (((*a)->attach->object.get<0>() != INVALID_OBJECT_ID && (*a)->attach->object.get<1>() != STREAMER_OBJECT_TYPE_DYNAMIC) || ((*a)->attach->object.get<0>() != INVALID_STREAMER_ID && (*a)->attach->object.get<1>() == STREAMER_OBJECT_TYPE_DYNAMIC))
 			{
 				switch ((*a)->attach->object.get<1>())
 				{
@@ -1619,7 +1423,7 @@ void Streamer::processAttachedAreas()
 					}
 				}
 			}
-			else if ((*a)->attach->player != INVALID_GENERIC_ID)
+			else if ((*a)->attach->player != INVALID_PLAYER_ID)
 			{
 				float heading = 0.0f;
 				Eigen::Vector3f position = Eigen::Vector3f::Zero();
@@ -1627,7 +1431,7 @@ void Streamer::processAttachedAreas()
 				sampgdk::GetPlayerFacingAngle((*a)->attach->player, &heading);
 				Utility::constructAttachedArea(*a, boost::variant<float, Eigen::Vector3f, Eigen::Vector4f>(heading), position);
 			}
-			else if ((*a)->attach->vehicle != INVALID_GENERIC_ID)
+			else if ((*a)->attach->vehicle != INVALID_VEHICLE_ID)
 			{
 				bool occupied = false;
 				for (boost::unordered_map<int, Player>::iterator p = core->getData()->players.begin(); p != core->getData()->players.end(); ++p)
@@ -1680,19 +1484,19 @@ void Streamer::processAttachedAreas()
 					}
 					case STREAMER_AREA_TYPE_RECTANGLE:
 					{
-						boost::get<Box2D>((*a)->attach->position).min_corner().fill(std::numeric_limits<float>::infinity());
-						boost::get<Box2D>((*a)->attach->position).max_corner().fill(std::numeric_limits<float>::infinity());
+						boost::get<Box2d>((*a)->attach->position).min_corner().fill(std::numeric_limits<float>::infinity());
+						boost::get<Box2d>((*a)->attach->position).max_corner().fill(std::numeric_limits<float>::infinity());
 						break;
 					}
 					case STREAMER_AREA_TYPE_CUBOID:
 					{
-						boost::get<Box3D>((*a)->attach->position).min_corner().fill(std::numeric_limits<float>::infinity());
-						boost::get<Box3D>((*a)->attach->position).max_corner().fill(std::numeric_limits<float>::infinity());
+						boost::get<Box3d>((*a)->attach->position).min_corner().fill(std::numeric_limits<float>::infinity());
+						boost::get<Box3d>((*a)->attach->position).max_corner().fill(std::numeric_limits<float>::infinity());
 						break;
 					}
 					case STREAMER_AREA_TYPE_POLYGON:
 					{
-						boost::get<Polygon2D>((*a)->attach->position).clear();
+						boost::get<Polygon2d>((*a)->attach->position).clear();
 						break;
 					}
 				}
@@ -1708,26 +1512,30 @@ void Streamer::processAttachedObjects()
 		if ((*o)->attach)
 		{
 			bool adjust = false;
+			Eigen::Vector3f position = (*o)->attach->position;
 			if ((*o)->attach->object != INVALID_STREAMER_ID)
 			{
 				boost::unordered_map<int, Item::SharedObject>::iterator p = core->getData()->objects.find((*o)->attach->object);
 				if (p != core->getData()->objects.end())
 				{
 					(*o)->attach->position = p->second->position;
+					(*o)->attach->worlds = p->second->worlds;
 					adjust = true;
 				}
 			}
-			else if ((*o)->attach->player != INVALID_GENERIC_ID)
+			else if ((*o)->attach->player != INVALID_PLAYER_ID)
 			{
 				adjust = sampgdk::GetPlayerPos((*o)->attach->player, &(*o)->attach->position[0], &(*o)->attach->position[1], &(*o)->attach->position[2]);
+				Utility::setFirstValueInContainer((*o)->attach->worlds, sampgdk::GetPlayerVirtualWorld((*o)->attach->player));
 			}
-			else if ((*o)->attach->vehicle != INVALID_GENERIC_ID)
+			else if ((*o)->attach->vehicle != INVALID_VEHICLE_ID)
 			{
 				adjust = sampgdk::GetVehiclePos((*o)->attach->vehicle, &(*o)->attach->position[0], &(*o)->attach->position[1], &(*o)->attach->position[2]);
+				Utility::setFirstValueInContainer((*o)->attach->worlds, sampgdk::GetVehicleVirtualWorld((*o)->attach->vehicle));
 			}
 			if (adjust)
 			{
-				if ((*o)->cell)
+				if ((*o)->cell && !(*o)->attach->position.isApprox(position))
 				{
 					core->getGrid()->removeObject(*o, true);
 				}
@@ -1745,19 +1553,22 @@ void Streamer::processAttachedTextLabels()
 	for (boost::unordered_set<Item::SharedTextLabel>::iterator t = attachedTextLabels.begin(); t != attachedTextLabels.end(); ++t)
 	{
 		bool adjust = false;
+		Eigen::Vector3f position = (*t)->attach->position;
 		if ((*t)->attach)
 		{
-			if ((*t)->attach->player != INVALID_GENERIC_ID)
+			if ((*t)->attach->player != INVALID_PLAYER_ID)
 			{
 				adjust = sampgdk::GetPlayerPos((*t)->attach->player, &(*t)->attach->position[0], &(*t)->attach->position[1], &(*t)->attach->position[2]);
+				Utility::setFirstValueInContainer((*t)->attach->worlds, sampgdk::GetPlayerVirtualWorld((*t)->attach->player));
 			}
-			else if ((*t)->attach->vehicle != INVALID_GENERIC_ID)
+			else if ((*t)->attach->vehicle != INVALID_VEHICLE_ID)
 			{
 				adjust = sampgdk::GetVehiclePos((*t)->attach->vehicle, &(*t)->attach->position[0], &(*t)->attach->position[1], &(*t)->attach->position[2]);
+				Utility::setFirstValueInContainer((*t)->attach->worlds, sampgdk::GetVehicleVirtualWorld((*t)->attach->vehicle));
 			}
 			if (adjust)
 			{
-				if ((*t)->cell)
+				if ((*t)->cell && !(*t)->attach->position.isApprox(position))
 				{
 					core->getGrid()->removeTextLabel(*t, true);
 				}

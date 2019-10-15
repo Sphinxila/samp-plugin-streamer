@@ -17,24 +17,12 @@
 #ifndef NATIVES_H
 #define NATIVES_H
 
-#define STREAMER_OPC (0)
-#define STREAMER_OPDC (1)
-#define STREAMER_OPEO (2)
-#define STREAMER_OPSO (3)
-#define STREAMER_OPPP (4)
-#define STREAMER_OPEC (5)
-#define STREAMER_OPLC (6)
-#define STREAMER_OPERC (7)
-#define STREAMER_OPLRC (8)
-#define STREAMER_OPWS (9)
-
-#include "common.h"
 #include "utility.h"
 
-#define CHECK_PARAMS(m, n) \
-	if (params[0] != (m * 4)) \
+#define CHECK_PARAMS(n) \
+	if (params[0] != (n * 4)) \
 	{ \
-		Utility::logError("%s: Expecting %d parameter(s), but found %d.", n, m, params[0] / sizeof(cell)); \
+		Utility::logError("%s: Expecting %d parameter(s), but found %d.", __func__, n, params[0] / sizeof(cell)); \
 		return 0; \
 	}
 
@@ -45,6 +33,8 @@ namespace Natives
 	cell AMX_NATIVE_CALL Streamer_SetTickRate(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL Streamer_GetPlayerTickRate(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL Streamer_SetPlayerTickRate(AMX *amx, cell *params);
+	cell AMX_NATIVE_CALL Streamer_ToggleChunkStream(AMX *amx, cell *params);
+	cell AMX_NATIVE_CALL Streamer_IsToggleChunkStream(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL Streamer_GetChunkTickRate(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL Streamer_SetChunkTickRate(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL Streamer_GetChunkSize(AMX *amx, cell *params);
@@ -69,6 +59,7 @@ namespace Natives
 	cell AMX_NATIVE_CALL Streamer_IsToggleItemCallbacks(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL Streamer_ToggleErrorCallback(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL Streamer_IsToggleErrorCallback(AMX *amx, cell *params);
+	cell AMX_NATIVE_CALL Streamer_AmxUnloadDestroyItems(AMX *amx, cell *params);
 	// Updates
 	cell AMX_NATIVE_CALL Streamer_ProcessActiveItems(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL Streamer_ToggleIdleUpdate(AMX *amx, cell *params);
@@ -90,6 +81,7 @@ namespace Natives
 	cell AMX_NATIVE_CALL Streamer_IsInArrayData(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL Streamer_AppendArrayData(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL Streamer_RemoveArrayData(AMX *amx, cell *params);
+	cell AMX_NATIVE_CALL Streamer_GetArrayDataLength(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL Streamer_GetUpperBound(AMX *amx, cell *params);
 	// Miscellaneous
 	cell AMX_NATIVE_CALL Streamer_GetDistanceToItem(AMX *amx, cell *params);
@@ -105,6 +97,8 @@ namespace Natives
 	cell AMX_NATIVE_CALL Streamer_CountItems(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL Streamer_GetNearbyItems(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL Streamer_GetAllVisibleItems(AMX *amx, cell *params);
+	cell AMX_NATIVE_CALL Streamer_GetItemPos(AMX *amx, cell *params);
+	cell AMX_NATIVE_CALL Streamer_SetItemPos(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL Streamer_GetItemOffset(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL Streamer_SetItemOffset(AMX *amx, cell *params);
 	// Objects
@@ -167,6 +161,7 @@ namespace Natives
 	cell AMX_NATIVE_CALL CreateDynamicPolygon(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL DestroyDynamicArea(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL IsValidDynamicArea(AMX *amx, cell *params);
+	cell AMX_NATIVE_CALL GetDynamicAreaType(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL GetDynamicPolygonPoints(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL GetDynamicPolygonNumberPoints(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL IsPlayerInDynamicArea(AMX *amx, cell *params);
@@ -195,6 +190,7 @@ namespace Natives
 	cell AMX_NATIVE_CALL IsDynamicActorStreamedIn(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL GetDynamicActorVirtualWorld(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL SetDynamicActorVirtualWorld(AMX *amx, cell *params);
+	cell AMX_NATIVE_CALL GetDynamicActorAnimation(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL ApplyDynamicActorAnimation(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL ClearDynamicActorAnimations(AMX *amx, cell *params);
 	cell AMX_NATIVE_CALL GetDynamicActorFacingAngle(AMX *amx, cell *params);

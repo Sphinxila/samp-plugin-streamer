@@ -18,13 +18,6 @@
 #define GRID_H
 
 #include "cell.h"
-#include "common.h"
-
-#include <boost/unordered_map.hpp>
-#include <boost/unordered_set.hpp>
-
-#include <cmath>
-#include <vector>
 
 class Grid
 {
@@ -75,13 +68,14 @@ public:
 	void findAllCellsForPlayer(Player &player, std::vector<SharedCell> &playerCells);
 	void findMinimalCellsForPlayer(Player &player, std::vector<SharedCell> &playerCells);
 	void findMinimalCellsForPoint(const Eigen::Vector2f &point, std::vector<SharedCell> &pointCells);
+	void findMinimalCellsForPoint(const Eigen::Vector2f &point, std::vector<SharedCell> &pointCells, float range);
 private:
 	float cellDistance;
 	float cellSize;
 	float comparableCellDistance;
 	SharedCell globalCell;
 
-	boost::unordered_map<CellID, SharedCell> cells;
+	boost::unordered_map<CellId, SharedCell> cells;
 	Eigen::Matrix<float, 2, 9> translationMatrix;
 
 	inline void calculateTranslationMatrix()
@@ -90,16 +84,16 @@ private:
 		                     0.0f, cellSize, 0.0f, cellSize, 0.0f, cellSize * -1.0f, cellSize, cellSize * -1.0f, cellSize * -1.0f;
 	}
 
-	inline void eraseCellIfEmpty(const SharedCell &cell)
+	inline void eraseCellIfEmpty(const SharedCell &passedCell)
 	{
-		if (cell->areas.empty() && cell->checkpoints.empty() && cell->mapIcons.empty() && cell->objects.empty() && cell->pickups.empty() && cell->raceCheckpoints.empty() && cell->textLabels.empty() && cell->actors.empty())
+		if (passedCell->areas.empty() && passedCell->checkpoints.empty() && passedCell->mapIcons.empty() && passedCell->objects.empty() && passedCell->pickups.empty() && passedCell->raceCheckpoints.empty() && passedCell->textLabels.empty() && passedCell->actors.empty())
 		{
-			cells.erase(cell->cellID);
+			cells.erase(passedCell->cellId);
 		}
 	}
 
-	CellID getCellID(const Eigen::Vector2f &position, bool insert = true);
-	void processDiscoveredCellsForPlayer(Player &player, std::vector<SharedCell> &playerCells, const boost::unordered_set<CellID> &discoveredCells);
+	CellId getCellId(const Eigen::Vector2f &position, bool insert = true);
+	void processDiscoveredCellsForPlayer(Player &player, std::vector<SharedCell> &playerCells, const boost::unordered_set<CellId> &discoveredCells);
 };
 
 #endif

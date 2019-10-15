@@ -14,24 +14,11 @@
  * limitations under the License.
  */
 
-#include "array.h"
+#include "../precompiled.h"
 
+#include "array.h"
 #include "../core.h"
 #include "../utility.h"
-
-#include <boost/geometry.hpp>
-#include <boost/geometry/geometries/geometries.hpp>
-#include <boost/intrusive_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
-#include <boost/tuple/tuple.hpp>
-#include <boost/unordered_map.hpp>
-#include <boost/unordered_set.hpp>
-#include <boost/variant.hpp>
-
-#include <Eigen/Core>
-
-#include <bitset>
-#include <cmath>
 
 using namespace Manipulation;
 
@@ -74,7 +61,7 @@ int Manipulation::getArrayData(AMX *amx, cell *params)
 		{
 			switch (static_cast<int>(params[3]))
 			{
-				case AreaID:
+				case AreaId:
 				{
 					error = InvalidData;
 					break;
@@ -100,7 +87,7 @@ int Manipulation::getArrayData(AMX *amx, cell *params)
 			Utility::logError("Streamer_GetArrayData: Invalid data specified.");
 			break;
 		}
-		case InvalidID:
+		case InvalidId:
 		{
 			Utility::logError("Streamer_GetArrayData: Invalid ID specified.");
 			break;
@@ -157,7 +144,7 @@ int Manipulation::setArrayData(AMX *amx, cell *params)
 		{
 			switch (static_cast<int>(params[3]))
 			{
-				case AreaID:
+				case AreaId:
 				{
 					error = InvalidData;
 					break;
@@ -188,7 +175,7 @@ int Manipulation::setArrayData(AMX *amx, cell *params)
 			Utility::logError("Streamer_SetArrayData: Invalid data specified.");
 			break;
 		}
-		case InvalidID:
+		case InvalidId:
 		{
 			Utility::logError("Streamer_SetArrayData: Invalid ID specified.");
 			break;
@@ -245,7 +232,7 @@ int Manipulation::isInArrayData(AMX *amx, cell *params)
 		{
 			switch (static_cast<int>(params[3]))
 			{
-				case AreaID:
+				case AreaId:
 				{
 					error = InvalidData;
 					break;
@@ -276,7 +263,7 @@ int Manipulation::isInArrayData(AMX *amx, cell *params)
 			Utility::logError("Streamer_IsInArrayData: Invalid data specified.");
 			break;
 		}
-		case InvalidID:
+		case InvalidId:
 		{
 			Utility::logError("Streamer_IsInArrayData: Invalid ID specified.");
 			break;
@@ -333,7 +320,7 @@ int Manipulation::appendArrayData(AMX *amx, cell *params)
 		{
 			switch (static_cast<int>(params[3]))
 			{
-				case AreaID:
+				case AreaId:
 				{
 					error = InvalidData;
 					break;
@@ -364,7 +351,7 @@ int Manipulation::appendArrayData(AMX *amx, cell *params)
 			Utility::logError("Streamer_AppendArrayData: Invalid data specified.");
 			break;
 		}
-		case InvalidID:
+		case InvalidId:
 		{
 			Utility::logError("Streamer_AppendArrayData: Invalid ID specified.");
 			break;
@@ -421,7 +408,7 @@ int Manipulation::removeArrayData(AMX *amx, cell *params)
 		{
 			switch (static_cast<int>(params[3]))
 			{
-				case AreaID:
+				case AreaId:
 				{
 					error = InvalidData;
 					break;
@@ -452,7 +439,7 @@ int Manipulation::removeArrayData(AMX *amx, cell *params)
 			Utility::logError("Streamer_RemoveArrayData: Invalid data specified.");
 			break;
 		}
-		case InvalidID:
+		case InvalidId:
 		{
 			Utility::logError("Streamer_RemoveArrayData: Invalid ID specified.");
 			break;
@@ -460,6 +447,94 @@ int Manipulation::removeArrayData(AMX *amx, cell *params)
 		case InvalidType:
 		{
 			Utility::logError("Streamer_RemoveArrayData: Invalid type specified.");
+			break;
+		}
+		default:
+		{
+			return result;
+		}
+	}
+	return 0;
+}
+
+int Manipulation::getArrayDataLength(AMX *amx, cell *params)
+{
+	int error = -1, result = -1;
+	switch (static_cast<int>(params[1]))
+	{
+		case STREAMER_TYPE_OBJECT:
+		{
+			result = getArrayDataLengthForItem(core->getData()->objects, static_cast<int>(params[2]), static_cast<int>(params[3]), error);
+			break;
+		}
+		case STREAMER_TYPE_PICKUP:
+		{
+			result = getArrayDataLengthForItem(core->getData()->pickups, static_cast<int>(params[2]), static_cast<int>(params[3]), error);
+			break;
+		}
+		case STREAMER_TYPE_CP:
+		{
+			result = getArrayDataLengthForItem(core->getData()->checkpoints, static_cast<int>(params[2]), static_cast<int>(params[3]), error);
+			break;
+		}
+		case STREAMER_TYPE_RACE_CP:
+		{
+			result = getArrayDataLengthForItem(core->getData()->raceCheckpoints, static_cast<int>(params[2]), static_cast<int>(params[3]), error);
+			break;
+		}
+		case STREAMER_TYPE_MAP_ICON:
+		{
+			result = getArrayDataLengthForItem(core->getData()->mapIcons, static_cast<int>(params[2]), static_cast<int>(params[3]), error);
+			break;
+		}
+		case STREAMER_TYPE_3D_TEXT_LABEL:
+		{
+			result = getArrayDataLengthForItem(core->getData()->textLabels, static_cast<int>(params[2]), static_cast<int>(params[3]), error);
+			break;
+		}
+		case STREAMER_TYPE_AREA:
+		{
+			switch (static_cast<int>(params[3]))
+			{
+				case AreaId:
+				{
+					error = InvalidData;
+					break;
+				}
+				default:
+				{
+					result = getArrayDataLengthForItem(core->getData()->areas, static_cast<int>(params[2]), static_cast<int>(params[3]), error);
+					break;
+				}
+			}
+			break;
+		}
+		case STREAMER_TYPE_ACTOR:
+		{
+			result = getArrayDataLengthForItem(core->getData()->actors, static_cast<int>(params[2]), static_cast<int>(params[3]), error);
+			break;
+		}
+		default:
+		{
+			error = InvalidType;
+			break;
+		}
+	}
+	switch (error)
+	{
+		case InvalidData:
+		{
+			Utility::logError("Streamer_GetArrayDataLength: Invalid data specified.");
+			break;
+		}
+		case InvalidId:
+		{
+			Utility::logError("Streamer_GetArrayDataLength: Invalid ID specified.");
+			break;
+		}
+		case InvalidType:
+		{
+			Utility::logError("Streamer_GetArrayDataLength: Invalid type specified.");
 			break;
 		}
 		default:

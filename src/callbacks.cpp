@@ -14,13 +14,9 @@
  * limitations under the License.
  */
 
+#include "precompiled.h"
+
 #include "core.h"
-
-#include <boost/intrusive_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
-#include <boost/unordered_map.hpp>
-
-#include <set>
 
 PLUGIN_EXPORT bool PLUGIN_CALL OnPlayerConnect(int playerid)
 {
@@ -160,17 +156,17 @@ PLUGIN_EXPORT bool PLUGIN_CALL OnPlayerLeaveRaceCheckpoint(int playerid)
 
 PLUGIN_EXPORT bool PLUGIN_CALL OnPlayerPickUpPickup(int playerid, int pickupid)
 {
-	for (boost::unordered_map<int, int>::iterator i = core->getData()->internalPickups.begin(); i != core->getData()->internalPickups.end(); ++i)
+	for (boost::unordered_map<std::pair<int, int>, int>::iterator i = core->getData()->internalPickups.begin(); i != core->getData()->internalPickups.end(); ++i)
 	{
 		if (i->second == pickupid)
 		{
-			int pickupid = i->first;
+			int dynPickupId = i->first.first;
 			for (std::set<AMX*>::iterator a = core->getData()->interfaces.begin(); a != core->getData()->interfaces.end(); ++a)
 			{
 				int amxIndex = 0;
 				if (!amx_FindPublic(*a, "OnPlayerPickUpDynamicPickup", &amxIndex))
 				{
-					amx_Push(*a, static_cast<cell>(pickupid));
+					amx_Push(*a, static_cast<cell>(dynPickupId));
 					amx_Push(*a, static_cast<cell>(playerid));
 					amx_Exec(*a, NULL, amxIndex);
 				}
@@ -192,10 +188,10 @@ PLUGIN_EXPORT bool PLUGIN_CALL OnPlayerEditObject(int playerid, bool playerobjec
 			{
 				if (i->second == objectid)
 				{
-					int objectid = i->first;
+					int dynObjectId = i->first;
 					if (response == EDIT_RESPONSE_CANCEL || response == EDIT_RESPONSE_FINAL)
 					{
-						boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(objectid);
+						boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(dynObjectId);
 						if (o != core->getData()->objects.end())
 						{
 							if (o->second->comparableStreamDistance < STREAMER_STATIC_DISTANCE_CUTOFF && o->second->originalComparableStreamDistance > STREAMER_STATIC_DISTANCE_CUTOFF)
@@ -208,6 +204,7 @@ PLUGIN_EXPORT bool PLUGIN_CALL OnPlayerEditObject(int playerid, bool playerobjec
 					for (std::set<AMX*>::iterator a = core->getData()->interfaces.begin(); a != core->getData()->interfaces.end(); ++a)
 					{
 						int amxIndex = 0;
+						cell amxRetVal = 0;
 						if (!amx_FindPublic(*a, "OnPlayerEditDynamicObject", &amxIndex))
 						{
 							amx_Push(*a, amx_ftoc(fRotZ));
@@ -217,12 +214,16 @@ PLUGIN_EXPORT bool PLUGIN_CALL OnPlayerEditObject(int playerid, bool playerobjec
 							amx_Push(*a, amx_ftoc(fY));
 							amx_Push(*a, amx_ftoc(fX));
 							amx_Push(*a, static_cast<cell>(response));
-							amx_Push(*a, static_cast<cell>(objectid));
+							amx_Push(*a, static_cast<cell>(dynObjectId));
 							amx_Push(*a, static_cast<cell>(playerid));
-							amx_Exec(*a, NULL, amxIndex);
+							amx_Exec(*a, &amxRetVal, amxIndex);
+							if (amxRetVal)
+							{
+								break;
+							}
 						}
 					}
-					break;
+					return true;
 				}
 			}
 		}
@@ -241,22 +242,27 @@ PLUGIN_EXPORT bool PLUGIN_CALL OnPlayerSelectObject(int playerid, int type, int 
 			{
 				if (i->second == objectid)
 				{
-					int objectid = i->first;
+					int dynObjectId = i->first;
 					for (std::set<AMX*>::iterator a = core->getData()->interfaces.begin(); a != core->getData()->interfaces.end(); ++a)
 					{
 						int amxIndex = 0;
+						cell amxRetVal = 0;
 						if (!amx_FindPublic(*a, "OnPlayerSelectDynamicObject", &amxIndex))
 						{
 							amx_Push(*a, amx_ftoc(z));
 							amx_Push(*a, amx_ftoc(y));
 							amx_Push(*a, amx_ftoc(x));
 							amx_Push(*a, static_cast<cell>(modelid));
-							amx_Push(*a, static_cast<cell>(objectid));
+							amx_Push(*a, static_cast<cell>(dynObjectId));
 							amx_Push(*a, static_cast<cell>(playerid));
-							amx_Exec(*a, NULL, amxIndex);
+							amx_Exec(*a, &amxRetVal, amxIndex);
+							if (amxRetVal)
+							{
+								break;
+							}
 						}
 					}
-					break;
+					return true;
 				}
 			}
 		}
@@ -310,24 +316,29 @@ PLUGIN_EXPORT bool PLUGIN_CALL OnPlayerGiveDamageActor(int playerid, int actorid
 	{
 		if (i->second == actorid)
 		{
-			int actorid = i->first;
+			int dynActorId = i->first;
 			for (std::set<AMX*>::iterator a = core->getData()->interfaces.begin(); a != core->getData()->interfaces.end(); ++a)
 			{
 				int amxIndex = 0;
+				cell amxRetVal = 0;
 				if (!amx_FindPublic(*a, "OnPlayerGiveDamageDynamicActor", &amxIndex))
 				{
 					amx_Push(*a, static_cast<cell>(bodypart));
 					amx_Push(*a, static_cast<cell>(weaponid));
 					amx_Push(*a, amx_ftoc(amount));
-					amx_Push(*a, static_cast<cell>(actorid));
+					amx_Push(*a, static_cast<cell>(dynActorId));
 					amx_Push(*a, static_cast<cell>(playerid));
-					amx_Exec(*a, NULL, amxIndex);
+					amx_Exec(*a, &amxRetVal, amxIndex);
+					if (amxRetVal)
+					{
+						break;
+					}
 				}
 			}
-			break;
+			return true;
 		}
 	}
-	return true;
+	return false;
 }
 
 PLUGIN_EXPORT bool PLUGIN_CALL OnActorStreamIn(int actorid, int forplayerid)
@@ -336,14 +347,14 @@ PLUGIN_EXPORT bool PLUGIN_CALL OnActorStreamIn(int actorid, int forplayerid)
 	{
 		if (i->second == actorid)
 		{
-			int actorid = i->first;
+			int dynActorId = i->first;
 			for (std::set<AMX*>::iterator a = core->getData()->interfaces.begin(); a != core->getData()->interfaces.end(); ++a)
 			{
 				int amxIndex = 0;
 				if (!amx_FindPublic(*a, "OnDynamicActorStreamIn", &amxIndex))
 				{
 					amx_Push(*a, static_cast<cell>(forplayerid));
-					amx_Push(*a, static_cast<cell>(actorid));
+					amx_Push(*a, static_cast<cell>(dynActorId));
 					amx_Exec(*a, NULL, amxIndex);
 				}
 			}
@@ -359,14 +370,14 @@ PLUGIN_EXPORT bool PLUGIN_CALL OnActorStreamOut(int actorid, int forplayerid)
 	{
 		if (i->second == actorid)
 		{
-			int actorid = i->first;
+			int dynActorId = i->first;
 			for (std::set<AMX*>::iterator a = core->getData()->interfaces.begin(); a != core->getData()->interfaces.end(); ++a)
 			{
 				int amxIndex = 0;
 				if (!amx_FindPublic(*a, "OnDynamicActorStreamOut", &amxIndex))
 				{
 					amx_Push(*a, static_cast<cell>(forplayerid));
-					amx_Push(*a, static_cast<cell>(actorid));
+					amx_Push(*a, static_cast<cell>(dynActorId));
 					amx_Exec(*a, NULL, amxIndex);
 				}
 			}

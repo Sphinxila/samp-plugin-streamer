@@ -14,24 +14,11 @@
  * limitations under the License.
  */
 
-#include "int.h"
+#include "../precompiled.h"
 
+#include "int.h"
 #include "../core.h"
 #include "../utility.h"
-
-#include <boost/geometry.hpp>
-#include <boost/geometry/geometries/geometries.hpp>
-#include <boost/intrusive_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
-#include <boost/tuple/tuple.hpp>
-#include <boost/unordered_map.hpp>
-#include <boost/unordered_set.hpp>
-#include <boost/variant.hpp>
-
-#include <Eigen/Core>
-
-#include <bitset>
-#include <cmath>
 
 int Manipulation::getIntData(AMX *amx, cell *params)
 {
@@ -45,7 +32,7 @@ int Manipulation::getIntData(AMX *amx, cell *params)
 			{
 				switch (static_cast<int>(params[3]))
 				{
-					case AreaID:
+					case AreaId:
 					{
 						return Utility::getFirstValueInContainer(o->second->areas);
 					}
@@ -63,7 +50,7 @@ int Manipulation::getIntData(AMX *amx, cell *params)
 						{
 							return o->second->attach->player;
 						}
-						return INVALID_GENERIC_ID;
+						return INVALID_PLAYER_ID;
 					}
 					case AttachedVehicle:
 					{
@@ -71,21 +58,21 @@ int Manipulation::getIntData(AMX *amx, cell *params)
 						{
 							return o->second->attach->vehicle;
 						}
-						return INVALID_GENERIC_ID;
+						return INVALID_VEHICLE_ID;
 					}
-					case ExtraID:
+					case ExtraId:
 					{
 						return Utility::getFirstValueInContainer(o->second->extras);
 					}
-					case InteriorID:
+					case InteriorId:
 					{
 						return Utility::getFirstValueInContainer(o->second->interiors);
 					}
-					case ModelID:
+					case ModelId:
 					{
-						return o->second->modelID;
+						return o->second->modelId;
 					}
-					case PlayerID:
+					case PlayerId:
 					{
 						return Utility::getFirstValueInContainer(o->second->players);
 					}
@@ -104,7 +91,7 @@ int Manipulation::getIntData(AMX *amx, cell *params)
 						}
 						return 0;
 					}
-					case WorldID:
+					case WorldId:
 					{
 						return Utility::getFirstValueInContainer(o->second->worlds);
 					}
@@ -117,7 +104,7 @@ int Manipulation::getIntData(AMX *amx, cell *params)
 			}
 			else
 			{
-				error = InvalidID;
+				error = InvalidId;
 			}
 			break;
 		}
@@ -128,23 +115,23 @@ int Manipulation::getIntData(AMX *amx, cell *params)
 			{
 				switch (static_cast<int>(params[3]))
 				{
-					case AreaID:
+					case AreaId:
 					{
 						return Utility::getFirstValueInContainer(p->second->areas);
 					}
-					case ExtraID:
+					case ExtraId:
 					{
 						return Utility::getFirstValueInContainer(p->second->extras);
 					}
-					case InteriorID:
+					case InteriorId:
 					{
 						return Utility::getFirstValueInContainer(p->second->interiors);
 					}
-					case ModelID:
+					case ModelId:
 					{
-						return p->second->modelID;
+						return p->second->modelId;
 					}
-					case PlayerID:
+					case PlayerId:
 					{
 						return Utility::getFirstValueInContainer(p->second->players);
 					}
@@ -156,7 +143,7 @@ int Manipulation::getIntData(AMX *amx, cell *params)
 					{
 						return p->second->type;
 					}
-					case WorldID:
+					case WorldId:
 					{
 						return Utility::getFirstValueInContainer(p->second->worlds);
 					}
@@ -169,7 +156,7 @@ int Manipulation::getIntData(AMX *amx, cell *params)
 			}
 			else
 			{
-				error = InvalidID;
+				error = InvalidId;
 			}
 			break;
 		}
@@ -180,19 +167,19 @@ int Manipulation::getIntData(AMX *amx, cell *params)
 			{
 				switch (static_cast<int>(params[3]))
 				{
-					case AreaID:
+					case AreaId:
 					{
 						return Utility::getFirstValueInContainer(c->second->areas);
 					}
-					case ExtraID:
+					case ExtraId:
 					{
 						return Utility::getFirstValueInContainer(c->second->extras);
 					}
-					case InteriorID:
+					case InteriorId:
 					{
 						return Utility::getFirstValueInContainer(c->second->interiors);
 					}
-					case PlayerID:
+					case PlayerId:
 					{
 						return Utility::getFirstValueInContainer(c->second->players);
 					}
@@ -200,7 +187,7 @@ int Manipulation::getIntData(AMX *amx, cell *params)
 					{
 						return c->second->priority;
 					}
-					case WorldID:
+					case WorldId:
 					{
 						return Utility::getFirstValueInContainer(c->second->worlds);
 					}
@@ -213,7 +200,7 @@ int Manipulation::getIntData(AMX *amx, cell *params)
 			}
 			else
 			{
-				error = InvalidID;
+				error = InvalidId;
 			}
 			break;
 		}
@@ -224,19 +211,19 @@ int Manipulation::getIntData(AMX *amx, cell *params)
 			{
 				switch (static_cast<int>(params[3]))
 				{
-					case AreaID:
+					case AreaId:
 					{
 						return Utility::getFirstValueInContainer(r->second->areas);
 					}
-					case ExtraID:
+					case ExtraId:
 					{
 						return Utility::getFirstValueInContainer(r->second->extras);
 					}
-					case InteriorID:
+					case InteriorId:
 					{
 						return Utility::getFirstValueInContainer(r->second->interiors);
 					}
-					case PlayerID:
+					case PlayerId:
 					{
 						return Utility::getFirstValueInContainer(r->second->players);
 					}
@@ -248,7 +235,7 @@ int Manipulation::getIntData(AMX *amx, cell *params)
 					{
 						return r->second->type;
 					}
-					case WorldID:
+					case WorldId:
 					{
 						return Utility::getFirstValueInContainer(r->second->worlds);
 					}
@@ -261,7 +248,7 @@ int Manipulation::getIntData(AMX *amx, cell *params)
 			}
 			else
 			{
-				error = InvalidID;
+				error = InvalidId;
 			}
 			break;
 		}
@@ -272,7 +259,7 @@ int Manipulation::getIntData(AMX *amx, cell *params)
 			{
 				switch (static_cast<int>(params[3]))
 				{
-					case AreaID:
+					case AreaId:
 					{
 						return Utility::getFirstValueInContainer(m->second->areas);
 					}
@@ -280,15 +267,15 @@ int Manipulation::getIntData(AMX *amx, cell *params)
 					{
 						return m->second->color;
 					}
-					case ExtraID:
+					case ExtraId:
 					{
 						return Utility::getFirstValueInContainer(m->second->extras);
 					}
-					case InteriorID:
+					case InteriorId:
 					{
 						return Utility::getFirstValueInContainer(m->second->interiors);
 					}
-					case PlayerID:
+					case PlayerId:
 					{
 						return Utility::getFirstValueInContainer(m->second->players);
 					}
@@ -304,7 +291,7 @@ int Manipulation::getIntData(AMX *amx, cell *params)
 					{
 						return m->second->type;
 					}
-					case WorldID:
+					case WorldId:
 					{
 						return Utility::getFirstValueInContainer(m->second->worlds);
 					}
@@ -317,7 +304,7 @@ int Manipulation::getIntData(AMX *amx, cell *params)
 			}
 			else
 			{
-				error = InvalidID;
+				error = InvalidId;
 			}
 			break;
 		}
@@ -328,7 +315,7 @@ int Manipulation::getIntData(AMX *amx, cell *params)
 			{
 				switch (static_cast<int>(params[3]))
 				{
-					case AreaID:
+					case AreaId:
 					{
 						return Utility::getFirstValueInContainer(t->second->areas);
 					}
@@ -338,7 +325,7 @@ int Manipulation::getIntData(AMX *amx, cell *params)
 						{
 							return t->second->attach->player;
 						}
-						return INVALID_GENERIC_ID;
+						return INVALID_PLAYER_ID;
 					}
 					case AttachedVehicle:
 					{
@@ -346,21 +333,21 @@ int Manipulation::getIntData(AMX *amx, cell *params)
 						{
 							return t->second->attach->vehicle;
 						}
-						return INVALID_GENERIC_ID;
+						return INVALID_VEHICLE_ID;
 					}
 					case Color:
 					{
 						return t->second->color;
 					}
-					case ExtraID:
+					case ExtraId:
 					{
 						return Utility::getFirstValueInContainer(t->second->extras);
 					}
-					case InteriorID:
+					case InteriorId:
 					{
 						return Utility::getFirstValueInContainer(t->second->interiors);
 					}
-					case PlayerID:
+					case PlayerId:
 					{
 						return Utility::getFirstValueInContainer(t->second->players);
 					}
@@ -372,7 +359,7 @@ int Manipulation::getIntData(AMX *amx, cell *params)
 					{
 						return t->second->testLOS;
 					}
-					case WorldID:
+					case WorldId:
 					{
 						return Utility::getFirstValueInContainer(t->second->worlds);
 					}
@@ -385,7 +372,7 @@ int Manipulation::getIntData(AMX *amx, cell *params)
 			}
 			else
 			{
-				error = InvalidID;
+				error = InvalidId;
 			}
 			break;
 		}
@@ -410,7 +397,7 @@ int Manipulation::getIntData(AMX *amx, cell *params)
 						{
 							return a->second->attach->player;
 						}
-						return INVALID_GENERIC_ID;
+						return INVALID_PLAYER_ID;
 					}
 					case AttachedVehicle:
 					{
@@ -418,17 +405,17 @@ int Manipulation::getIntData(AMX *amx, cell *params)
 						{
 							return a->second->attach->vehicle;
 						}
-						return INVALID_GENERIC_ID;
+						return INVALID_VEHICLE_ID;
 					}
-					case ExtraID:
+					case ExtraId:
 					{
 						return Utility::getFirstValueInContainer(a->second->extras);
 					}
-					case InteriorID:
+					case InteriorId:
 					{
 						return Utility::getFirstValueInContainer(a->second->interiors);
 					}
-					case PlayerID:
+					case PlayerId:
 					{
 						return Utility::getFirstValueInContainer(a->second->players);
 					}
@@ -440,7 +427,7 @@ int Manipulation::getIntData(AMX *amx, cell *params)
 					{
 						return a->second->type;
 					}
-					case WorldID:
+					case WorldId:
 					{
 						return Utility::getFirstValueInContainer(a->second->worlds);
 					}
@@ -453,7 +440,7 @@ int Manipulation::getIntData(AMX *amx, cell *params)
 			}
 			else
 			{
-				error = InvalidID;
+				error = InvalidId;
 			}
 			break;
 		}
@@ -464,15 +451,15 @@ int Manipulation::getIntData(AMX *amx, cell *params)
 			{
 				switch (static_cast<int>(params[3]))
 				{
-					case AreaID:
+					case AreaId:
 					{
 						return Utility::getFirstValueInContainer(a->second->areas);
 					}
-					case ExtraID:
+					case ExtraId:
 					{
 						return Utility::getFirstValueInContainer(a->second->extras);
 					}
-					case InteriorID:
+					case InteriorId:
 					{
 						return Utility::getFirstValueInContainer(a->second->interiors);
 					}
@@ -480,11 +467,11 @@ int Manipulation::getIntData(AMX *amx, cell *params)
 					{
 						return a->second->invulnerable;
 					}
-					case ModelID:
+					case ModelId:
 					{
-						return a->second->modelID;
+						return a->second->modelId;
 					}
-					case PlayerID:
+					case PlayerId:
 					{
 						return Utility::getFirstValueInContainer(a->second->players);
 					}
@@ -492,7 +479,7 @@ int Manipulation::getIntData(AMX *amx, cell *params)
 					{
 						return a->second->priority;
 					}
-					case WorldID:
+					case WorldId:
 					{
 						return Utility::getFirstValueInContainer(a->second->worlds);
 					}
@@ -505,7 +492,7 @@ int Manipulation::getIntData(AMX *amx, cell *params)
 			}
 			else
 			{
-				error = InvalidID;
+				error = InvalidId;
 			}
 			break;
 		}
@@ -522,7 +509,7 @@ int Manipulation::getIntData(AMX *amx, cell *params)
 			Utility::logError("Streamer_GetIntData: Invalid data specified.");
 			break;
 		}
-		case InvalidID:
+		case InvalidId:
 		{
 			Utility::logError("Streamer_GetIntData: Invalid ID specified.");
 			break;
@@ -549,7 +536,7 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 			{
 				switch (static_cast<int>(params[3]))
 				{
-					case AreaID:
+					case AreaId:
 					{
 						return Utility::setFirstValueInContainer(o->second->areas, static_cast<int>(params[4])) != 0;
 					}
@@ -562,14 +549,15 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 								Utility::logError("Streamer_SetIntData: Object is currently moving and must be stopped first.");
 								return 0;
 							}
-							if (sampgdk::FindNative("SetPlayerGravity") == NULL)
+							static AMX_NATIVE native = sampgdk::FindNative("SetPlayerGravity");
+							if (native == NULL)
 							{
 								Utility::logError("Streamer_SetIntData: YSF plugin must be loaded to attach objects to objects.");
 								return 0;
 							}
 							o->second->attach = boost::intrusive_ptr<Item::Object::Attach>(new Item::Object::Attach);
-							o->second->attach->player = INVALID_GENERIC_ID;
-							o->second->attach->vehicle = INVALID_GENERIC_ID;
+							o->second->attach->player = INVALID_PLAYER_ID;
+							o->second->attach->vehicle = INVALID_VEHICLE_ID;
 							o->second->attach->object = static_cast<int>(params[4]);
 							o->second->attach->positionOffset.setZero();
 							o->second->attach->rotation.setZero();
@@ -594,21 +582,22 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 					}
 					case AttachedPlayer:
 					{
-						if (static_cast<int>(params[4]) != INVALID_GENERIC_ID)
+						if (static_cast<int>(params[4]) != INVALID_PLAYER_ID)
 						{
 							if (o->second->move)
 							{
 								Utility::logError("Streamer_SetIntData: Object is currently moving and must be stopped first.");
 								return 0;
 							}
-							if (sampgdk::FindNative("SetPlayerGravity") == NULL)
+							static AMX_NATIVE native = sampgdk::FindNative("SetPlayerGravity");
+							if (native == NULL)
 							{
 								Utility::logError("Streamer_SetIntData: YSF plugin must be loaded to attach objects to players.");
 								return 0;
 							}
 							o->second->attach = boost::intrusive_ptr<Item::Object::Attach>(new Item::Object::Attach);
 							o->second->attach->object = INVALID_STREAMER_ID;
-							o->second->attach->vehicle = INVALID_GENERIC_ID;
+							o->second->attach->vehicle = INVALID_VEHICLE_ID;
 							o->second->attach->player = static_cast<int>(params[4]);
 							o->second->attach->positionOffset.setZero();
 							o->second->attach->rotation.setZero();
@@ -619,7 +608,7 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 						{
 							if (o->second->attach)
 							{
-								if (o->second->attach->player != INVALID_GENERIC_ID)
+								if (o->second->attach->player != INVALID_PLAYER_ID)
 								{
 									o->second->attach.reset();
 									core->getStreamer()->attachedObjects.erase(o->second);
@@ -632,7 +621,7 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 					}
 					case AttachedVehicle:
 					{
-						if (static_cast<int>(params[4]) != INVALID_GENERIC_ID)
+						if (static_cast<int>(params[4]) != INVALID_VEHICLE_ID)
 						{
 							if (o->second->move)
 							{
@@ -641,7 +630,7 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 							}
 							o->second->attach = boost::intrusive_ptr<Item::Object::Attach>(new Item::Object::Attach);
 							o->second->attach->object = INVALID_STREAMER_ID;
-							o->second->attach->player = INVALID_GENERIC_ID;
+							o->second->attach->player = INVALID_PLAYER_ID;
 							o->second->attach->vehicle = static_cast<int>(params[4]);
 							o->second->attach->positionOffset.setZero();
 							o->second->attach->rotation.setZero();
@@ -652,7 +641,7 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 						{
 							if (o->second->attach)
 							{
-								if (o->second->attach->vehicle != INVALID_GENERIC_ID)
+								if (o->second->attach->vehicle != INVALID_VEHICLE_ID)
 								{
 									o->second->attach.reset();
 									core->getStreamer()->attachedObjects.erase(o->second);
@@ -663,21 +652,21 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 						}
 						break;
 					}
-					case ExtraID:
+					case ExtraId:
 					{
 						return Utility::setFirstValueInContainer(o->second->extras, static_cast<int>(params[4])) != 0;
 					}
-					case InteriorID:
+					case InteriorId:
 					{
 						return Utility::setFirstValueInContainer(o->second->interiors, static_cast<int>(params[4])) != 0;
 					}
-					case ModelID:
+					case ModelId:
 					{
-						o->second->modelID = static_cast<int>(params[4]);
+						o->second->modelId = static_cast<int>(params[4]);
 						update = true;
 						break;
 					}
-					case PlayerID:
+					case PlayerId:
 					{
 						return Utility::setFirstValueInContainer(o->second->players, static_cast<int>(params[4])) != 0;
 					}
@@ -690,7 +679,7 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 					{
 						if (o->second->attach)
 						{
-							if (o->second->attach->object != INVALID_GENERIC_ID)
+							if (o->second->attach->object != INVALID_STREAMER_ID)
 							{
 								o->second->attach->syncRotation = static_cast<int>(params[4]) != 0;
 								update = true;
@@ -698,7 +687,7 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 						}
 						break;
 					}
-					case WorldID:
+					case WorldId:
 					{
 						return Utility::setFirstValueInContainer(o->second->worlds, static_cast<int>(params[4])) != 0;
 					}
@@ -716,7 +705,7 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 						if (i != p->second.internalObjects.end())
 						{
 							sampgdk::DestroyPlayerObject(p->first, i->second);
-							i->second = sampgdk::CreatePlayerObject(p->first, o->second->modelID, o->second->position[0], o->second->position[1], o->second->position[2], o->second->rotation[0], o->second->rotation[1], o->second->rotation[2], o->second->drawDistance);
+							i->second = sampgdk::CreatePlayerObject(p->first, o->second->modelId, o->second->position[0], o->second->position[1], o->second->position[2], o->second->rotation[0], o->second->rotation[1], o->second->rotation[2], o->second->drawDistance);
 							if (o->second->attach)
 							{
 								if (o->second->attach->object != INVALID_STREAMER_ID)
@@ -724,22 +713,22 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 									boost::unordered_map<int, int>::iterator j = p->second.internalObjects.find(o->second->attach->object);
 									if (j != p->second.internalObjects.end())
 									{
-										AMX_NATIVE native = sampgdk::FindNative("AttachPlayerObjectToObject");
+										static AMX_NATIVE native = sampgdk::FindNative("AttachPlayerObjectToObject");
 										if (native != NULL)
 										{
 											sampgdk::InvokeNative(native, "dddffffffb", p->first, i->second, j->second, o->second->attach->positionOffset[0], o->second->attach->positionOffset[1], o->second->attach->positionOffset[2], o->second->attach->rotation[0], o->second->attach->rotation[1], o->second->attach->rotation[2], o->second->attach->syncRotation);
 										}
 									}
 								}
-								else if (o->second->attach->player != INVALID_GENERIC_ID)
+								else if (o->second->attach->player != INVALID_PLAYER_ID)
 								{
-									AMX_NATIVE native = sampgdk::FindNative("AttachPlayerObjectToPlayer");
+									static AMX_NATIVE native = sampgdk::FindNative("AttachPlayerObjectToPlayer");
 									if (native != NULL)
 									{
 										sampgdk::InvokeNative(native, "dddffffffd", p->first, i->second, o->second->attach->player, o->second->attach->positionOffset[0], o->second->attach->positionOffset[1], o->second->attach->positionOffset[2], o->second->attach->rotation[0], o->second->attach->rotation[1], o->second->attach->rotation[2], 1);
 									}
 								}
-								else if (o->second->attach->vehicle != INVALID_GENERIC_ID)
+								else if (o->second->attach->vehicle != INVALID_VEHICLE_ID)
 								{
 									sampgdk::AttachPlayerObjectToVehicle(p->first, i->second, o->second->attach->vehicle, o->second->attach->positionOffset[0], o->second->attach->positionOffset[1], o->second->attach->positionOffset[2], o->second->attach->rotation[0], o->second->attach->rotation[1], o->second->attach->rotation[2]);
 								}
@@ -752,7 +741,7 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 							{
 								if (m->second.main)
 								{
-									sampgdk::SetPlayerObjectMaterial(p->first, i->second, m->first, m->second.main->modelID, m->second.main->txdFileName.c_str(), m->second.main->textureName.c_str(), m->second.main->materialColor);
+									sampgdk::SetPlayerObjectMaterial(p->first, i->second, m->first, m->second.main->modelId, m->second.main->txdFileName.c_str(), m->second.main->textureName.c_str(), m->second.main->materialColor);
 								}
 								else if (m->second.text)
 								{
@@ -770,7 +759,7 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 			}
 			else
 			{
-				error = InvalidID;
+				error = InvalidId;
 			}
 			break;
 		}
@@ -781,25 +770,25 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 			{
 				switch (static_cast<int>(params[3]))
 				{
-					case AreaID:
+					case AreaId:
 					{
 						return Utility::setFirstValueInContainer(p->second->areas, static_cast<int>(params[4])) != 0;
 					}
-					case ExtraID:
+					case ExtraId:
 					{
 						return Utility::setFirstValueInContainer(p->second->extras, static_cast<int>(params[4])) != 0;
 					}
-					case InteriorID:
+					case InteriorId:
 					{
 						return Utility::setFirstValueInContainer(p->second->interiors, static_cast<int>(params[4])) != 0;
 					}
-					case ModelID:
+					case ModelId:
 					{
-						p->second->modelID = static_cast<int>(params[4]);
+						p->second->modelId = static_cast<int>(params[4]);
 						update = true;
 						break;
 					}
-					case PlayerID:
+					case PlayerId:
 					{
 						return Utility::setFirstValueInContainer(p->second->players, static_cast<int>(params[4])) != 0;
 					}
@@ -814,7 +803,7 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 						update = true;
 						break;
 					}
-					case WorldID:
+					case WorldId:
 					{
 						return Utility::setFirstValueInContainer(p->second->worlds, static_cast<int>(params[4])) != 0;
 					}
@@ -826,18 +815,21 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 				}
 				if (update)
 				{
-					boost::unordered_map<int, int>::iterator i = core->getData()->internalPickups.find(p->first);
-					if (i != core->getData()->internalPickups.end())
+					for (boost::unordered_set<int>::const_iterator w = p->second->worlds.begin(); w != p->second->worlds.end(); ++w)
 					{
-						sampgdk::DestroyPickup(i->second);
-						i->second = sampgdk::CreatePickup(p->second->modelID, p->second->type, p->second->position[0], p->second->position[1], p->second->position[2], p->second->worldID);
+						boost::unordered_map<std::pair<int, int>, int>::iterator i = core->getData()->internalPickups.find(std::make_pair(p->first, *w));
+						if (i != core->getData()->internalPickups.end())
+						{
+							sampgdk::DestroyPickup(i->second);
+							i->second = sampgdk::CreatePickup(p->second->modelId, p->second->type, p->second->position[0], p->second->position[1], p->second->position[2], *w);
+						}
 					}
 				}
 				return 1;
 			}
 			else
 			{
-				error = InvalidID;
+				error = InvalidId;
 			}
 			break;
 		}
@@ -848,21 +840,19 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 			{
 				switch (static_cast<int>(params[3]))
 				{
-					case AreaID:
+					case AreaId:
 					{
 						return Utility::setFirstValueInContainer(c->second->areas, static_cast<int>(params[4])) != 0;
 					}
-					case ExtraID:
+					case ExtraId:
 					{
 						return Utility::setFirstValueInContainer(c->second->extras, static_cast<int>(params[4])) != 0;
 					}
-					case InteriorID:
+					case InteriorId:
 					{
 						return Utility::setFirstValueInContainer(c->second->interiors, static_cast<int>(params[4])) != 0;
-						update = true;
-						break;
 					}
-					case PlayerID:
+					case PlayerId:
 					{
 						return Utility::setFirstValueInContainer(c->second->players, static_cast<int>(params[4])) != 0;
 					}
@@ -871,7 +861,7 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 						c->second->priority = static_cast<int>(params[4]);
 						return 1;
 					}
-					case WorldID:
+					case WorldId:
 					{
 						return Utility::setFirstValueInContainer(c->second->worlds, static_cast<int>(params[4])) != 0;
 					}
@@ -884,7 +874,7 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 			}
 			else
 			{
-				error = InvalidID;
+				error = InvalidId;
 			}
 			break;
 		}
@@ -895,19 +885,19 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 			{
 				switch (static_cast<int>(params[3]))
 				{
-					case AreaID:
+					case AreaId:
 					{
 						return Utility::setFirstValueInContainer(r->second->areas, static_cast<int>(params[4])) != 0;
 					}
-					case ExtraID:
+					case ExtraId:
 					{
 						return Utility::setFirstValueInContainer(r->second->extras, static_cast<int>(params[4])) != 0;
 					}
-					case InteriorID:
+					case InteriorId:
 					{
 						return Utility::setFirstValueInContainer(r->second->interiors, static_cast<int>(params[4])) != 0;
 					}
-					case PlayerID:
+					case PlayerId:
 					{
 						return Utility::setFirstValueInContainer(r->second->players, static_cast<int>(params[4])) != 0;
 					}
@@ -922,7 +912,7 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 						update = true;
 						break;
 					}
-					case WorldID:
+					case WorldId:
 					{
 						return Utility::setFirstValueInContainer(r->second->worlds, static_cast<int>(params[4])) != 0;
 					}
@@ -947,7 +937,7 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 			}
 			else
 			{
-				error = InvalidID;
+				error = InvalidId;
 			}
 			break;
 		}
@@ -958,7 +948,7 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 			{
 				switch (static_cast<int>(params[3]))
 				{
-					case AreaID:
+					case AreaId:
 					{
 						return Utility::setFirstValueInContainer(m->second->areas, static_cast<int>(params[4])) != 0;
 					}
@@ -968,15 +958,15 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 						update = true;
 						break;
 					}
-					case ExtraID:
+					case ExtraId:
 					{
 						return Utility::setFirstValueInContainer(m->second->extras, static_cast<int>(params[4])) != 0;
 					}
-					case InteriorID:
+					case InteriorId:
 					{
 						return Utility::setFirstValueInContainer(m->second->interiors, static_cast<int>(params[4])) != 0;
 					}
-					case PlayerID:
+					case PlayerId:
 					{
 						return Utility::setFirstValueInContainer(m->second->players, static_cast<int>(params[4])) != 0;
 					}
@@ -997,7 +987,7 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 						update = true;
 						break;
 					}
-					case WorldID:
+					case WorldId:
 					{
 						return Utility::setFirstValueInContainer(m->second->worlds, static_cast<int>(params[4])) != 0;
 					}
@@ -1023,7 +1013,7 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 			}
 			else
 			{
-				error = InvalidID;
+				error = InvalidId;
 			}
 			break;
 		}
@@ -1034,17 +1024,17 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 			{
 				switch (static_cast<int>(params[3]))
 				{
-					case AreaID:
+					case AreaId:
 					{
 						return Utility::setFirstValueInContainer(t->second->areas, static_cast<int>(params[4])) != 0;
 					}
 					case AttachedPlayer:
 					{
-						if (static_cast<int>(params[4]) != INVALID_GENERIC_ID)
+						if (static_cast<int>(params[4]) != INVALID_PLAYER_ID)
 						{
 							t->second->attach = boost::intrusive_ptr<Item::TextLabel::Attach>(new Item::TextLabel::Attach);
 							t->second->attach->player = static_cast<int>(params[4]);
-							t->second->attach->vehicle = INVALID_GENERIC_ID;
+							t->second->attach->vehicle = INVALID_VEHICLE_ID;
 							core->getStreamer()->attachedTextLabels.insert(t->second);
 							update = true;
 						}
@@ -1052,7 +1042,7 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 						{
 							if (t->second->attach)
 							{
-								if (t->second->attach->player != INVALID_GENERIC_ID)
+								if (t->second->attach->player != INVALID_PLAYER_ID)
 								{
 									t->second->attach.reset();
 									core->getStreamer()->attachedTextLabels.erase(t->second);
@@ -1065,10 +1055,10 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 					}
 					case AttachedVehicle:
 					{
-						if (static_cast<int>(params[4]) != INVALID_GENERIC_ID)
+						if (static_cast<int>(params[4]) != INVALID_VEHICLE_ID)
 						{
 							t->second->attach = boost::intrusive_ptr<Item::TextLabel::Attach>(new Item::TextLabel::Attach);
-							t->second->attach->player = INVALID_GENERIC_ID;
+							t->second->attach->player = INVALID_PLAYER_ID;
 							t->second->attach->vehicle = static_cast<int>(params[4]);
 							core->getStreamer()->attachedTextLabels.insert(t->second);
 							update = true;
@@ -1077,7 +1067,7 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 						{
 							if (t->second->attach)
 							{
-								if (t->second->attach->vehicle != INVALID_GENERIC_ID)
+								if (t->second->attach->vehicle != INVALID_VEHICLE_ID)
 								{
 									t->second->attach.reset();
 									core->getStreamer()->attachedTextLabels.erase(t->second);
@@ -1094,15 +1084,15 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 						update = true;
 						break;
 					}
-					case ExtraID:
+					case ExtraId:
 					{
 						return Utility::setFirstValueInContainer(t->second->extras, static_cast<int>(params[4])) != 0;
 					}
-					case InteriorID:
+					case InteriorId:
 					{
 						return Utility::setFirstValueInContainer(t->second->interiors, static_cast<int>(params[4])) != 0;
 					}
-					case PlayerID:
+					case PlayerId:
 					{
 						return Utility::setFirstValueInContainer(t->second->players, static_cast<int>(params[4])) != 0;
 					}
@@ -1117,7 +1107,7 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 						update = true;
 						break;
 					}
-					case WorldID:
+					case WorldId:
 					{
 						return Utility::setFirstValueInContainer(t->second->worlds, static_cast<int>(params[4])) != 0;
 					}
@@ -1142,7 +1132,7 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 						if (i != p->second.internalTextLabels.end())
 						{
 							sampgdk::DeletePlayer3DTextLabel(p->first, i->second);
-							i->second = sampgdk::CreatePlayer3DTextLabel(p->first, t->second->text.c_str(), t->second->color, t->second->position[0], t->second->position[1], t->second->position[2], t->second->drawDistance, t->second->attach ? t->second->attach->player : INVALID_GENERIC_ID, t->second->attach ? t->second->attach->vehicle : INVALID_GENERIC_ID, t->second->testLOS);
+							i->second = sampgdk::CreatePlayer3DTextLabel(p->first, t->second->text.c_str(), t->second->color, t->second->position[0], t->second->position[1], t->second->position[2], t->second->drawDistance, t->second->attach ? t->second->attach->player : INVALID_PLAYER_ID, t->second->attach ? t->second->attach->vehicle : INVALID_VEHICLE_ID, t->second->testLOS);
 						}
 					}
 				}
@@ -1150,7 +1140,7 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 			}
 			else
 			{
-				error = InvalidID;
+				error = InvalidId;
 			}
 			break;
 		}
@@ -1168,11 +1158,11 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 					}
 					case AttachedPlayer:
 					{
-						if (static_cast<int>(params[4]) != INVALID_GENERIC_ID)
+						if (static_cast<int>(params[4]) != INVALID_PLAYER_ID)
 						{
 							a->second->attach = boost::intrusive_ptr<Item::Area::Attach>(new Item::Area::Attach);
 							a->second->attach->object = boost::make_tuple(INVALID_STREAMER_ID, STREAMER_OBJECT_TYPE_DYNAMIC, INVALID_PLAYER_ID);
-							a->second->attach->vehicle = INVALID_GENERIC_ID;
+							a->second->attach->vehicle = INVALID_VEHICLE_ID;
 							a->second->attach->position = a->second->position;
 							a->second->attach->player = static_cast<int>(params[4]);
 							core->getStreamer()->attachedAreas.insert(a->second);
@@ -1182,7 +1172,7 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 						{
 							if (a->second->attach)
 							{
-								if (a->second->attach->player != INVALID_GENERIC_ID)
+								if (a->second->attach->player != INVALID_PLAYER_ID)
 								{
 									a->second->attach.reset();
 									core->getStreamer()->attachedAreas.erase(a->second);
@@ -1195,11 +1185,11 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 					}
 					case AttachedVehicle:
 					{
-						if (static_cast<int>(params[4]) != INVALID_GENERIC_ID)
+						if (static_cast<int>(params[4]) != INVALID_VEHICLE_ID)
 						{
 							a->second->attach = boost::intrusive_ptr<Item::Area::Attach>(new Item::Area::Attach);
 							a->second->attach->object = boost::make_tuple(INVALID_STREAMER_ID, STREAMER_OBJECT_TYPE_DYNAMIC, INVALID_PLAYER_ID);
-							a->second->attach->player = INVALID_GENERIC_ID;
+							a->second->attach->player = INVALID_PLAYER_ID;
 							a->second->attach->position = a->second->position;
 							a->second->attach->vehicle = static_cast<int>(params[4]);
 							core->getStreamer()->attachedAreas.insert(a->second);
@@ -1209,7 +1199,7 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 						{
 							if (a->second->attach)
 							{
-								if (a->second->attach->vehicle != INVALID_GENERIC_ID)
+								if (a->second->attach->vehicle != INVALID_VEHICLE_ID)
 								{
 									a->second->attach.reset();
 									core->getStreamer()->attachedAreas.erase(a->second);
@@ -1220,15 +1210,15 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 						}
 						return 0;
 					}
-					case ExtraID:
+					case ExtraId:
 					{
 						return Utility::setFirstValueInContainer(a->second->extras, static_cast<int>(params[4])) != 0;
 					}
-					case InteriorID:
+					case InteriorId:
 					{
 						return Utility::setFirstValueInContainer(a->second->interiors, static_cast<int>(params[4])) != 0;
 					}
-					case PlayerID:
+					case PlayerId:
 					{
 						return Utility::setFirstValueInContainer(a->second->players, static_cast<int>(params[4])) != 0;
 					}
@@ -1237,7 +1227,7 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 						a->second->priority = static_cast<int>(params[4]);
 						break;
 					}
-					case WorldID:
+					case WorldId:
 					{
 						return Utility::setFirstValueInContainer(a->second->worlds, static_cast<int>(params[4])) != 0;
 					}
@@ -1250,7 +1240,7 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 			}
 			else
 			{
-				error = InvalidID;
+				error = InvalidId;
 			}
 			break;
 		}
@@ -1261,15 +1251,15 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 			{
 				switch (static_cast<int>(params[3]))
 				{
-					case AreaID:
+					case AreaId:
 					{
 						return Utility::setFirstValueInContainer(a->second->areas, static_cast<int>(params[4])) != 0;
 					}
-					case ExtraID:
+					case ExtraId:
 					{
 						return Utility::setFirstValueInContainer(a->second->extras, static_cast<int>(params[4])) != 0;
 					}
-					case InteriorID:
+					case InteriorId:
 					{
 						return Utility::setFirstValueInContainer(a->second->interiors, static_cast<int>(params[4])) != 0;
 					}
@@ -1279,13 +1269,13 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 						update = true;
 						break;
 					}
-					case ModelID:
+					case ModelId:
 					{
-						a->second->modelID = static_cast<int>(params[4]);
+						a->second->modelId = static_cast<int>(params[4]);
 						update = true;
 						break;
 					}
-					case PlayerID:
+					case PlayerId:
 					{
 						return Utility::setFirstValueInContainer(a->second->players, static_cast<int>(params[4])) != 0;
 					}
@@ -1294,7 +1284,7 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 						a->second->priority = static_cast<int>(params[4]);
 						return 1;
 					}
-					case WorldID:
+					case WorldId:
 					{
 						return Utility::setFirstValueInContainer(a->second->worlds, static_cast<int>(params[4])) != 0;
 					}
@@ -1310,10 +1300,10 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 					if (i != core->getData()->internalActors.end())
 					{
 						sampgdk::DestroyActor(i->second);
-						i->second = sampgdk::CreateActor(a->second->modelID, a->second->position[0], a->second->position[1], a->second->position[2], a->second->rotation);
+						i->second = sampgdk::CreateActor(a->second->modelId, a->second->position[0], a->second->position[1], a->second->position[2], a->second->rotation);
 						sampgdk::SetActorInvulnerable(i->second, a->second->invulnerable);
 						sampgdk::SetActorHealth(i->second, a->second->health);
-						sampgdk::SetActorVirtualWorld(i->second, a->second->worldID);
+						sampgdk::SetActorVirtualWorld(i->second, a->second->worldId);
 						if (a->second->anim)
 						{
 							sampgdk::ApplyActorAnimation(i->second, a->second->anim->lib.c_str(), a->second->anim->name.c_str(), a->second->anim->delta, a->second->anim->loop, a->second->anim->lockx, a->second->anim->locky, a->second->anim->freeze, a->second->anim->time);
@@ -1324,7 +1314,7 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 			}
 			else
 			{
-				error = InvalidID;
+				error = InvalidId;
 			}
 			break;
 		}
@@ -1341,7 +1331,7 @@ int Manipulation::setIntData(AMX *amx, cell *params)
 			Utility::logError("Streamer_SetIntData: Invalid data specified.");
 			break;
 		}
-		case InvalidID:
+		case InvalidId:
 		{
 			Utility::logError("Streamer_SetIntData: Invalid ID specified.");
 			break;

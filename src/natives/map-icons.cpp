@@ -14,31 +14,23 @@
  * limitations under the License.
  */
 
-#include "../natives.h"
+#include "../precompiled.h"
 
+#include "../natives.h"
 #include "../core.h"
 #include "../utility.h"
 
-#include <boost/geometry.hpp>
-#include <boost/geometry/geometries/geometries.hpp>
-#include <boost/intrusive_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
-#include <boost/unordered_map.hpp>
-#include <boost/unordered_set.hpp>
-
-#include <Eigen/Core>
-
 cell AMX_NATIVE_CALL Natives::CreateDynamicMapIcon(AMX *amx, cell *params)
 {
-	CHECK_PARAMS(12, "CreateDynamicMapIcon");
+	CHECK_PARAMS(12);
 	if (core->getData()->getGlobalMaxItems(STREAMER_TYPE_MAP_ICON) == core->getData()->mapIcons.size())
 	{
-		return 0;
+		return INVALID_STREAMER_ID;
 	}
-	int mapIconID = Item::MapIcon::identifier.get();
+	int mapIconId = Item::MapIcon::identifier.get();
 	Item::SharedMapIcon mapIcon(new Item::MapIcon);
 	mapIcon->amx = amx;
-	mapIcon->mapIconID = mapIconID;
+	mapIcon->mapIconId = mapIconId;
 	mapIcon->inverseAreaChecking = false;
 	mapIcon->originalComparableStreamDistance = -1.0f;
 	mapIcon->positionOffset = Eigen::Vector3f::Zero();
@@ -55,13 +47,13 @@ cell AMX_NATIVE_CALL Natives::CreateDynamicMapIcon(AMX *amx, cell *params)
 	Utility::addToContainer(mapIcon->areas, static_cast<int>(params[11]));
 	mapIcon->priority = static_cast<int>(params[12]);
 	core->getGrid()->addMapIcon(mapIcon);
-	core->getData()->mapIcons.insert(std::make_pair(mapIconID, mapIcon));
-	return static_cast<cell>(mapIconID);
+	core->getData()->mapIcons.insert(std::make_pair(mapIconId, mapIcon));
+	return static_cast<cell>(mapIconId);
 }
 
 cell AMX_NATIVE_CALL Natives::DestroyDynamicMapIcon(AMX *amx, cell *params)
 {
-	CHECK_PARAMS(1, "DestroyDynamicMapIcon");
+	CHECK_PARAMS(1);
 	boost::unordered_map<int, Item::SharedMapIcon>::iterator m = core->getData()->mapIcons.find(static_cast<int>(params[1]));
 	if (m != core->getData()->mapIcons.end())
 	{
@@ -73,7 +65,7 @@ cell AMX_NATIVE_CALL Natives::DestroyDynamicMapIcon(AMX *amx, cell *params)
 
 cell AMX_NATIVE_CALL Natives::IsValidDynamicMapIcon(AMX *amx, cell *params)
 {
-	CHECK_PARAMS(1, "IsValidDynamicMapIcon");
+	CHECK_PARAMS(1);
 	boost::unordered_map<int, Item::SharedMapIcon>::iterator m = core->getData()->mapIcons.find(static_cast<int>(params[1]));
 	if (m != core->getData()->mapIcons.end())
 	{

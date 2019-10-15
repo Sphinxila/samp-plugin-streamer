@@ -14,21 +14,11 @@
  * limitations under the License.
  */
 
-#include "misc.h"
+#include "../precompiled.h"
 
+#include "misc.h"
 #include "../core.h"
 #include "../main.h"
-
-#include <boost/geometry.hpp>
-#include <boost/geometry/geometries/geometries.hpp>
-#include <boost/intrusive_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
-#include <boost/tuple/tuple.hpp>
-#include <boost/unordered_map.hpp>
-#include <boost/unordered_set.hpp>
-#include <boost/variant.hpp>
-
-#include <Eigen/Core>
 
 using namespace Utility;
 
@@ -39,7 +29,7 @@ boost::unordered_map<int, Item::SharedActor>::iterator Utility::destroyActor(boo
 	if (i != core->getData()->internalActors.end())
 	{
 		core->getData()->destroyedActors.push_back(i->second);
-		core->getData()->internalActors.quick_erase(i);
+		core->getData()->internalActors.erase(i);
 	}
 	boost::unordered_map<int, Item::SharedActor>::iterator d = core->getData()->discoveredActors.find(a->first);
 	if (d != core->getData()->discoveredActors.end())
@@ -84,12 +74,27 @@ boost::unordered_map<int, Item::SharedMapIcon>::iterator Utility::destroyMapIcon
 	Item::MapIcon::identifier.remove(m->first, core->getData()->mapIcons.size());
 	for (boost::unordered_map<int, Player>::iterator p = core->getData()->players.begin(); p != core->getData()->players.end(); ++p)
 	{
+		Item::Bimap<Item::SharedMapIcon>::Type::right_iterator d = p->second.discoveredMapIcons.right.find(boost::make_tuple(m->first, m->second));
+		if (d != p->second.discoveredMapIcons.right.end())
+		{
+			p->second.discoveredMapIcons.right.erase(d);
+		}
+		Item::Bimap<Item::SharedMapIcon>::Type::right_iterator e = p->second.existingMapIcons.right.find(boost::make_tuple(m->first, m->second));
+		if (e != p->second.existingMapIcons.right.end())
+		{
+			p->second.existingMapIcons.right.erase(e);
+		}
 		boost::unordered_map<int, int>::iterator i = p->second.internalMapIcons.find(m->first);
 		if (i != p->second.internalMapIcons.end())
 		{
 			sampgdk::RemovePlayerMapIcon(p->first, i->second);
 			p->second.mapIconIdentifier.remove(i->second, p->second.internalMapIcons.size());
-			p->second.internalMapIcons.quick_erase(i);
+			p->second.internalMapIcons.erase(i);
+		}
+		boost::unordered_set<int>::iterator r = p->second.removedMapIcons.find(m->first);
+		if (r != p->second.removedMapIcons.end())
+		{
+			p->second.removedMapIcons.erase(r);
 		}
 		p->second.visibleCell->mapIcons.erase(m->first);
 	}
@@ -102,11 +107,26 @@ boost::unordered_map<int, Item::SharedObject>::iterator Utility::destroyObject(b
 	Item::Object::identifier.remove(o->first, core->getData()->objects.size());
 	for (boost::unordered_map<int, Player>::iterator p = core->getData()->players.begin(); p != core->getData()->players.end(); ++p)
 	{
+		Item::Bimap<Item::SharedObject>::Type::right_iterator d = p->second.discoveredObjects.right.find(boost::make_tuple(o->first, o->second));
+		if (d != p->second.discoveredObjects.right.end())
+		{
+			p->second.discoveredObjects.right.erase(d);
+		}
+		Item::Bimap<Item::SharedObject>::Type::right_iterator e = p->second.existingObjects.right.find(boost::make_tuple(o->first, o->second));
+		if (e != p->second.existingObjects.right.end())
+		{
+			p->second.existingObjects.right.erase(e);
+		}
 		boost::unordered_map<int, int>::iterator i = p->second.internalObjects.find(o->first);
 		if (i != p->second.internalObjects.end())
 		{
 			sampgdk::DestroyPlayerObject(p->first, i->second);
-			p->second.internalObjects.quick_erase(i);
+			p->second.internalObjects.erase(i);
+		}
+		boost::unordered_set<int>::iterator r = p->second.removedObjects.find(o->first);
+		if (r != p->second.removedObjects.end())
+		{
+			p->second.removedObjects.erase(r);
 		}
 		p->second.visibleCell->objects.erase(o->first);
 	}
@@ -117,16 +137,19 @@ boost::unordered_map<int, Item::SharedObject>::iterator Utility::destroyObject(b
 boost::unordered_map<int, Item::SharedPickup>::iterator Utility::destroyPickup(boost::unordered_map<int, Item::SharedPickup>::iterator p)
 {
 	Item::Pickup::identifier.remove(p->first, core->getData()->pickups.size());
-	boost::unordered_map<int, int>::iterator i = core->getData()->internalPickups.find(p->first);
-	if (i != core->getData()->internalPickups.end())
+	for (boost::unordered_set<int>::const_iterator w = p->second->worlds.begin(); w != p->second->worlds.end(); ++w)
 	{
-		sampgdk::DestroyPickup(i->second);
-		core->getData()->internalPickups.quick_erase(i);
-	}
-	boost::unordered_map<int, Item::SharedPickup>::iterator d = core->getData()->discoveredPickups.find(p->first);
-	if (d != core->getData()->discoveredPickups.end())
-	{
-		core->getData()->discoveredPickups.erase(d);
+		boost::unordered_map<std::pair<int, int>, int>::iterator i = core->getData()->internalPickups.find(std::make_pair(p->first, *w));
+		if (i != core->getData()->internalPickups.end())
+		{
+			sampgdk::DestroyPickup(i->second);
+			core->getData()->internalPickups.erase(i);
+		}
+		boost::unordered_map<std::pair<int, int>, Item::SharedPickup>::iterator d = core->getData()->discoveredPickups.find(std::make_pair(p->first, *w));
+		if (d != core->getData()->discoveredPickups.end())
+		{
+			core->getData()->discoveredPickups.erase(d);
+		}
 	}
 	core->getGrid()->removePickup(p->second);
 	return core->getData()->pickups.erase(p);
@@ -154,11 +177,26 @@ boost::unordered_map<int, Item::SharedTextLabel>::iterator Utility::destroyTextL
 	Item::TextLabel::identifier.remove(t->first, core->getData()->textLabels.size());
 	for (boost::unordered_map<int, Player>::iterator p = core->getData()->players.begin(); p != core->getData()->players.end(); ++p)
 	{
+		Item::Bimap<Item::SharedTextLabel>::Type::right_iterator d = p->second.discoveredTextLabels.right.find(boost::make_tuple(t->first, t->second));
+		if (d != p->second.discoveredTextLabels.right.end())
+		{
+			p->second.discoveredTextLabels.right.erase(d);
+		}
+		Item::Bimap<Item::SharedTextLabel>::Type::right_iterator e = p->second.existingTextLabels.right.find(boost::make_tuple(t->first, t->second));
+		if (e != p->second.existingTextLabels.right.end())
+		{
+			p->second.existingTextLabels.right.erase(e);
+		}
 		boost::unordered_map<int, int>::iterator i = p->second.internalTextLabels.find(t->first);
 		if (i != p->second.internalTextLabels.end())
 		{
 			sampgdk::DeletePlayer3DTextLabel(p->first, i->second);
-			p->second.internalTextLabels.quick_erase(i);
+			p->second.internalTextLabels.erase(i);
+		}
+		boost::unordered_set<int>::iterator r = p->second.removedTextLabels.find(t->first);
+		if (r != p->second.removedTextLabels.end())
+		{
+			p->second.removedTextLabels.erase(r);
 		}
 		p->second.visibleCell->textLabels.erase(t->first);
 	}
@@ -227,14 +265,17 @@ bool Utility::setChunkTickRate(int type, std::size_t value, int playerid)
 			case STREAMER_TYPE_OBJECT:
 			{
 				p->second.chunkTickRate[STREAMER_TYPE_OBJECT] = value;
+				break;
 			}
 			case STREAMER_TYPE_MAP_ICON:
 			{
 				p->second.chunkTickRate[STREAMER_TYPE_MAP_ICON] = value;
+				break;
 			}
 			case STREAMER_TYPE_3D_TEXT_LABEL:
 			{
 				p->second.chunkTickRate[STREAMER_TYPE_3D_TEXT_LABEL] = value;
+				break;
 			}
 		}
 	}
@@ -302,14 +343,17 @@ bool Utility::setMaxVisibleItems(int type, std::size_t value, int playerid)
 			case STREAMER_TYPE_OBJECT:
 			{
 				p->second.maxVisibleObjects = value;
+				break;
 			}
 			case STREAMER_TYPE_MAP_ICON:
 			{
 				p->second.maxVisibleMapIcons = value;
+				break;
 			}
 			case STREAMER_TYPE_3D_TEXT_LABEL:
 			{
 				p->second.maxVisibleTextLabels = value;
+				break;
 			}
 		}
 	}
@@ -392,7 +436,10 @@ void Utility::processPendingDestroyedActors()
 		std::vector<int>::iterator a = core->getData()->destroyedActors.begin();
 		while (a != core->getData()->destroyedActors.end())
 		{
-			sampgdk::DestroyActor(*a);
+			if (sampgdk::IsValidActor(*a))
+			{
+				sampgdk::DestroyActor(*a);
+			}
 			a = core->getData()->destroyedActors.erase(a);
 		}
 	}

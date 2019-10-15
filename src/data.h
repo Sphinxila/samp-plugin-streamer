@@ -17,13 +17,7 @@
 #ifndef DATA_H
 #define DATA_H
 
-#include "common.h"
 #include "player.h"
-
-#include <boost/intrusive_ptr.hpp>
-#include <boost/unordered_map.hpp>
-
-#include <set>
 
 class Data
 {
@@ -45,14 +39,15 @@ public:
 	bool errorCallbackEnabled;
 
 	std::set<AMX*> interfaces;
+	std::set<AMX*> amxUnloadDestroyItems;
 
 	std::vector<int> destroyedActors;
 
 	boost::unordered_map<int, Item::SharedActor> discoveredActors;
-	boost::unordered_map<int, Item::SharedPickup> discoveredPickups;
+	boost::unordered_map<std::pair<int, int>, Item::SharedPickup> discoveredPickups;
 
 	boost::unordered_map<int, int> internalActors;
-	boost::unordered_map<int, int> internalPickups;
+	boost::unordered_map<std::pair<int, int>, int> internalPickups;
 
 	boost::unordered_map<int, Item::SharedActor> actors;
 	boost::unordered_map<int, Item::SharedArea> areas;

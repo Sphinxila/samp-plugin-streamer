@@ -14,29 +14,18 @@
  * limitations under the License.
  */
 
-#include "geometry.h"
-#include "misc.h"
+#include "../precompiled.h"
 
+#include "geometry.h"
 #include "../core.h"
 #include "../main.h"
-
-#include <boost/geometry.hpp>
-#include <boost/geometry/geometries/geometries.hpp>
-#include <boost/intrusive_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
-#include <boost/tuple/tuple.hpp>
-#include <boost/variant.hpp>
-
-#include <Eigen/Core>
-
-#include <cmath>
 
 using namespace Utility;
 
 bool Utility::doesLineSegmentIntersectArea(const Eigen::Vector3f &lineSegmentStart, const Eigen::Vector3f &lineSegmentEnd, const Item::SharedArea &area)
 {
 	Eigen::Vector2f height = Eigen::Vector2f::Zero();
-	boost::variant<Polygon2D, Box2D, Box3D, Eigen::Vector2f, Eigen::Vector3f> position;
+	boost::variant<Polygon2d, Box2d, Box3d, Eigen::Vector2f, Eigen::Vector3f> position;
 	if (area->attach)
 	{
 		height = area->height;
@@ -55,9 +44,9 @@ bool Utility::doesLineSegmentIntersectArea(const Eigen::Vector3f &lineSegmentSta
 		}
 		case STREAMER_AREA_TYPE_CYLINDER:
 		{
-			Box2D box2D = Box2D(Eigen::Vector2f(boost::get<Eigen::Vector2f>(position)[0] - area->size, boost::get<Eigen::Vector2f>(position)[1] - area->size), Eigen::Vector2f(boost::get<Eigen::Vector2f>(position)[0] + area->size, boost::get<Eigen::Vector2f>(position)[1] + area->size));
-			Box3D box3D = Box3D(Eigen::Vector3f(box2D.min_corner()[0], box2D.min_corner()[1], height[0]), Eigen::Vector3f(box2D.max_corner()[0], box2D.max_corner()[1], height[1]));
-			return doesLineSegmentIntersectBox(lineSegmentStart, lineSegmentEnd, box3D);
+			Box2d box2d = Box2d(Eigen::Vector2f(boost::get<Eigen::Vector2f>(position)[0] - area->size, boost::get<Eigen::Vector2f>(position)[1] - area->size), Eigen::Vector2f(boost::get<Eigen::Vector2f>(position)[0] + area->size, boost::get<Eigen::Vector2f>(position)[1] + area->size));
+			Box3d box3d = Box3d(Eigen::Vector3f(box2d.min_corner()[0], box2d.min_corner()[1], height[0]), Eigen::Vector3f(box2d.max_corner()[0], box2d.max_corner()[1], height[1]));
+			return doesLineSegmentIntersectBox(lineSegmentStart, lineSegmentEnd, box3d);
 		}
 		case STREAMER_AREA_TYPE_SPHERE:
 		{
@@ -65,17 +54,17 @@ bool Utility::doesLineSegmentIntersectArea(const Eigen::Vector3f &lineSegmentSta
 		}
 		case STREAMER_AREA_TYPE_RECTANGLE:
 		{
-			return doesLineSegmentIntersectBox(Eigen::Vector2f(lineSegmentStart[0], lineSegmentStart[1]), Eigen::Vector2f(lineSegmentEnd[0], lineSegmentEnd[1]), boost::get<Box2D>(position));
+			return doesLineSegmentIntersectBox(Eigen::Vector2f(lineSegmentStart[0], lineSegmentStart[1]), Eigen::Vector2f(lineSegmentEnd[0], lineSegmentEnd[1]), boost::get<Box2d>(position));
 		}
 		case STREAMER_AREA_TYPE_CUBOID:
 		{
-			return doesLineSegmentIntersectBox(lineSegmentStart, lineSegmentEnd, boost::get<Box3D>(position));
+			return doesLineSegmentIntersectBox(lineSegmentStart, lineSegmentEnd, boost::get<Box3d>(position));
 		}
 		case STREAMER_AREA_TYPE_POLYGON:
 		{
-			Box2D box2D = boost::geometry::return_envelope<Box2D>(boost::get<Polygon2D>(position));
-			Box3D box3D = Box3D(Eigen::Vector3f(box2D.min_corner()[0], box2D.min_corner()[1], height[0]), Eigen::Vector3f(box2D.max_corner()[0], box2D.max_corner()[1], height[1]));
-			return doesLineSegmentIntersectBox(lineSegmentStart, lineSegmentEnd, box3D);
+			Box2d box2d = boost::geometry::return_envelope<Box2d>(boost::get<Polygon2d>(position));
+			Box3d box3d = Box3d(Eigen::Vector3f(box2d.min_corner()[0], box2d.min_corner()[1], height[0]), Eigen::Vector3f(box2d.max_corner()[0], box2d.max_corner()[1], height[1]));
+			return doesLineSegmentIntersectBox(lineSegmentStart, lineSegmentEnd, box3d);
 		}
 	}
 	return false;
@@ -84,7 +73,7 @@ bool Utility::doesLineSegmentIntersectArea(const Eigen::Vector3f &lineSegmentSta
 bool Utility::isPointInArea(const Eigen::Vector3f &point, const Item::SharedArea &area)
 {
 	Eigen::Vector2f height = Eigen::Vector2f::Zero();
-	boost::variant<Polygon2D, Box2D, Box3D, Eigen::Vector2f, Eigen::Vector3f> position;
+	boost::variant<Polygon2d, Box2d, Box3d, Eigen::Vector2f, Eigen::Vector3f> position;
 	if (area->attach)
 	{
 		height = area->attach->height;
@@ -115,17 +104,17 @@ bool Utility::isPointInArea(const Eigen::Vector3f &point, const Item::SharedArea
 		}
 		case STREAMER_AREA_TYPE_RECTANGLE:
 		{
-			return boost::geometry::covered_by(Eigen::Vector2f(point[0], point[1]), boost::get<Box2D>(position));
+			return boost::geometry::covered_by(Eigen::Vector2f(point[0], point[1]), boost::get<Box2d>(position));
 		}
 		case STREAMER_AREA_TYPE_CUBOID:
 		{
-			return boost::geometry::covered_by(point, boost::get<Box3D>(position));
+			return boost::geometry::covered_by(point, boost::get<Box3d>(position));
 		}
 		case STREAMER_AREA_TYPE_POLYGON:
 		{
 			if ((almostEquals(point[2], height[0]) || (point[2] > height[0])) && (almostEquals(point[2], height[1]) || (point[2] < height[1])))
 			{
-				return boost::geometry::covered_by(Eigen::Vector2f(point[0], point[1]), boost::get<Polygon2D>(position));
+				return boost::geometry::covered_by(Eigen::Vector2f(point[0], point[1]), boost::get<Polygon2d>(position));
 			}
 			return false;
 		}
@@ -162,28 +151,28 @@ void Utility::constructAttachedArea(const Item::SharedArea &area, const boost::v
 			}
 			case STREAMER_AREA_TYPE_RECTANGLE:
 			{
-				boost::get<Box2D>(area->attach->position).min_corner() = Eigen::Vector2f(position[0], position[1]) + boost::get<Box2D>(area->position).min_corner();
-				boost::get<Box2D>(area->attach->position).max_corner() = Eigen::Vector2f(position[0], position[1]) + boost::get<Box2D>(area->position).max_corner();
-				boost::geometry::correct(boost::get<Box2D>(area->attach->position));
+				boost::get<Box2d>(area->attach->position).min_corner() = Eigen::Vector2f(position[0], position[1]) + boost::get<Box2d>(area->position).min_corner();
+				boost::get<Box2d>(area->attach->position).max_corner() = Eigen::Vector2f(position[0], position[1]) + boost::get<Box2d>(area->position).max_corner();
+				boost::geometry::correct(boost::get<Box2d>(area->attach->position));
 				break;
 			}
 			case STREAMER_AREA_TYPE_CUBOID:
 			{
-				boost::get<Box3D>(area->attach->position).min_corner() = position + boost::get<Box3D>(area->position).min_corner();
-				boost::get<Box3D>(area->attach->position).max_corner() = position + boost::get<Box3D>(area->position).max_corner();
-				boost::geometry::correct(boost::get<Box3D>(area->attach->position));
+				boost::get<Box3d>(area->attach->position).min_corner() = position + boost::get<Box3d>(area->position).min_corner();
+				boost::get<Box3d>(area->attach->position).max_corner() = position + boost::get<Box3d>(area->position).max_corner();
+				boost::geometry::correct(boost::get<Box3d>(area->attach->position));
 				break;
 			}
 			case STREAMER_AREA_TYPE_POLYGON:
 			{
 				area->attach->height = Eigen::Vector2f(position[2] + area->height[0], position[2] + area->height[1]);
 				std::vector<Eigen::Vector2f> points;
-				for (std::vector<Eigen::Vector2f>::iterator p = boost::get<Polygon2D>(area->position).outer().begin(); p != boost::get<Polygon2D>(area->position).outer().end(); ++p)
+				for (std::vector<Eigen::Vector2f>::iterator p = boost::get<Polygon2d>(area->position).outer().begin(); p != boost::get<Polygon2d>(area->position).outer().end(); ++p)
 				{
 					points.push_back(Eigen::Vector2f(position[0], position[1]) + Eigen::Vector2f(p->data()[0], p->data()[1]));
 				}
-				boost::geometry::assign_points(boost::get<Polygon2D>(area->attach->position), points);
-				boost::geometry::correct(boost::get<Polygon2D>(area->attach->position));
+				boost::geometry::assign_points(boost::get<Polygon2d>(area->attach->position), points);
+				boost::geometry::correct(boost::get<Polygon2d>(area->attach->position));
 				break;
 			}
 		}
@@ -240,7 +229,7 @@ void Utility::projectPoint(const Eigen::Vector3f &point, const Eigen::Vector4f &
 	matrix(2, 0) = 2 * ((quaternion[0] * quaternion[2]) - (quaternion[1] * quaternion[3]));
 	matrix(2, 1) = 2 * ((quaternion[1] * quaternion[2]) + (quaternion[0] * quaternion[3]));
 	matrix(2, 2) = 1 - 2 * ((quaternion[0] * quaternion[0]) + (quaternion[1] * quaternion[1]));
-	position[0] += -((point[2] * matrix(2, 0)) + (point[1] * matrix(2, 1)) + (point[0] * matrix(2, 2)));
+	position[0] += (point[2] * matrix(2, 0)) + (point[1] * matrix(2, 1)) + (point[0] * matrix(2, 2));
 	position[1] += -((point[2] * matrix(1, 0)) + (point[1] * matrix(1, 1)) + (point[0] * matrix(1, 2)));
 	position[2] += (point[2] * matrix(0, 0)) + (point[1] * matrix(0, 1)) + (point[0] * matrix(0, 2));
 }

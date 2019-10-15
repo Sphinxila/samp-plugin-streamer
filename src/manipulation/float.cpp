@@ -14,24 +14,11 @@
  * limitations under the License.
  */
 
-#include "float.h"
+#include "../precompiled.h"
 
+#include "float.h"
 #include "../core.h"
 #include "../utility.h"
-
-#include <boost/geometry.hpp>
-#include <boost/geometry/geometries/geometries.hpp>
-#include <boost/intrusive_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
-#include <boost/tuple/tuple.hpp>
-#include <boost/unordered_map.hpp>
-#include <boost/unordered_set.hpp>
-#include <boost/variant.hpp>
-
-#include <Eigen/Core>
-
-#include <bitset>
-#include <cmath>
 
 using namespace Manipulation;
 
@@ -240,7 +227,7 @@ int Manipulation::getFloatData(AMX *amx, cell *params)
 			}
 			else
 			{
-				error = InvalidID;
+				error = InvalidId;
 			}
 			break;
 		}
@@ -280,7 +267,7 @@ int Manipulation::getFloatData(AMX *amx, cell *params)
 			}
 			else
 			{
-				error = InvalidID;
+				error = InvalidId;
 			}
 			break;
 		}
@@ -325,7 +312,7 @@ int Manipulation::getFloatData(AMX *amx, cell *params)
 			}
 			else
 			{
-				error = InvalidID;
+				error = InvalidId;
 			}
 			break;
 		}
@@ -385,7 +372,7 @@ int Manipulation::getFloatData(AMX *amx, cell *params)
 			}
 			else
 			{
-				error = InvalidID;
+				error = InvalidId;
 			}
 			break;
 		}
@@ -425,7 +412,7 @@ int Manipulation::getFloatData(AMX *amx, cell *params)
 			}
 			else
 			{
-				error = InvalidID;
+				error = InvalidId;
 			}
 			break;
 		}
@@ -500,7 +487,7 @@ int Manipulation::getFloatData(AMX *amx, cell *params)
 			}
 			else
 			{
-				error = InvalidID;
+				error = InvalidId;
 			}
 			break;
 		}
@@ -601,12 +588,12 @@ int Manipulation::getFloatData(AMX *amx, cell *params)
 						{
 							case STREAMER_AREA_TYPE_RECTANGLE:
 							{
-								Utility::storeFloatInNative(amx, params[4], boost::get<Box2D>(a->second->position).max_corner()[0]);
+								Utility::storeFloatInNative(amx, params[4], boost::get<Box2d>(a->second->position).max_corner()[0]);
 								return 1;
 							}
 							case STREAMER_AREA_TYPE_CUBOID:
 							{
-								Utility::storeFloatInNative(amx, params[4], boost::get<Box3D>(a->second->position).max_corner()[0]);
+								Utility::storeFloatInNative(amx, params[4], boost::get<Box3d>(a->second->position).max_corner()[0]);
 								return 1;
 							}
 						}
@@ -618,12 +605,12 @@ int Manipulation::getFloatData(AMX *amx, cell *params)
 						{
 							case STREAMER_AREA_TYPE_RECTANGLE:
 							{
-								Utility::storeFloatInNative(amx, params[4], boost::get<Box2D>(a->second->position).max_corner()[1]);
+								Utility::storeFloatInNative(amx, params[4], boost::get<Box2d>(a->second->position).max_corner()[1]);
 								return 1;
 							}
 							case STREAMER_AREA_TYPE_CUBOID:
 							{
-								Utility::storeFloatInNative(amx, params[4], boost::get<Box3D>(a->second->position).max_corner()[1]);
+								Utility::storeFloatInNative(amx, params[4], boost::get<Box3d>(a->second->position).max_corner()[1]);
 								return 1;
 							}
 						}
@@ -635,7 +622,7 @@ int Manipulation::getFloatData(AMX *amx, cell *params)
 						{
 							case STREAMER_AREA_TYPE_CUBOID:
 							{
-								Utility::storeFloatInNative(amx, params[4], boost::get<Box3D>(a->second->position).max_corner()[2]);
+								Utility::storeFloatInNative(amx, params[4], boost::get<Box3d>(a->second->position).max_corner()[2]);
 								return 1;
 							}
 							case STREAMER_AREA_TYPE_CYLINDER:
@@ -653,12 +640,12 @@ int Manipulation::getFloatData(AMX *amx, cell *params)
 						{
 							case STREAMER_AREA_TYPE_RECTANGLE:
 							{
-								Utility::storeFloatInNative(amx, params[4], boost::get<Box2D>(a->second->position).min_corner()[0]);
+								Utility::storeFloatInNative(amx, params[4], boost::get<Box2d>(a->second->position).min_corner()[0]);
 								return 1;
 							}
 							case STREAMER_AREA_TYPE_CUBOID:
 							{
-								Utility::storeFloatInNative(amx, params[4], boost::get<Box3D>(a->second->position).min_corner()[0]);
+								Utility::storeFloatInNative(amx, params[4], boost::get<Box3d>(a->second->position).min_corner()[0]);
 								return 1;
 							}
 						}
@@ -670,12 +657,12 @@ int Manipulation::getFloatData(AMX *amx, cell *params)
 						{
 							case STREAMER_AREA_TYPE_RECTANGLE:
 							{
-								Utility::storeFloatInNative(amx, params[4], boost::get<Box2D>(a->second->position).min_corner()[1]);
+								Utility::storeFloatInNative(amx, params[4], boost::get<Box2d>(a->second->position).min_corner()[1]);
 								return 1;
 							}
 							case STREAMER_AREA_TYPE_CUBOID:
 							{
-								Utility::storeFloatInNative(amx, params[4], boost::get<Box3D>(a->second->position).min_corner()[1]);
+								Utility::storeFloatInNative(amx, params[4], boost::get<Box3d>(a->second->position).min_corner()[1]);
 								return 1;
 							}
 						}
@@ -687,7 +674,7 @@ int Manipulation::getFloatData(AMX *amx, cell *params)
 						{
 							case STREAMER_AREA_TYPE_CUBOID:
 							{
-								Utility::storeFloatInNative(amx, params[4], boost::get<Box3D>(a->second->position).min_corner()[2]);
+								Utility::storeFloatInNative(amx, params[4], boost::get<Box3d>(a->second->position).min_corner()[2]);
 								return 1;
 							}
 							case STREAMER_AREA_TYPE_CYLINDER:
@@ -761,7 +748,7 @@ int Manipulation::getFloatData(AMX *amx, cell *params)
 			}
 			else
 			{
-				error = InvalidID;
+				error = InvalidId;
 			}
 			break;
 		}
@@ -811,7 +798,7 @@ int Manipulation::getFloatData(AMX *amx, cell *params)
 			}
 			else
 			{
-				error = InvalidID;
+				error = InvalidId;
 			}
 			break;
 		}
@@ -828,7 +815,7 @@ int Manipulation::getFloatData(AMX *amx, cell *params)
 			Utility::logError("Streamer_GetFloatData: Invalid data specified.");
 			break;
 		}
-		case InvalidID:
+		case InvalidId:
 		{
 			Utility::logError("Streamer_GetFloatData: Invalid ID specified.");
 			break;
@@ -1010,30 +997,30 @@ int Manipulation::setFloatData(AMX *amx, cell *params)
 						if (i != p->second.internalObjects.end())
 						{
 							sampgdk::DestroyPlayerObject(p->first, i->second);
-							i->second = sampgdk::CreatePlayerObject(p->first, o->second->modelID, o->second->position[0], o->second->position[1], o->second->position[2], o->second->rotation[0], o->second->rotation[1], o->second->rotation[2], o->second->drawDistance);
+							i->second = sampgdk::CreatePlayerObject(p->first, o->second->modelId, o->second->position[0], o->second->position[1], o->second->position[2], o->second->rotation[0], o->second->rotation[1], o->second->rotation[2], o->second->drawDistance);
 							if (o->second->attach)
 							{
-								if (o->second->attach->object != INVALID_GENERIC_ID)
+								if (o->second->attach->object != INVALID_STREAMER_ID)
 								{
 									boost::unordered_map<int, int>::iterator j = p->second.internalObjects.find(o->second->attach->object);
 									if (j != p->second.internalObjects.end())
 									{
-										AMX_NATIVE native = sampgdk::FindNative("AttachPlayerObjectToObject");
+										static AMX_NATIVE native = sampgdk::FindNative("AttachPlayerObjectToObject");
 										if (native != NULL)
 										{
 											sampgdk::InvokeNative(native, "dddffffffb", p->first, i->second, j->second, o->second->attach->positionOffset[0], o->second->attach->positionOffset[1], o->second->attach->positionOffset[2], o->second->attach->rotation[0], o->second->attach->rotation[1], o->second->attach->rotation[2], o->second->attach->syncRotation);
 										}
 									}
 								}
-								else if (o->second->attach->player != INVALID_GENERIC_ID)
+								else if (o->second->attach->player != INVALID_PLAYER_ID)
 								{
-									AMX_NATIVE native = sampgdk::FindNative("AttachPlayerObjectToPlayer");
+									static AMX_NATIVE native = sampgdk::FindNative("AttachPlayerObjectToPlayer");
 									if (native != NULL)
 									{
 										sampgdk::InvokeNative(native, "dddffffffd", p->first, i->second, o->second->attach->player, o->second->attach->positionOffset[0], o->second->attach->positionOffset[1], o->second->attach->positionOffset[2], o->second->attach->rotation[0], o->second->attach->rotation[1], o->second->attach->rotation[2], 1);
 									}
 								}
-								else if (o->second->attach->vehicle != INVALID_GENERIC_ID)
+								else if (o->second->attach->vehicle != INVALID_VEHICLE_ID)
 								{
 									sampgdk::AttachPlayerObjectToVehicle(p->first, i->second, o->second->attach->vehicle, o->second->attach->positionOffset[0], o->second->attach->positionOffset[1], o->second->attach->positionOffset[2], o->second->attach->rotation[0], o->second->attach->rotation[1], o->second->attach->rotation[2]);
 								}
@@ -1046,7 +1033,7 @@ int Manipulation::setFloatData(AMX *amx, cell *params)
 							{
 								if (m->second.main)
 								{
-									sampgdk::SetPlayerObjectMaterial(p->first, i->second, m->first, m->second.main->modelID, m->second.main->txdFileName.c_str(), m->second.main->textureName.c_str(), m->second.main->materialColor);
+									sampgdk::SetPlayerObjectMaterial(p->first, i->second, m->first, m->second.main->modelId, m->second.main->txdFileName.c_str(), m->second.main->textureName.c_str(), m->second.main->materialColor);
 								}
 								else if (m->second.text)
 								{
@@ -1067,7 +1054,7 @@ int Manipulation::setFloatData(AMX *amx, cell *params)
 			}
 			else
 			{
-				error = InvalidID;
+				error = InvalidId;
 			}
 			break;
 		}
@@ -1123,11 +1110,14 @@ int Manipulation::setFloatData(AMX *amx, cell *params)
 				}
 				if (update)
 				{
-					boost::unordered_map<int, int>::iterator i = core->getData()->internalPickups.find(p->first);
-					if (i != core->getData()->internalPickups.end())
+					for (boost::unordered_set<int>::const_iterator w = p->second->worlds.begin(); w != p->second->worlds.end(); ++w)
 					{
-						sampgdk::DestroyPickup(i->second);
-						i->second = sampgdk::CreatePickup(p->second->modelID, p->second->type, p->second->position[0], p->second->position[1], p->second->position[2], p->second->worldID);
+						boost::unordered_map<std::pair<int, int>, int>::iterator i = core->getData()->internalPickups.find(std::make_pair(p->first, *w));
+						if (i != core->getData()->internalPickups.end())
+						{
+							sampgdk::DestroyPickup(i->second);
+							i->second = sampgdk::CreatePickup(p->second->modelId, p->second->type, p->second->position[0], p->second->position[1], p->second->position[2], *w);
+						}
 					}
 				}
 				if (reassign || update)
@@ -1137,7 +1127,7 @@ int Manipulation::setFloatData(AMX *amx, cell *params)
 			}
 			else
 			{
-				error = InvalidID;
+				error = InvalidId;
 			}
 			break;
 		}
@@ -1216,7 +1206,7 @@ int Manipulation::setFloatData(AMX *amx, cell *params)
 			}
 			else
 			{
-				error = InvalidID;
+				error = InvalidId;
 			}
 			break;
 		}
@@ -1313,7 +1303,7 @@ int Manipulation::setFloatData(AMX *amx, cell *params)
 			}
 			else
 			{
-				error = InvalidID;
+				error = InvalidId;
 			}
 			break;
 		}
@@ -1386,7 +1376,7 @@ int Manipulation::setFloatData(AMX *amx, cell *params)
 			}
 			else
 			{
-				error = InvalidID;
+				error = InvalidId;
 			}
 			break;
 		}
@@ -1457,7 +1447,7 @@ int Manipulation::setFloatData(AMX *amx, cell *params)
 						if (i != p->second.internalTextLabels.end())
 						{
 							sampgdk::DeletePlayer3DTextLabel(p->first, i->second);
-							i->second = sampgdk::CreatePlayer3DTextLabel(p->first, t->second->text.c_str(), t->second->color, t->second->position[0], t->second->position[1], t->second->position[2], t->second->drawDistance, t->second->attach ? t->second->attach->player : INVALID_GENERIC_ID, t->second->attach ? t->second->attach->vehicle : INVALID_GENERIC_ID, t->second->testLOS);
+							i->second = sampgdk::CreatePlayer3DTextLabel(p->first, t->second->text.c_str(), t->second->color, t->second->position[0], t->second->position[1], t->second->position[2], t->second->drawDistance, t->second->attach ? t->second->attach->player : INVALID_PLAYER_ID, t->second->attach ? t->second->attach->vehicle : INVALID_VEHICLE_ID, t->second->testLOS);
 						}
 					}
 				}
@@ -1468,7 +1458,7 @@ int Manipulation::setFloatData(AMX *amx, cell *params)
 			}
 			else
 			{
-				error = InvalidID;
+				error = InvalidId;
 			}
 			break;
 		}
@@ -1509,13 +1499,13 @@ int Manipulation::setFloatData(AMX *amx, cell *params)
 						{
 							case STREAMER_AREA_TYPE_RECTANGLE:
 							{
-								boost::get<Box2D>(a->second->position).max_corner()[0] = amx_ctof(params[4]);
+								boost::get<Box2d>(a->second->position).max_corner()[0] = amx_ctof(params[4]);
 								reassign = true;
 								break;
 							}
 							case STREAMER_AREA_TYPE_CUBOID:
 							{
-								boost::get<Box3D>(a->second->position).max_corner()[0] = amx_ctof(params[4]);
+								boost::get<Box3d>(a->second->position).max_corner()[0] = amx_ctof(params[4]);
 								reassign = true;
 								break;
 							}
@@ -1528,13 +1518,13 @@ int Manipulation::setFloatData(AMX *amx, cell *params)
 						{
 							case STREAMER_AREA_TYPE_RECTANGLE:
 							{
-								boost::get<Box2D>(a->second->position).max_corner()[1] = amx_ctof(params[4]);
+								boost::get<Box2d>(a->second->position).max_corner()[1] = amx_ctof(params[4]);
 								reassign = true;
 								break;
 							}
 							case STREAMER_AREA_TYPE_CUBOID:
 							{
-								boost::get<Box3D>(a->second->position).max_corner()[1] = amx_ctof(params[4]);
+								boost::get<Box3d>(a->second->position).max_corner()[1] = amx_ctof(params[4]);
 								reassign = true;
 								break;
 							}
@@ -1547,7 +1537,7 @@ int Manipulation::setFloatData(AMX *amx, cell *params)
 						{
 							case STREAMER_AREA_TYPE_CUBOID:
 							{
-								boost::get<Box3D>(a->second->position).max_corner()[2] = amx_ctof(params[4]);
+								boost::get<Box3d>(a->second->position).max_corner()[2] = amx_ctof(params[4]);
 								return 1;
 							}
 							case STREAMER_AREA_TYPE_CYLINDER:
@@ -1565,13 +1555,13 @@ int Manipulation::setFloatData(AMX *amx, cell *params)
 						{
 							case STREAMER_AREA_TYPE_RECTANGLE:
 							{
-								boost::get<Box2D>(a->second->position).min_corner()[0] = amx_ctof(params[4]);
+								boost::get<Box2d>(a->second->position).min_corner()[0] = amx_ctof(params[4]);
 								reassign = true;
 								break;
 							}
 							case STREAMER_AREA_TYPE_CUBOID:
 							{
-								boost::get<Box3D>(a->second->position).min_corner()[0] = amx_ctof(params[4]);
+								boost::get<Box3d>(a->second->position).min_corner()[0] = amx_ctof(params[4]);
 								reassign = true;
 								break;
 							}
@@ -1584,13 +1574,13 @@ int Manipulation::setFloatData(AMX *amx, cell *params)
 						{
 							case STREAMER_AREA_TYPE_RECTANGLE:
 							{
-								boost::get<Box2D>(a->second->position).min_corner()[1] = amx_ctof(params[4]);
+								boost::get<Box2d>(a->second->position).min_corner()[1] = amx_ctof(params[4]);
 								reassign = true;
 								break;
 							}
 							case STREAMER_AREA_TYPE_CUBOID:
 							{
-								boost::get<Box3D>(a->second->position).min_corner()[1] = amx_ctof(params[4]);
+								boost::get<Box3d>(a->second->position).min_corner()[1] = amx_ctof(params[4]);
 								reassign = true;
 								break;
 							}
@@ -1603,7 +1593,7 @@ int Manipulation::setFloatData(AMX *amx, cell *params)
 						{
 							case STREAMER_AREA_TYPE_CUBOID:
 							{
-								boost::get<Box3D>(a->second->position).min_corner()[2] = amx_ctof(params[4]);
+								boost::get<Box3d>(a->second->position).min_corner()[2] = amx_ctof(params[4]);
 								return 1;
 							}
 							case STREAMER_AREA_TYPE_CYLINDER:
@@ -1695,16 +1685,16 @@ int Manipulation::setFloatData(AMX *amx, cell *params)
 					{
 						case STREAMER_AREA_TYPE_RECTANGLE:
 						{
-							boost::geometry::correct(boost::get<Box2D>(a->second->position));
-							a->second->comparableSize = static_cast<float>(boost::geometry::comparable_distance(boost::get<Box2D>(a->second->position).min_corner(), boost::get<Box2D>(a->second->position).max_corner()));
-							a->second->size = static_cast<float>(boost::geometry::distance(boost::get<Box2D>(a->second->position).min_corner(), boost::get<Box2D>(a->second->position).max_corner()));
+							boost::geometry::correct(boost::get<Box2d>(a->second->position));
+							a->second->comparableSize = static_cast<float>(boost::geometry::comparable_distance(boost::get<Box2d>(a->second->position).min_corner(), boost::get<Box2d>(a->second->position).max_corner()));
+							a->second->size = static_cast<float>(boost::geometry::distance(boost::get<Box2d>(a->second->position).min_corner(), boost::get<Box2d>(a->second->position).max_corner()));
 							break;
 						}
 						case STREAMER_AREA_TYPE_CUBOID:
 						{
-							boost::geometry::correct(boost::get<Box3D>(a->second->position));
-							a->second->comparableSize = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector2f(boost::get<Box3D>(a->second->position).min_corner()[0], boost::get<Box3D>(a->second->position).min_corner()[1]), Eigen::Vector2f(boost::get<Box3D>(a->second->position).max_corner()[0], boost::get<Box3D>(a->second->position).max_corner()[1])));
-							a->second->size = static_cast<float>(boost::geometry::distance(Eigen::Vector2f(boost::get<Box3D>(a->second->position).min_corner()[0], boost::get<Box3D>(a->second->position).min_corner()[1]), Eigen::Vector2f(boost::get<Box3D>(a->second->position).max_corner()[0], boost::get<Box3D>(a->second->position).max_corner()[1])));
+							boost::geometry::correct(boost::get<Box3d>(a->second->position));
+							a->second->comparableSize = static_cast<float>(boost::geometry::comparable_distance(Eigen::Vector2f(boost::get<Box3d>(a->second->position).min_corner()[0], boost::get<Box3d>(a->second->position).min_corner()[1]), Eigen::Vector2f(boost::get<Box3d>(a->second->position).max_corner()[0], boost::get<Box3d>(a->second->position).max_corner()[1])));
+							a->second->size = static_cast<float>(boost::geometry::distance(Eigen::Vector2f(boost::get<Box3d>(a->second->position).min_corner()[0], boost::get<Box3d>(a->second->position).min_corner()[1]), Eigen::Vector2f(boost::get<Box3d>(a->second->position).max_corner()[0], boost::get<Box3d>(a->second->position).max_corner()[1])));
 							break;
 						}
 					}
@@ -1717,7 +1707,7 @@ int Manipulation::setFloatData(AMX *amx, cell *params)
 			}
 			else
 			{
-				error = InvalidID;
+				error = InvalidId;
 			}
 			break;
 		}
@@ -1789,10 +1779,10 @@ int Manipulation::setFloatData(AMX *amx, cell *params)
 					if (i != core->getData()->internalActors.end())
 					{
 						sampgdk::DestroyActor(i->second);
-						i->second = sampgdk::CreateActor(a->second->modelID, a->second->position[0], a->second->position[1], a->second->position[2], a->second->rotation);
+						i->second = sampgdk::CreateActor(a->second->modelId, a->second->position[0], a->second->position[1], a->second->position[2], a->second->rotation);
 						sampgdk::SetActorInvulnerable(i->second, a->second->invulnerable);
 						sampgdk::SetActorHealth(i->second, a->second->health);
-						sampgdk::SetActorVirtualWorld(i->second, a->second->worldID);
+						sampgdk::SetActorVirtualWorld(i->second, a->second->worldId);
 						if (a->second->anim)
 						{
 							sampgdk::ApplyActorAnimation(i->second, a->second->anim->lib.c_str(), a->second->anim->name.c_str(), a->second->anim->delta, a->second->anim->loop, a->second->anim->lockx, a->second->anim->locky, a->second->anim->freeze, a->second->anim->time);
@@ -1806,7 +1796,7 @@ int Manipulation::setFloatData(AMX *amx, cell *params)
 			}
 			else
 			{
-				error = InvalidID;
+				error = InvalidId;
 			}
 			break;
 		}
@@ -1823,7 +1813,7 @@ int Manipulation::setFloatData(AMX *amx, cell *params)
 			Utility::logError("Streamer_SetFloatData: Invalid data specified.");
 			break;
 		}
-		case InvalidID:
+		case InvalidId:
 		{
 			Utility::logError("Streamer_SetFloatData: Invalid ID specified.");
 			break;

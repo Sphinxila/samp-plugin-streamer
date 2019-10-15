@@ -27,6 +27,7 @@ set(SOURCE_FILES
 	item.cpp
 	player.cpp
 	streamer.cpp
+	chunk-streamer.cpp
 	utility/amx.cpp
 	utility/geometry.cpp
 	utility/misc.cpp
@@ -49,6 +50,7 @@ SET(HEADER_FILES
 	natives.h
 	player.h
 	streamer.h
+	chunk-streamer.h
 	utility.h
 	utility/amx.h
 	utility/geometry.h

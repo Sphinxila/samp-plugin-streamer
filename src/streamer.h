@@ -18,16 +18,9 @@
 #define STREAMER_H
 
 #include "cell.h"
-#include "common.h"
 #include "item.h"
 #include "player.h"
 #include "utility.h"
-
-#include <boost/tuple/tuple.hpp>
-#include <boost/unordered_set.hpp>
-
-#include <bitset>
-#include <map>
 
 class Streamer
 {
@@ -54,11 +47,10 @@ public:
 		return false;
 	}
 
-	std::size_t getChunkSize(int type);
-	bool setChunkSize(int type, std::size_t value);
-
 	void startAutomaticUpdate();
 	void startManualUpdate(Player &player, int type);
+	
+	bool processPlayerArea(Player &player, const Item::SharedArea &a, const int state);
 
 	void processActiveItems();
 
@@ -69,9 +61,9 @@ public:
 private:
 	void calculateAverageElapsedTime();
 
-	void performPlayerChunkUpdate(Player &player, bool automatic);
-	void performPlayerUpdate(Player &player, bool automatic);
 	void executeCallbacks();
+
+	void performPlayerUpdate(Player &player, bool automatic);
 
 	void discoverActors(Player &player, const std::vector<SharedCell> &cells);
 	void streamActors();
@@ -79,25 +71,18 @@ private:
 	void processAreas(Player &player, const std::vector<SharedCell> &cells);
 	void processCheckpoints(Player &player, const std::vector<SharedCell> &cells);
 	void processRaceCheckpoints(Player &player, const std::vector<SharedCell> &cells);
-
-	void discoverMapIcons(Player &player, const std::vector<SharedCell> &cells);
-	void streamMapIcons(Player &player, bool automatic);
-
-	void discoverObjects(Player &player, const std::vector<SharedCell> &cells);
-	void streamObjects(Player &player, bool automatic);
+	void processMapIcons(Player &player, const std::vector<SharedCell> &cells);
+	void processObjects(Player &player, const std::vector<SharedCell> &cells);
 
 	void discoverPickups(Player &player, const std::vector<SharedCell> &cells);
 	void streamPickups();
-
-	void discoverTextLabels(Player &player, const std::vector<SharedCell> &cells);
-	void streamTextLabels(Player &player, bool automatic);
+	
+	void processTextLabels(Player &player, const std::vector<SharedCell> &cells);
 
 	void processMovingObjects();
 	void processAttachedAreas();
 	void processAttachedObjects();
 	void processAttachedTextLabels();
-
-	std::size_t chunkSize[STREAMER_MAX_TYPES];
 
 	std::size_t tickCount;
 	std::size_t tickRate;
@@ -111,7 +96,7 @@ private:
 	std::multimap<int, boost::tuple<int, int> > areaLeaveCallbacks;
 
 	std::vector<int> objectMoveCallbacks;
-
+protected:
 	std::vector<boost::tuple<int, int> > streamInCallbacks;
 	std::vector<boost::tuple<int, int> > streamOutCallbacks;
 
