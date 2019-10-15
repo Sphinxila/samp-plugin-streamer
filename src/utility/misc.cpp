@@ -14,11 +14,15 @@
  * limitations under the License.
  */
 
-#include "../precompiled.h"
+#include "../common.h"
 
 #include "misc.h"
 #include "../core.h"
 #include "../main.h"
+
+#include <a_actor.h>
+#include <a_players.h>
+#include <a_objects.h>
 
 using namespace Utility;
 

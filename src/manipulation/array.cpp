@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "../precompiled.h"
+#include "../common.h"
 
 #include "array.h"
 #include "../core.h"

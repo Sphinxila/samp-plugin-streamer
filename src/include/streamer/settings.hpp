@@ -22,6 +22,8 @@ size_t Streamer_GetVisibleItems(int type, int playerid);
 bool Streamer_IsToggleErrorCallback();
 bool Streamer_ToggleItemInvAreas(int type, int id);
 int Streamer_IsToggleItemStatic(int type, int id);
+int Streamer_IsToggleChunkStream();
+void Streamer_ToggleChunkStream(bool status);
 void Streamer_SetCellDistance(float distance);
 void Streamer_SetCellSize(float size);
 bool Streamer_SetChunkSize(int type, std::size_t size);

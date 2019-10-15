@@ -36,10 +36,10 @@ int CreateDynamicRaceCP(int id, float x, float y, float z, float nx, float ny, f
 	if (core->getData()->getGlobalMaxItems(STREAMER_TYPE_RACE_CP) == core->getData()->raceCheckpoints.size()) {
 		return 0;
 	}
-	int raceCheckpointID = Item::RaceCheckpoint::identifier.get();
+	int raceCheckpointId = Item::RaceCheckpoint::identifier.get();
 	Item::SharedRaceCheckpoint raceCheckpoint(new Item::RaceCheckpoint);
 	//raceCheckpoint->amx = amx;
-	raceCheckpoint->raceCheckpointID = raceCheckpointID;
+	raceCheckpoint->raceCheckpointId = raceCheckpointId;
 	raceCheckpoint->inverseAreaChecking = false;
 	raceCheckpoint->originalComparableStreamDistance = -1.0f;
 	raceCheckpoint->positionOffset = Eigen::Vector3f::Zero();
@@ -58,8 +58,8 @@ int CreateDynamicRaceCP(int id, float x, float y, float z, float nx, float ny, f
 	Utility::addToContainer(raceCheckpoint->areas, areaid);
 	raceCheckpoint->priority = priority;
 	core->getGrid()->addRaceCheckpoint(raceCheckpoint);
-	core->getData()->raceCheckpoints.insert(std::make_pair(raceCheckpointID, raceCheckpoint));
-	return raceCheckpointID;
+	core->getData()->raceCheckpoints.insert(std::make_pair(raceCheckpointId, raceCheckpoint));
+	return raceCheckpointId;
 }
 
 int DestroyDynamicRaceCP(int id) {

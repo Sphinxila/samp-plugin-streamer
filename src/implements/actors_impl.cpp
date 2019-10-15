@@ -29,6 +29,9 @@
 
 #include <Eigen/Core>
 
+#include <a_actor.h>
+#include <a_players.h>
+
 STREAMER_BEGIN_NS
 
 int CreateDynamicActor(int modelid, float x, float y, float z, float r, bool invulnerable,
@@ -37,14 +40,14 @@ int CreateDynamicActor(int modelid, float x, float y, float z, float r, bool inv
 		return 0;
 	}
 
-	int actorID = Item::Actor::identifier.get();
+	int actorId = Item::Actor::identifier.get();
 	Item::SharedActor actor(new Item::Actor);
 	//actor->amx = amx;
-	actor->actorID = actorID;
+	actor->actorId = actorId;
 	actor->inverseAreaChecking = false;
 	actor->originalComparableStreamDistance = -1.0f;
 	actor->positionOffset = Eigen::Vector3f::Zero();
-	actor->modelID = modelid;
+	actor->modelId = modelid;
 	actor->position = Eigen::Vector3f(x, y, z);
 	actor->rotation = r;
 	actor->invulnerable = invulnerable;
@@ -61,8 +64,8 @@ int CreateDynamicActor(int modelid, float x, float y, float z, float r, bool inv
 	actor->priority = priority;
 
 	core->getGrid()->addActor(actor);
-	core->getData()->actors.insert(std::make_pair(actorID, actor));
-	return actorID;
+	core->getData()->actors.insert(std::make_pair(actorId, actor));
+	return actorId;
 }
 
 int DestroyDynamicActor(int id) {
@@ -121,7 +124,7 @@ int ClearDynamicActorAnimations(int id) {
 int GetPlayerTargetDynamicActor(int id) {
 	boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(id);
 	if (p != core->getData()->players.end()) {
-		int actorid = sampgdk::GetPlayerTargetActor(p->second.playerID);
+		int actorid = sampgdk::GetPlayerTargetActor(p->second.playerId);
 		for (boost::unordered_map<int, int>::iterator i = core->getData()->internalActors.begin(); i != core->getData()->internalActors.end(); ++i) {
 			if (i->second == actorid) {
 				return i->first;
@@ -139,10 +142,10 @@ int SetDynamicActorFacingAngle(int id, float angle) {
 		boost::unordered_map<int, int>::iterator i = core->getData()->internalActors.find(a->first);
 		if (i != core->getData()->internalActors.end()) {
 			sampgdk::DestroyActor(i->second);
-			i->second = sampgdk::CreateActor(a->second->modelID, a->second->position[0], a->second->position[1], a->second->position[2], a->second->rotation);
+			i->second = sampgdk::CreateActor(a->second->modelId, a->second->position[0], a->second->position[1], a->second->position[2], a->second->rotation);
 			sampgdk::SetActorInvulnerable(i->second, a->second->invulnerable);
 			sampgdk::SetActorHealth(i->second, a->second->health);
-			sampgdk::SetActorVirtualWorld(i->second, a->second->worldID);
+			sampgdk::SetActorVirtualWorld(i->second, a->second->worldId);
 
 			if (a->second->anim) {
 				sampgdk::ApplyActorAnimation(i->second, a->second->anim->lib.c_str(), a->second->anim->name.c_str(), a->second->anim->delta, a->second->anim->loop, a->second->anim->lockx, a->second->anim->locky, a->second->anim->freeze, a->second->anim->time);
@@ -175,10 +178,10 @@ int SetDynamicActorInvulnerable(int id, bool invulnerable) {
 		boost::unordered_map<int, int>::iterator i = core->getData()->internalActors.find(a->first);
 		if (i != core->getData()->internalActors.end()) {
 			sampgdk::DestroyActor(i->second);
-			i->second = sampgdk::CreateActor(a->second->modelID, a->second->position[0], a->second->position[1], a->second->position[2], a->second->rotation);
+			i->second = sampgdk::CreateActor(a->second->modelId, a->second->position[0], a->second->position[1], a->second->position[2], a->second->rotation);
 			sampgdk::SetActorInvulnerable(i->second, a->second->invulnerable);
 			sampgdk::SetActorHealth(i->second, a->second->health);
-			sampgdk::SetActorVirtualWorld(i->second, a->second->worldID);
+			sampgdk::SetActorVirtualWorld(i->second, a->second->worldId);
 
 			if (a->second->anim) {
 				sampgdk::ApplyActorAnimation(i->second, a->second->anim->lib.c_str(), a->second->anim->name.c_str(), a->second->anim->delta, a->second->anim->loop, a->second->anim->lockx, a->second->anim->locky, a->second->anim->freeze, a->second->anim->time);
@@ -212,7 +215,7 @@ int SetDynamicActorPos(int id, float x, float y, float z) {
 		Utility::setFirstValueInContainer(a->second->worlds, value);
 		boost::unordered_map<int, int>::iterator i = core->getData()->internalActors.find(a->first);
 		if (i != core->getData()->internalActors.end()) {
-			sampgdk::SetActorVirtualWorld(i->second, a->second->worldID);
+			sampgdk::SetActorVirtualWorld(i->second, a->second->worldId);
 		}
 		return 1;
 	}
@@ -267,11 +270,11 @@ int IsDynamicActorInvulnerable(int id)
 	return 0;
 }
 
-/*int IsDynamicActorStreamedIn(int playerID, int actorID)
+/*int IsDynamicActorStreamedIn(int playerId, int actorId)
 {
-	boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(playerID);
+	boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(playerId);
 	if (p != core->getData()->players.end()) {
-		boost::unordered_map<int, Item::SharedActor>::iterator a = core->getData()->actors.find(actorID);
+		boost::unordered_map<int, Item::SharedActor>::iterator a = core->getData()->actors.find(actorId);
 
 		if (a != core->getData()->actors.end()) {
 			boost::unordered_map<int, int>::iterator i = core->getData()->internalActors.find(a->first);
@@ -283,10 +286,10 @@ int IsDynamicActorInvulnerable(int id)
 	return 0;
 }*/
 
-int GetPlayerCameraTargetDynActor(int playerID) {
-	boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(playerID);
+int GetPlayerCameraTargetDynActor(int playerId) {
+	boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(playerId);
 	if (p != core->getData()->players.end()) {
-		int actorid = sampgdk::GetPlayerCameraTargetActor(p->second.playerID);
+		int actorid = sampgdk::GetPlayerCameraTargetActor(p->second.playerId);
 		if (actorid != INVALID_ACTOR_ID) {
 			for (boost::unordered_map<int, int>::iterator i = core->getData()->internalActors.begin(); i != core->getData()->internalActors.end(); ++i) {
 				if (i->second == actorid) {
@@ -326,8 +329,8 @@ int SetDynamicActorVirtualWorld(int actorid, int worldid) {
 		Utility::setFirstValueInContainer(a->second->worlds, worldid);
 		boost::unordered_map<int, int>::iterator i = core->getData()->internalActors.find(a->first);
 		if (i != core->getData()->internalActors.end()) {
-			a->second->worldID = !a->second->worlds.empty() ? worldid : 0;
-			sampgdk::SetActorVirtualWorld(i->second, a->second->worldID);
+			a->second->worldId = !a->second->worlds.empty() ? worldid : 0;
+			sampgdk::SetActorVirtualWorld(i->second, a->second->worldId);
 		}
 		return 1;
 	}

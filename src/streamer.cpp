@@ -14,10 +14,16 @@
  * limitations under the License.
  */
 
-#include "precompiled.h"
+#include "common.h"
 
 #include "streamer.h"
 #include "core.h"
+
+#include <a_actor.h>
+#include <a_players.h>
+#include <a_objects.h>
+#include <a_vehicles.h>
+#include <sampgdk/interop.h>
 
 Streamer::Streamer()
 {

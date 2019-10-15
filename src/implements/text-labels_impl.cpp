@@ -38,10 +38,10 @@ int CreateDynamic3DTextLabel(std::string text, int color, float x, float y, floa
 	if (core->getData()->getGlobalMaxItems(STREAMER_TYPE_3D_TEXT_LABEL) == core->getData()->textLabels.size()) {
 		return 0;
 	}
-	int textLabelID = Item::TextLabel::identifier.get();
+	int textLabelId = Item::TextLabel::identifier.get();
 	Item::SharedTextLabel textLabel(new Item::TextLabel);
 	//textLabel->amx = amx;
-	textLabel->textLabelID = textLabelID;
+	textLabel->textLabelId = textLabelId;
 	textLabel->inverseAreaChecking = false;
 	textLabel->originalComparableStreamDistance = -1.0f;
 	textLabel->positionOffset = Eigen::Vector3f::Zero();
@@ -50,7 +50,7 @@ int CreateDynamic3DTextLabel(std::string text, int color, float x, float y, floa
 	textLabel->color = color;
 	textLabel->position = Eigen::Vector3f(x, y, z);
 	textLabel->drawDistance = drawDistance;
-	if (attachedPlayer != INVALID_GENERIC_ID || attachedVehicle != INVALID_GENERIC_ID) {
+	if (attachedPlayer != INVALID_OBJECT_ID || attachedVehicle != INVALID_OBJECT_ID) {
 		textLabel->attach = boost::intrusive_ptr<Item::TextLabel::Attach>(new Item::TextLabel::Attach);
 		textLabel->attach->player = attachedPlayer;
 		textLabel->attach->vehicle = attachedVehicle;
@@ -68,8 +68,8 @@ int CreateDynamic3DTextLabel(std::string text, int color, float x, float y, floa
 	Utility::addToContainer(textLabel->areas, areaid);
 	textLabel->priority = priority;
 	core->getGrid()->addTextLabel(textLabel);
-	core->getData()->textLabels.insert(std::make_pair(textLabelID, textLabel));
-	return textLabelID;
+	core->getData()->textLabels.insert(std::make_pair(textLabelId, textLabel));
+	return textLabelId;
 }
 
 int DestroyDynamic3DTextLabel(int id) {

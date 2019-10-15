@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-#include "precompiled.h"
+#include "common.h"
+
+#include <sampgdk/interop.h>
+#include <a_players.h>
+#include <a_objects.h>
 
 #include "chunk-streamer.h"
 #include "core.h"

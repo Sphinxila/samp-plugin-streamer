@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
-#include "precompiled.h"
+#include "common.h"
 
 #include "main.h"
 #include "core.h"
 #include "natives.h"
 #include "utility.h"
+
+#include <sampgdk/core.h>
+
 
 extern void *pAMXFunctions;
 

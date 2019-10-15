@@ -91,7 +91,7 @@ inline void intrusive_ptr_release(T *t)
 #include <vector>
 #include <utility>
 
-#include "sampgdk.h"
+#include <sampgdk/sdk.h>
 
 class Cell;
 class Data;

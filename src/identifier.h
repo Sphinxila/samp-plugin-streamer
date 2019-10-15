@@ -17,6 +17,8 @@
 #ifndef IDENTIFIER_H
 #define IDENTIFIER_H
 
+#include <queue>
+
 class Identifier
 {
 public:

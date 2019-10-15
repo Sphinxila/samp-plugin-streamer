@@ -35,6 +35,11 @@
 #include <limits>
 #include <string>
 
+#include <a_objects.h>
+#include <a_players.h>
+#include <a_actor.h>
+#include <sampgdk/interop.h>
+
 STREAMER_BEGIN_NS
 
 int CreateDynamicObject( int modelid, float x, float y,  float z,
@@ -43,17 +48,17 @@ int CreateDynamicObject( int modelid, float x, float y,  float z,
 	if (core->getData()->getGlobalMaxItems(STREAMER_TYPE_OBJECT) == core->getData()->objects.size()) {
 		return 0;
 	}
-	int objectID = Item::Object::identifier.get();
+	int objectId = Item::Object::identifier.get();
 	Item::SharedObject object(new Item::Object);
 	//object->amx = amx;
-	object->objectID = objectID;
+	object->objectId = objectId;
 	object->inverseAreaChecking = false;
 	object->noCameraCollision = false;
 	object->inverseAreaChecking = false;
 	object->originalComparableStreamDistance = -1.0f;
 	object->positionOffset = Eigen::Vector3f::Zero();
 	object->streamCallbacks = false;
-	object->modelID = modelid;
+	object->modelId = modelid;
 	object->position = Eigen::Vector3f(x, y, z);
 	object->rotation = Eigen::Vector3f(rx, ry, rz);
 
@@ -69,8 +74,8 @@ int CreateDynamicObject( int modelid, float x, float y,  float z,
 
 	object->priority = priority;
 	core->getGrid()->addObject(object);
-	core->getData()->objects.insert(std::make_pair(objectID, object));
-	return objectID;
+	core->getData()->objects.insert(std::make_pair(objectId, object));
+	return objectId;
 }
 
 int DestroyDynamicObject(int id) {
@@ -269,7 +274,7 @@ int IsDynamicObjectMoving(int id) {
 int AttachCameraToDynamicObject(int playerid, int objectid) {
 	boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(playerid);
 	if (p != core->getData()->players.end()) {
-		int internalID = INVALID_GENERIC_ID;
+		int internalID = INVALID_OBJECT_ID;
 		boost::unordered_map<int, int>::iterator i = p->second.internalObjects.find(objectid);
 		if (i == p->second.internalObjects.end()) {
 			boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(objectid);
@@ -286,7 +291,7 @@ int AttachCameraToDynamicObject(int playerid, int objectid) {
 		} else {
 			internalID = i->second;
 		}
-		if (internalID != INVALID_GENERIC_ID) {
+		if (internalID != INVALID_OBJECT_ID) {
 			sampgdk::AttachCameraToPlayerObject(p->first, internalID);
 			return 1;
 		}
@@ -306,8 +311,8 @@ int AttachDynamicObjectToObject(int objectid, int attachtoid, float x, float y, 
 			return 0;
 		}
 		o->second->attach = boost::intrusive_ptr<Item::Object::Attach>(new Item::Object::Attach);
-		o->second->attach->player = INVALID_GENERIC_ID;
-		o->second->attach->vehicle = INVALID_GENERIC_ID;
+		o->second->attach->player = INVALID_OBJECT_ID;
+		o->second->attach->vehicle = INVALID_OBJECT_ID;
 		o->second->attach->object = attachtoid;
 		o->second->attach->positionOffset = Eigen::Vector3f(x, y, z);
 		o->second->attach->rotation = Eigen::Vector3f(rx, ry, rz);
@@ -323,7 +328,7 @@ int AttachDynamicObjectToObject(int objectid, int attachtoid, float x, float y, 
 					}
 					for (boost::unordered_map<int, Item::Object::Material>::iterator m = o->second->materials.begin(); m != o->second->materials.end(); ++m) {
 						if (m->second.main) {
-							sampgdk::SetPlayerObjectMaterial(p->first, i->second, m->first, m->second.main->modelID, m->second.main->txdFileName.c_str(), m->second.main->textureName.c_str(), m->second.main->materialColor);
+							sampgdk::SetPlayerObjectMaterial(p->first, i->second, m->first, m->second.main->modelId, m->second.main->txdFileName.c_str(), m->second.main->textureName.c_str(), m->second.main->materialColor);
 						} else if (m->second.text) {
 							sampgdk::SetPlayerObjectMaterialText(p->first, i->second, m->second.text->materialText.c_str(), m->first, m->second.text->materialSize, m->second.text->fontFace.c_str(), m->second.text->fontSize, m->second.text->bold, m->second.text->fontColor, m->second.text->backColor, m->second.text->textAlignment);
 						}
@@ -368,7 +373,7 @@ int AttachDynamicObjectToPlayer(int objectid, int playerid, float x, float y, fl
 		}
 		o->second->attach = boost::intrusive_ptr<Item::Object::Attach>(new Item::Object::Attach);
 		o->second->attach->object = INVALID_STREAMER_ID;
-		o->second->attach->vehicle = INVALID_GENERIC_ID;
+		o->second->attach->vehicle = INVALID_OBJECT_ID;
 		o->second->attach->player = playerid;
 		o->second->attach->positionOffset = Eigen::Vector3f(x,y,z);
 		o->second->attach->rotation = Eigen::Vector3f(rx,ry,rz);
@@ -381,14 +386,14 @@ int AttachDynamicObjectToPlayer(int objectid, int playerid, float x, float y, fl
 				}
 				for (boost::unordered_map<int, Item::Object::Material>::iterator m = o->second->materials.begin(); m != o->second->materials.end(); ++m) {
 					if (m->second.main) {
-						sampgdk::SetPlayerObjectMaterial(p->first, i->second, m->first, m->second.main->modelID, m->second.main->txdFileName.c_str(), m->second.main->textureName.c_str(), m->second.main->materialColor);
+						sampgdk::SetPlayerObjectMaterial(p->first, i->second, m->first, m->second.main->modelId, m->second.main->txdFileName.c_str(), m->second.main->textureName.c_str(), m->second.main->materialColor);
 					} else if (m->second.text) {
 						sampgdk::SetPlayerObjectMaterialText(p->first, i->second, m->second.text->materialText.c_str(), m->first, m->second.text->materialSize, m->second.text->fontFace.c_str(), m->second.text->fontSize, m->second.text->bold, m->second.text->fontColor, m->second.text->backColor, m->second.text->textAlignment);
 					}
 				}
 			}
 		}
-		if (playerid != INVALID_GENERIC_ID) {
+		if (playerid != INVALID_OBJECT_ID) {
 			core->getStreamer()->attachedObjects.insert(o->second);
 		} else {
 			o->second->attach.reset();
@@ -409,7 +414,7 @@ int AttachDynamicObjectToVehicle(int objectid, int vehicleid, float x, float y, 
 		}
 		o->second->attach = boost::intrusive_ptr<Item::Object::Attach>(new Item::Object::Attach);
 		o->second->attach->object = INVALID_STREAMER_ID;
-		o->second->attach->player = INVALID_GENERIC_ID;
+		o->second->attach->player = INVALID_OBJECT_ID;
 		o->second->attach->vehicle = vehicleid;
 		o->second->attach->positionOffset = Eigen::Vector3f(x, y, z);
 		o->second->attach->rotation = Eigen::Vector3f(rx, ry, rz);
@@ -419,14 +424,14 @@ int AttachDynamicObjectToVehicle(int objectid, int vehicleid, float x, float y, 
 				sampgdk::AttachPlayerObjectToVehicle(p->first, i->second, o->second->attach->vehicle, o->second->attach->positionOffset[0], o->second->attach->positionOffset[1], o->second->attach->positionOffset[2], o->second->attach->rotation[0], o->second->attach->rotation[1], o->second->attach->rotation[2]);
 				for (boost::unordered_map<int, Item::Object::Material>::iterator m = o->second->materials.begin(); m != o->second->materials.end(); ++m) {
 					if (m->second.main) {
-						sampgdk::SetPlayerObjectMaterial(p->first, i->second, m->first, m->second.main->modelID, m->second.main->txdFileName.c_str(), m->second.main->textureName.c_str(), m->second.main->materialColor);
+						sampgdk::SetPlayerObjectMaterial(p->first, i->second, m->first, m->second.main->modelId, m->second.main->txdFileName.c_str(), m->second.main->textureName.c_str(), m->second.main->materialColor);
 					} else if (m->second.text) {
 						sampgdk::SetPlayerObjectMaterialText(p->first, i->second, m->second.text->materialText.c_str(), m->first, m->second.text->materialSize, m->second.text->fontFace.c_str(), m->second.text->fontSize, m->second.text->bold, m->second.text->fontColor, m->second.text->backColor, m->second.text->textAlignment);
 					}
 				}
 			}
 		}
-		if (vehicleid != INVALID_GENERIC_ID) {
+		if (vehicleid != INVALID_OBJECT_ID) {
 			core->getStreamer()->attachedObjects.insert(o->second);
 		} else {
 			o->second->attach.reset();
@@ -441,7 +446,7 @@ int AttachDynamicObjectToVehicle(int objectid, int vehicleid, float x, float y, 
 int EditDynamicObject(int playerid, int objectid) {
 	boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(playerid);
 	if (p != core->getData()->players.end()) {
-		int internalID = INVALID_GENERIC_ID;
+		int internalID = INVALID_OBJECT_ID;
 		boost::unordered_map<int, int>::iterator i = p->second.internalObjects.find(objectid);
 		if (i == p->second.internalObjects.end()) {
 			boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(objectid);
@@ -461,7 +466,7 @@ int EditDynamicObject(int playerid, int objectid) {
 		} else {
 			internalID = i->second;
 		}
-		if (internalID != INVALID_GENERIC_ID) {
+		if (internalID != INVALID_OBJECT_ID) {
 			sampgdk::EditPlayerObject(p->first, internalID);
 			return 1;
 		}
@@ -488,7 +493,7 @@ int GetDynamicObjectMaterial(int objectid, int materialindex, int &modelid, std:
 		boost::unordered_map<int, Item::Object::Material>::iterator m = o->second->materials.find(materialindex);
 		if (m != o->second->materials.end()) {
 			if (m->second.main) {
-				modelid = m->second.main->modelID;
+				modelid = m->second.main->modelId;
 				txdname = m->second.main->txdFileName;
 				texturename = m->second.main->textureName;
 				materialcolor = m->second.main->materialColor;
@@ -504,7 +509,7 @@ int SetDynamicObjectMaterial(int id, int materialindex, int modelid,  std::strin
 	if (o != core->getData()->objects.end()) {
 		int index = materialindex;
 		o->second->materials[index].main = boost::intrusive_ptr<Item::Object::Material::Main>(new Item::Object::Material::Main);
-		o->second->materials[index].main->modelID = modelid;
+		o->second->materials[index].main->modelId = modelid;
 		o->second->materials[index].main->txdFileName = txdname;
 		o->second->materials[index].main->textureName = texturename;
 		o->second->materials[index].main->materialColor = materialcolor;
@@ -513,7 +518,7 @@ int SetDynamicObjectMaterial(int id, int materialindex, int modelid,  std::strin
 			boost::unordered_map<int, int>::iterator i = p->second.internalObjects.find(o->first);
 			if (i != p->second.internalObjects.end())
 			{
-				sampgdk::SetPlayerObjectMaterial(p->first, i->second, index, o->second->materials[index].main->modelID, o->second->materials[index].main->txdFileName.c_str(), o->second->materials[index].main->textureName.c_str(), o->second->materials[index].main->materialColor);
+				sampgdk::SetPlayerObjectMaterial(p->first, i->second, index, o->second->materials[index].main->modelId, o->second->materials[index].main->txdFileName.c_str(), o->second->materials[index].main->textureName.c_str(), o->second->materials[index].main->materialColor);
 			}
 		}
 		o->second->materials[index].text.reset();
@@ -584,7 +589,7 @@ int SetDynamicObjectMaterialText(int id, int materialindex, std::string text, in
 int GetPlayerCameraTargetDynObject(int playerrid) {
 	boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(playerrid);
 	if (p != core->getData()->players.end()) {
-		int objectid = sampgdk::GetPlayerCameraTargetObject(p->second.playerID);
+		int objectid = sampgdk::GetPlayerCameraTargetObject(p->second.playerId);
 		if (objectid != INVALID_OBJECT_ID) {
 			for (boost::unordered_map<int, int>::iterator i = p->second.internalObjects.begin(); i != p->second.internalObjects.end(); ++i) {
 				if (i->second == objectid) {

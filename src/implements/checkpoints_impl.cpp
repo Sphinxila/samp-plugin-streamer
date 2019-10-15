@@ -37,10 +37,10 @@ int CreateDynamicCP(float x, float y, float z, float size, int worldid, int inte
 	if (core->getData()->getGlobalMaxItems(STREAMER_TYPE_CP) == core->getData()->checkpoints.size()) {
 		return 0;
 	}
-	int checkpointID = Item::Checkpoint::identifier.get();
+	int checkpointId = Item::Checkpoint::identifier.get();
 	Item::SharedCheckpoint checkpoint(new Item::Checkpoint);
 	//checkpoint->amx = amx;
-	checkpoint->checkpointID = checkpointID;
+	checkpoint->checkpointId = checkpointId;
 	checkpoint->inverseAreaChecking = false;
 	checkpoint->originalComparableStreamDistance = -1.0f;
 	checkpoint->positionOffset = Eigen::Vector3f::Zero();
@@ -56,8 +56,8 @@ int CreateDynamicCP(float x, float y, float z, float size, int worldid, int inte
 	Utility::addToContainer(checkpoint->areas, areaid);
 	checkpoint->priority = priority;
 	core->getGrid()->addCheckpoint(checkpoint);
-	core->getData()->checkpoints.insert(std::make_pair(checkpointID, checkpoint));
-	return checkpointID;
+	core->getData()->checkpoints.insert(std::make_pair(checkpointId, checkpoint));
+	return checkpointId;
 }
 
 int DestroyDynamicCP(int id)
@@ -78,11 +78,11 @@ int IsValidDynamicCP(int id) {
 	return 0;
 }
 
-int IsPlayerInDynamicCP(int id, int checkpointID)
+int IsPlayerInDynamicCP(int id, int checkpointId)
 {
 	boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(id);
 	if (p != core->getData()->players.end()) {
-		if (p->second.activeCheckpoint == checkpointID) {
+		if (p->second.activeCheckpoint == checkpointId) {
 			return 1;
 		}
 	}

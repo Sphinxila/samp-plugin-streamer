@@ -14,10 +14,15 @@
  * limitations under the License.
  */
 
-#include "../precompiled.h"
+#include "../common.h"
 
 #include "../natives.h"
 #include "../core.h"
+
+#include <a_players.h>
+#include <a_objects.h>
+#include <a_actor.h>
+#include <sampgdk/interop.h>
 
 cell AMX_NATIVE_CALL Natives::Streamer_ProcessActiveItems(AMX *amx, cell *params)
 {

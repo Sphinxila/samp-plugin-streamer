@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-#include "../precompiled.h"
+#include "../common.h"
 
 #include "amx.h"
 #include "../core.h"
 #include "../main.h"
+
+#include <sampgdk/core.h>
 
 using namespace Utility;
 

@@ -29,6 +29,10 @@
 
 #include <bitset>
 
+#include <a_players.h>
+#include <a_objects.h>
+#include <a_actor.h>
+
 STREAMER_BEGIN_NS
 
 void Streamer_ProcessActiveItems() {
@@ -97,8 +101,8 @@ float Streamer_GetLastUpdateTime() {
 int Streamer_Update(int playerid, int type) {
 	boost::unordered_map<int, Player>::iterator p = core->getData()->players.find(playerid);
 	if (p != core->getData()->players.end()) {
-		p->second.interiorID = sampgdk::GetPlayerInterior(p->first);
-		p->second.worldID = sampgdk::GetPlayerVirtualWorld(p->first);
+		p->second.interiorId = sampgdk::GetPlayerInterior(p->first);
+		p->second.worldId = sampgdk::GetPlayerVirtualWorld(p->first);
 		sampgdk::GetPlayerPos(p->first, &p->second.position[0], &p->second.position[1], &p->second.position[2]);
 		core->getStreamer()->startManualUpdate(p->second, type);
 		return 1;
@@ -111,14 +115,14 @@ int Streamer_UpdateEx(int playerid, float x, float y, float z, int worldid, int 
 	if (p != core->getData()->players.end()) {
 		p->second.position = Eigen::Vector3f(x, y, z);
 		if (worldid >= 0) {
-			p->second.worldID = worldid;
+			p->second.worldId = worldid;
 		} else {
-			p->second.worldID = sampgdk::GetPlayerVirtualWorld(p->first);
+			p->second.worldId = sampgdk::GetPlayerVirtualWorld(p->first);
 		}
 		if (interiorid >= 0) {
-			p->second.interiorID = interiorid;
+			p->second.interiorId = interiorid;
 		} else {
-			p->second.interiorID = sampgdk::GetPlayerInterior(p->first);
+			p->second.interiorId = sampgdk::GetPlayerInterior(p->first);
 		}
 		if (compensatedtime >= 0) {
 			sampgdk::SetPlayerPos(p->first, p->second.position[0], p->second.position[1], p->second.position[2]);

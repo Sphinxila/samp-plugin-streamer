@@ -17,6 +17,9 @@
 #ifndef ITEM_H
 #define ITEM_H
 
+#include <a_samp.h>
+#include "common.h"
+
 #include "cell.h"
 #include "identifier.h"
 

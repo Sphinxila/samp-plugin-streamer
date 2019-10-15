@@ -34,7 +34,6 @@ set(SOURCE_FILES
 	manipulation/array.cpp
 	manipulation/float.cpp
 	manipulation/int.cpp
-	error_code.cpp
 )
 
 SET(HEADER_FILES
@@ -58,7 +57,6 @@ SET(HEADER_FILES
 	manipulation/array.h
 	manipulation/float.h
 	manipulation/int.h
-	sampgdk.h
 )
 
 SET(PLUGIN_FILES
@@ -81,6 +79,7 @@ if (SAMP_STREAMER_INCLUDE_PLUGIN)
 		boost::unordered
 		boost::smart_ptr
 		boost::geometry
+		boost::bimap
 	)
 	
 	if (SAMP_STREAMER_USE_BUILD_DIR)
@@ -158,6 +157,7 @@ target_link_libraries(streamer-lib
 	boost::unordered
 	boost::smart_ptr
 	boost::geometry
+	boost::bimap
 	eigen
 )
 
@@ -187,6 +187,7 @@ target_link_libraries(streamer-plugin-lib
 	boost::unordered
 	boost::smart_ptr
 	boost::geometry
+	boost::bimap
 	eigen
 )
 

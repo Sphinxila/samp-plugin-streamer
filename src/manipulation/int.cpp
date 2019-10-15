@@ -14,11 +14,16 @@
  * limitations under the License.
  */
 
-#include "../precompiled.h"
+#include "../common.h"
 
 #include "int.h"
 #include "../core.h"
 #include "../utility.h"
+
+#include <a_players.h>
+#include <a_actor.h>
+#include <a_objects.h>
+#include <sampgdk/interop.h>
 
 int Manipulation::getIntData(AMX *amx, cell *params)
 {
