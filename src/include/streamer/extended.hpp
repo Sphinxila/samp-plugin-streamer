@@ -18,6 +18,8 @@
 
 #include "config.hpp"
 
+#include <a_samp.h>
+
 STREAMER_BEGIN_NS
 
 int CreateDynamicActorEx(
