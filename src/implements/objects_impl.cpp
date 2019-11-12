@@ -561,7 +561,7 @@ int GetDynamicObjectMaterialText(int id, int materialindex, std::string &text, i
 	return 0;
 }
 
-int SetDynamicObjectMaterialText(int id, int materialindex, std::string text, int materialsize, int fontface, int fontsize, bool bold, int fontcolor, int backcolor, int textalignment) {
+int SetDynamicObjectMaterialText(int id, int materialindex, std::string text, int materialsize, std::string fontface, int fontsize, bool bold, int fontcolor, int backcolor, int textalignment) {
 	boost::unordered_map<int, Item::SharedObject>::iterator o = core->getData()->objects.find(id);
 	if (o != core->getData()->objects.end()) {
 		int index = materialindex;

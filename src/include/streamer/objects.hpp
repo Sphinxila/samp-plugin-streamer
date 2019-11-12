@@ -34,7 +34,7 @@ int GetDynamicObjectMaterial(int objectid, int materialindex, int &modelid, std:
 int SetDynamicObjectMaterial(int id, int materialindex, int modelid, std::string txdname, std::string texturename, int materialcolor);
 int IsDynamicObjectMaterialTextUsed(int id, int materialindex);
 int GetDynamicObjectMaterialText(int id, int materialindex, std::string &text, int &materialSize, std::string &fontface, int &fontsize, bool &bold, int &fontcolor, int &backcolor, int &textalignment);
-int SetDynamicObjectMaterialText(int id, int materialindex, std::string text, int materialsize, int fontface, int fontsize, bool bold, int fontcolor, int backcolor, int textalignment);
+int SetDynamicObjectMaterialText(int id, int materialindex, std::string text, int materialsize, std::string fontface, int fontsize, bool bold, int fontcolor, int backcolor, int textalignment);
 int GetPlayerCameraTargetDynObject(int playerrid);
 int GetDynamicObjectPos(int objectid, float &x, float &y, float &z);
 int GetDynamicObjectRot(int objectid, float &rx, float &ry, float &rz);
